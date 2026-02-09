@@ -1,0 +1,11 @@
+product,category,price,quantity,region
+Laptop,Electronics,50000,10,North
+Phone,Electronics,20000,25,South
+Tablet,Electronics,15000,15,East
+Headphones,Accessories,2000,50,West
+Laptop,Electronics,52000,8,North
+Phone,Electronics,21000,22,South
+Tablet,Electronics,14500,18,East
+Watch,Wearables,8000,30,West
+Laptop,Electronics,49500,12,South
+Phone,Electronics,19500,28,East
