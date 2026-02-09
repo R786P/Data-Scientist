@@ -1,5 +1,6 @@
-herelangchain==0.2.0
+langchain==0.2.0
 langchain-community==0.2.0
+langchain-google-genai==1.0.0
 pandas==2.0.3
 matplotlib==3.7.1
 seaborn==0.12.2
