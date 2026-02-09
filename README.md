@@ -1,4 +1,4 @@
-# Data-Scientist
+
 # 🤖 Data Science AI Agent
 
 An autonomous AI agent that performs real data scientist tasks — just give it a query in natural language and let it handle analysis, visualization, and insights generation.
