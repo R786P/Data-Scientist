@@ -58,3 +58,5 @@ output/
 .idea/
 *.swp
 *.swo
+secret.env
+.env
