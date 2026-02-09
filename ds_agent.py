@@ -1,22 +1,41 @@
+"""
+Data Science AI Agent
+An autonomous agent that performs data analysis via natural language queries.
+"""
+
 import os
+import re
 import pandas as pd
 import matplotlib.pyplot as plt
 import seaborn as sns
 import io
+import warnings
+from typing import Optional, Dict, Any
 from langchain.agents import AgentExecutor, create_react_agent
-from langchain.tools import BaseTool, Tool
+from langchain.tools import Tool
 from langchain.prompts import PromptTemplate
 from langchain_google_genai import ChatGoogleGenerativeAI
 from langchain_core.tools import tool
-import warnings
+
 warnings.filterwarnings('ignore')
 
-# ===== SETUP: Add your Gemini API key here =====
-os.environ["GOOGLE_API_KEY"] = "YOUR_GEMINI_API_KEY"  # https://aistudio.google.com/app/apikey
-
 class DataScienceAgent:
-    def __init__(self):
-        self.df = None
+    """AI Agent that performs data science tasks via natural language."""
+    
+    def __init__(self, api_key: Optional[str] = None):
+        """
+        Initialize the agent.
+        
+        Args:
+            api_key: Gemini API key (optional - will read from GOOGLE_API_KEY env var)
+        """
+        if api_key:
+            os.environ["GOOGLE_API_KEY"] = api_key
+        
+        if "GOOGLE_API_KEY" not in os.environ:
+            raise ValueError("Gemini API key not found. Set GOOGLE_API_KEY environment variable or pass api_key parameter.")
+        
+        self.df: Optional[pd.DataFrame] = None
         self.llm = ChatGoogleGenerativeAI(
             model="gemini-1.5-flash",
             temperature=0,
@@ -26,129 +45,241 @@ class DataScienceAgent:
         self.agent = self._create_agent()
     
     def _create_tools(self):
+        """Create tools for the agent."""
+        
         @tool
         def load_data(file_path: str) -> str:
-            """Load CSV/Excel file into memory"""
+            """Load CSV/Excel file into memory."""
             try:
                 if file_path.endswith('.csv'):
                     self.df = pd.read_csv(file_path)
-                else:
+                elif file_path.endswith(('.xlsx', '.xls')):
                     self.df = pd.read_excel(file_path)
-                return f"✓ Loaded {self.df.shape[0]} rows, {self.df.shape[1]} columns\nColumns: {list(self.df.columns)}"
+                else:
+                    return f"✗ Unsupported file format: {file_path}"
+                
+                return (f"✓ Successfully loaded {self.df.shape[0]} rows × {self.df.shape[1]} columns\n"
+                       f"Columns: {list(self.df.columns)}")
             except Exception as e:
-                return f"✗ Error: {str(e)}"
+                return f"✗ Error loading file: {str(e)}"
         
         @tool
         def show_basic_info(dummy: str) -> str:
-            """Show dataset shape, columns, dtypes, missing values"""
+            """Show dataset statistics."""
             if self.df is None:
                 return "⚠ No data loaded. Use 'load_data' first."
+            
             buffer = io.StringIO()
             self.df.info(buf=buffer)
-            info = buffer.getvalue()
+            info_str = buffer.getvalue()
+            
             missing = self.df.isnull().sum()
-            return f"Shape: {self.df.shape}\n\nColumns & Types:\n{self.df.dtypes}\n\nMissing Values:\n{missing[missing>0]}"
+            missing_str = missing[missing > 0].to_string() if missing.sum() > 0 else "No missing values"
+            
+            return (f"Shape: {self.df.shape}\n\n"
+                   f"Column Types:\n{self.df.dtypes.to_string()}\n\n"
+                   f"Missing Values:\n{missing_str}")
         
         @tool
         def generate_visualization(plot_type: str) -> str:
-            """Create plot: 'histogram', 'scatter', 'bar', 'box'"""
+            """Generate visualization based on plot type."""
             if self.df is None:
-                return "⚠ No data loaded."
+                return "⚠ No data loaded. Use 'load_data' first."
+            
             try:
-                plt.figure(figsize=(10,6))
-                if plot_type == "histogram" and self.df.select_dtypes(include='number').shape[1] > 0:
-                    num_col = self.df.select_dtypes(include='number').columns[0]
-                    sns.histplot(self.df[num_col], kde=True)
-                    plt.title(f'Histogram of {num_col}')
-                elif plot_type == "scatter" and self.df.select_dtypes(include='number').shape[1] >= 2:
-                    cols = self.df.select_dtypes(include='number').columns[:2]
-                    sns.scatterplot(data=self.df, x=cols[0], y=cols[1])
-                    plt.title(f'Scatter: {cols[0]} vs {cols[1]}')
-                elif plot_type == "bar" and self.df.select_dtypes(exclude='number').shape[1] > 0:
-                    cat_col = self.df.select_dtypes(exclude='number').columns[0]
-                    self.df[cat_col].value_counts().head(10).plot(kind='bar')
-                    plt.title(f'Top categories in {cat_col}')
+                plt.figure(figsize=(10, 6))
+                
+                if plot_type.lower() == "histogram":
+                    num_cols = self.df.select_dtypes(include='number').columns
+                    if len(num_cols) == 0:
+                        return "⚠ No numeric columns found for histogram."
+                    col = num_cols[0]
+                    sns.histplot(self.df[col], kde=True)
+                    plt.title(f'Histogram of {col}')
+                    plt.xlabel(col)
+                
+                elif plot_type.lower() == "bar":
+                    cat_cols = self.df.select_dtypes(include='object').columns
+                    if len(cat_cols) == 0:
+                        return "⚠ No categorical columns found for bar chart."
+                    col = cat_cols[0]
+                    counts = self.df[col].value_counts().head(10)
+                    counts.plot(kind='bar')
+                    plt.title(f'Top 10 Categories in {col}')
+                    plt.xlabel(col)
+                    plt.ylabel('Count')
+                    plt.xticks(rotation=45, ha='right')
+                
+                elif plot_type.lower() == "scatter":
+                    num_cols = self.df.select_dtypes(include='number').columns
+                    if len(num_cols) < 2:
+                        return "⚠ Need at least 2 numeric columns for scatter plot."
+                    sns.scatterplot(data=self.df, x=num_cols[0], y=num_cols[1])
+                    plt.title(f'Scatter Plot: {num_cols[0]} vs {num_cols[1]}')
+                    plt.xlabel(num_cols[0])
+                    plt.ylabel(num_cols[1])
+                
+                elif plot_type.lower() == "box":
+                    num_cols = self.df.select_dtypes(include='number').columns
+                    if len(num_cols) == 0:
+                        return "⚠ No numeric columns found for box plot."
+                    col = num_cols[0]
+                    sns.boxplot(data=self.df, y=col)
+                    plt.title(f'Box Plot of {col}')
+                    plt.ylabel(col)
+                
                 else:
-                    return "⚠ Cannot generate this plot type with current data."
+                    return f"⚠ Unsupported plot type: {plot_type}. Supported: histogram, bar, scatter, box"
+                
                 plt.tight_layout()
-                plt.savefig('plot.png')
+                plt.savefig('plot.png', dpi=150, bbox_inches='tight')
                 plt.close()
-                return "✓ Plot saved as 'plot.png' – check Files tab in Colab"
+                
+                return "✓ Plot saved as 'plot.png' in current directory"
+            
             except Exception as e:
-                return f"✗ Plot error: {str(e)}"
+                return f"✗ Error generating plot: {str(e)}"
         
         @tool
         def run_custom_code(python_code: str) -> str:
-            """Execute safe pandas operations (e.g., 'df.groupby("category").sum()')"""
+            """Execute safe pandas operations."""
             if self.df is None:
-                return "⚠ No data loaded."
+                return "⚠ No data loaded. Use 'load_data' first."
+            
             try:
-                # Security note: In production, use proper sandboxing
+                # Security note: For production, use proper sandboxing
                 local_vars = {'df': self.df, 'pd': pd}
-                exec(f"result = {python_code}", globals(), local_vars)
-                output = str(local_vars['result'])
+                exec(f"result = {python_code}", {"__builtins__": {}}, local_vars)
+                output = str(local_vars.get('result', 'No result returned'))
                 return f"✓ Result:\n{output[:1000]}"  # Limit output size
             except Exception as e:
-                return f"✗ Code error: {str(e)}"
+                return f"✗ Error executing code: {str(e)}"
         
         return [
-            Tool(name="Load Data", func=load_data, description="Load CSV/Excel file. Input: file path"),
-            Tool(name="Show Info", func=show_basic_info, description="Show dataset stats. Input: 'any'"),
-            Tool(name="Visualize", func=generate_visualization, description="Create plot. Input: 'histogram', 'scatter', 'bar', or 'box'"),
-            Tool(name="Custom Code", func=run_custom_code, description="Run pandas code. Input: pandas expression like 'df.head()' or 'df.groupby(\"col\").mean()'")
+            Tool(
+                name="Load Data",
+                func=load_data,
+                description="Load CSV/Excel file. Input: file path (e.g., 'sales.csv')"
+            ),
+            Tool(
+                name="Show Info",
+                func=show_basic_info,
+                description="Show dataset statistics (shape, dtypes, missing values). Input: any string"
+            ),
+            Tool(
+                name="Visualize",
+                func=generate_visualization,
+                description="Create plot. Input: 'histogram', 'bar', 'scatter', or 'box'"
+            ),
+            Tool(
+                name="Custom Code",
+                func=run_custom_code,
+                description="Run pandas operation. Input: pandas expression like 'df.head()' or 'df.groupby(\"category\").sum()'"
+            )
         ]
     
-    def _create_agent(self):
-        template = """You are an expert data scientist assistant. Help the user analyze datasets.
+    def _create_agent(self) -> AgentExecutor:
+        """Create the ReAct agent."""
+        template = """You are an expert data scientist assistant. Help users analyze datasets using the available tools.
+
 Available tools:
 {tools}
 
 Use this format:
 Question: the input question
 Thought: your reasoning
-Action: tool name
-Action Input: input for tool
+Action: tool name (exactly as shown above)
+Action Input: input for the tool
 Observation: tool result
-... (repeat if needed)
-Final Answer: concise summary with insights
+... (repeat Thought/Action/Action Input/Observation as needed)
+Final Answer: concise, actionable insight
 
 Question: {input}
 {agent_scratchpad}"""
 
         prompt = PromptTemplate.from_template(template)
         agent = create_react_agent(self.llm, self.tools, prompt)
-        return AgentExecutor(agent=agent, tools=self.tools, verbose=True, handle_parsing_errors=True)
+        
+        return AgentExecutor(
+            agent=agent,
+            tools=self.tools,
+            verbose=False,
+            handle_parsing_errors=True,
+            max_iterations=7
+        )
     
-    def query(self, user_query: str):
-        """Main interface – user gives query, agent responds"""
+    def query(self, user_query: str) -> str:
+        """
+        Process user query and return result.
+        
+        Args:
+            user_query: Natural language query
+            
+        Returns:
+            Agent response
+        """
+        # Auto-detect and load CSV if mentioned in query
         if "load" in user_query.lower() and ".csv" in user_query.lower():
-            # Auto-extract filename
-            import re
             match = re.search(r'[\w\-.]+\.csv', user_query)
             if match:
                 filename = match.group()
                 print(f"📥 Auto-loading: {filename}")
-                print(self.tools[0].func(filename))
-                print("\n" + "="*50)
+                result = self.tools[0].func(filename)
+                print(result)
+                print("-" * 50)
         
-        response = self.agent.invoke({"input": user_query})
-        print("\n💡 FINAL ANSWER:")
-        print(response['output'])
+        try:
+            response = self.agent.invoke({"input": user_query})
+            return response['output']
+        except Exception as e:
+            return f"⚠ Agent error: {str(e)}"
 
-# ===== USAGE EXAMPLE =====
+
+# ======================
+# CLI INTERFACE
+# ======================
 if __name__ == "__main__":
-    agent = DataScienceAgent()
-    
-    print("="*60)
-    print("🤖 DATA SCIENCE AI AGENT READY")
-    print("Commands you can try:")
+    print("=" * 70)
+    print("🤖 DATA SCIENCE AI AGENT")
+    print("=" * 70)
+    print("\nCommands you can try:")
     print("  • 'load sales.csv'")
-    print("  • 'show me dataset info'")
-    print("  • 'create histogram'")
-    print("  • 'what are top 3 categories by sales?'")
-    print("="*60 + "\n")
+    print("  • 'show basic info'")
+    print("  • 'top 3 products by revenue'")
+    print("  • 'create bar chart'")
+    print("  • 'average price by region'")
+    print("\n💡 Tip: Place your CSV files in the same directory as this script")
+    print("=" * 70 + "\n")
     
-    # Example queries (uncomment to test)
-    # agent.query("load sample_data.csv")
-    # agent.query("show basic statistics")
-    # agent.query("create a bar chart of categories")
+    # Initialize agent
+    try:
+        agent = DataScienceAgent()
+        print("✅ Agent initialized successfully!\n")
+    except ValueError as e:
+        print(f"❌ {e}")
+        print("\n🔧 Fix: Set your Gemini API key:")
+        print("   Option 1: export GOOGLE_API_KEY='your_key_here' (Linux/Mac)")
+        print("   Option 2: set GOOGLE_API_KEY='your_key_here' (Windows)")
+        print("   Option 3: Pass key when creating agent: DataScienceAgent(api_key='your_key')")
+        exit(1)
+    
+    # Interactive loop
+    while True:
+        try:
+            query = input("\n❓ Your query (or 'exit' to quit): ").strip()
+            if query.lower() in ['exit', 'quit', 'q']:
+                print("\n👋 Goodbye! Happy analyzing!")
+                break
+            
+            if not query:
+                continue
+            
+            print("\n⏳ Processing...")
+            result = agent.query(query)
+            print(f"\n💡 {result}")
+        
+        except KeyboardInterrupt:
+            print("\n\n👋 Interrupted. Goodbye!")
+            break
+        except Exception as e:
+            print(f"\n❌ Unexpected error: {str(e)}")
