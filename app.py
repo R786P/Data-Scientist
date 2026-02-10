@@ -1,9 +1,9 @@
 import os
-from flask import Flask, request, jsonify
+from flask import Flask, request, jsonify, render_template
 from werkzeug.utils import secure_filename
 from ds_agent import DataScienceAgent
 
-app = Flask(__name__)
+app = Flask(__name__, template_folder='templates')
 # Files root directory me save hongi taaki agent unhe asani se dhund sake
 app.config['UPLOAD_FOLDER'] = '.'
 app.config['MAX_CONTENT_LENGTH'] = 16 * 1024 * 1024  # 16MB limit
@@ -19,6 +19,10 @@ except Exception as e:
 
 @app.route('/')
 def home():
+    return render_template('index.html')  # ✅ Frontend page
+
+@app.route('/api/status')
+def api_status():
     return jsonify({
         "status": "running",
         "agent_status": "active" if agent else "inactive (Check GOOGLE_API_KEY in Render)",
