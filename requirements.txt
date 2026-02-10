@@ -2,7 +2,7 @@ Flask==3.0.3
 gunicorn==22.0.0
 pandas==2.1.4
 numpy==1.26.4
-langchain-core==0.2.24
+langchain-core==0.2.30
 langchain-community==0.2.12
 langchain-google-genai==1.0.5
 google-generativeai==0.8.3
