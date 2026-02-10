@@ -2,12 +2,10 @@ services:
   - type: web
     name: data-scientist
     runtime: python
-    region: frankfurt  # ya apna nearest region
+    region: frankfurt
     plan: free
     envVars:
-      - key: PYTHON_VERSION
-        value: 3.11.9
-      - key: PORT
-        value: 10000
-    buildCommand: "pip install --upgrade pip && pip install -r requirements.txt"
-    startCommand: "gunicorn --worker-class gevent --workers 1 --bind 0.0.0.0:$PORT app:app"
+      - key: GOOGLE_API_KEY
+        sync: false  # Render dashboard se manually set karna hai
+    buildCommand: "pip install --upgrade pip && pip install -r requirements.txt --no-cache-dir"
+    startCommand: "gunicorn --worker-class gevent --workers 1 --timeout 120 --bind 0.0.0.0:$PORT app:app"
