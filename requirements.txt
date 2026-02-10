@@ -4,8 +4,7 @@ pandas==2.1.4
 numpy==1.26.4
 matplotlib==3.8.4
 seaborn==0.13.2
-langchain==0.2.17
-langchain-core==0.2.30
+langchain==0.2.17          # ✅ Full package (auto-installs compatible langchain-core>=0.2.43)
 langchain-community==0.2.12
 langchain-google-genai==2.0.5
 google-generativeai==0.8.3
