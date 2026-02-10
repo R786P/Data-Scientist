@@ -1,14 +1,13 @@
-hereservices:
+services:
   - type: web
-    name: data-science-agent
+    name: data-scientist
     runtime: python
-    region: frankfurt        # or oregon (choose closest to India: frankfurt)
+    region: frankfurt  # ya apna nearest region
     plan: free
     envVars:
-      - key: GEMINI_API_KEY
-        sync: false          # ← Render UI se manually add karna hoga
-    buildCommand: "pip install -r requirements.txt"
-    startCommand: "streamlit run app.py --server.port=$PORT --server.address=0.0.0.0"
-    envVars:
       - key: PYTHON_VERSION
-        value: "3.11"
+        value: 3.11.9
+      - key: PORT
+        value: 10000
+    buildCommand: "pip install --upgrade pip && pip install -r requirements.txt"
+    startCommand: "gunicorn --worker-class gevent --workers 1 --bind 0.0.0.0:$PORT app:app"
