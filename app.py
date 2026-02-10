@@ -7,6 +7,7 @@ app = Flask(__name__)
 # Files root directory me save hongi taaki agent unhe asani se dhund sake
 app.config['UPLOAD_FOLDER'] = '.'
 app.config['MAX_CONTENT_LENGTH'] = 16 * 1024 * 1024  # 16MB limit
+
 # Initialize Agent
 agent = None
 try:
@@ -26,6 +27,7 @@ def home():
             "chat": "POST /chat (json: { 'message': 'load data.csv' })"
         }
     })
+
 @app.route('/upload', methods=['POST'])
 def upload_file():
     if 'file' not in request.files:
@@ -42,7 +44,8 @@ def upload_file():
             "message": f"File uploaded: {filename}. Ab aap chat me bol sakte hain: 'load {filename}'",
             "filename": filename
         })
-        @app.route('/chat', methods=['POST'])
+
+@app.route('/chat', methods=['POST'])
 def chat():
     if not agent:
         return jsonify({"error": "Agent not active. GOOGLE_API_KEY set karein."}), 500
