@@ -1,8 +1,18 @@
-streamlit==1.38.0
-pandas==2.2.2
+# Core dependencies - Python 3.11 compatible
+Flask==3.0.3
+gunicorn==22.0.0
+
+# Data science stack (Python 3.11 tested)
+pandas==2.1.4
 numpy==1.26.4
-matplotlib==3.9.0
+matplotlib==3.8.4
 seaborn==0.13.2
-langchain==0.2.15
-langchain-google-genai==2.0.2
+
+# LangChain + Gemini (lightweight for Render free tier)
+langchain==0.2.12
+langchain-google-genai==1.0.5
+google-generativeai==0.8.3
 python-dotenv==1.0.1
+
+# Security (optional but recommended)
+itsdangerous==2.1.2
