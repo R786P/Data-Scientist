@@ -1,0 +1,14 @@
+hereservices:
+  - type: web
+    name: data-science-agent
+    runtime: python
+    region: frankfurt        # or oregon (choose closest to India: frankfurt)
+    plan: free
+    envVars:
+      - key: GEMINI_API_KEY
+        sync: false          # ← Render UI se manually add karna hoga
+    buildCommand: "pip install -r requirements.txt"
+    startCommand: "streamlit run app.py --server.port=$PORT --server.address=0.0.0.0"
+    envVars:
+      - key: PYTHON_VERSION
+        value: "3.11"
