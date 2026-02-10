@@ -1,22 +1,31 @@
-import streamlit as st
+from flask import Flask, request, jsonify
+import pandas as pd
 import os
 
-st.set_page_config(page_title="🤖 Data Science AI Agent", layout="wide")
-st.title("🤖 Data Science AI Agent")
-st.write("Your AI agent is ready to analyze data!")
+app = Flask(__name__)
 
-# Optional: Import your agent logic
-try:
-    from agents import DataScienceAgent
-    st.success("✅ Agent loaded successfully!")
-except Exception as e:
-    st.warning(f"⚠️ Agent not loaded: {str(e)}")
+@app.route('/')
+def home():
+    return jsonify({
+        "status": "✅ Data Scientist Agent Running",
+        "python_version": os.sys.version,
+        "pandas_version": pd.__version__,
+        "message": "Send POST /analyze with CSV data"
+    })
 
-st.write("Upload CSV file to start analysis:")
-uploaded_file = st.file_uploader("Choose CSV", type="csv")
+@app.route('/analyze', methods=['POST'])
+def analyze():
+    try:
+        data = request.get_json()
+        df = pd.DataFrame(data['rows'], columns=data['columns'])
+        return jsonify({
+            "shape": df.shape,
+            "columns": list(df.columns),
+            "preview": df.head().to_dict()
+        })
+    except Exception as e:
+        return jsonify({"error": str(e)}), 400
 
-if uploaded_file is not None:
-    import pandas as pd
-    df = pd.read_csv(uploaded_file)
-    st.write("Preview:", df.head(5))
-    st.write("Shape:", df.shape)
+if __name__ == '__main__':
+    port = int(os.environ.get('PORT', 10000))
+    app.run(host='0.0.0.0', port=port)
