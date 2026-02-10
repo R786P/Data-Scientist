@@ -6,6 +6,6 @@ services:
     plan: free
     envVars:
       - key: GOOGLE_API_KEY
-        sync: false  # Render dashboard se manually set karna hai
-    buildCommand: "pip install --upgrade pip && pip install -r requirements.txt --no-cache-dir"
-    startCommand: "gunicorn --worker-class gevent --workers 1 --timeout 120 --bind 0.0.0.0:$PORT app:app"
+       sync: false  # Render dashboard se manually set karna hai
+- startCommand: "gunicorn --worker-class gevent --workers 1 --bind 0.0.0.0:$PORT app:app"
++ startCommand: "gunicorn --workers 1 --bind 0.0.0.0:$PORT app:app"
