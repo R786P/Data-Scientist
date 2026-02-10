@@ -1,4 +1,4 @@
-herestreamlit==1.32.0
+streamlit==1.32.0
 langchain==0.2.0
 langchain-community==0.2.0
 langchain-google-genai==1.0.5
