@@ -2,7 +2,11 @@ Flask==3.0.3
 gunicorn==22.0.0
 pandas==2.1.4
 numpy==1.26.4
-langchain==0.3.7           # Latest stable for Python 3.11
+matplotlib==3.8.4
+seaborn==0.13.2
+langchain==0.2.17         
+langchain-community==0.2.12
 langchain-google-genai==2.0.5
 google-generativeai==0.8.3
 python-dotenv==1.0.1
+itsdangerous==2.1.2
