@@ -32,6 +32,18 @@ def api_status():
         }
     })
 
+# ✅ DEBUG ENDPOINT ADDED (For checking environment variables)
+@app.route('/debug/env')
+def debug_env():
+    import os
+    key = os.environ.get("GOOGLE_API_KEY", "NOT SET")
+    return jsonify({
+        "GOOGLE_API_KEY_present": "YES" if key != "NOT SET" else "NO",
+        "key_preview": key[:8] + "..." if key != "NOT SET" else "N/A",
+        "agent_status": "active" if agent else "inactive",
+        "billing_setup_required": "Check Google Cloud Billing Console"
+    })
+
 @app.route('/upload', methods=['POST'])
 def upload_file():
     if 'file' not in request.files:
