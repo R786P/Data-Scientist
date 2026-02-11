@@ -16,10 +16,6 @@ from langchain.tools import Tool
 from langchain.prompts import PromptTemplate
 from langchain_google_genai import ChatGoogleGenerativeAI
 from langchain_core.tools import tool
-from dotenv import load_dotenv
-
-load_dotenv()
-warnings.filterwarnings('ignore')
 
 class DataScienceAgent:
     """AI Agent that performs data science tasks via natural language."""
