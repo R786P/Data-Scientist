@@ -1,7 +1,7 @@
 import os
 from flask import Flask, request, jsonify, render_template
 from werkzeug.utils import secure_filename
-from ds_agent import DataScienceAgent
+from core.agent import DataScienceAgent
 
 app = Flask(__name__, template_folder='templates')
 # Files root directory me save hongi taaki agent unhe asani se dhund sake
