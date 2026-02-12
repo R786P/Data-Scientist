@@ -1,12 +1,5 @@
-Flask==3.0.3
-gunicorn==22.0.0
-pandas==2.1.4
+streamlit==1.31.0
+pandas==2.2.3
 numpy==1.26.4
-langchain==0.3.7           # Latest stable for Python 3.11
-langchain-google-genai==2.0.5
-google-generativeai==0.8.3
-python-dotenv==1.0.1
 matplotlib==3.8.4
 seaborn==0.13.2
-scikit-learn==1.4.0
-streamlit==1.31.0
