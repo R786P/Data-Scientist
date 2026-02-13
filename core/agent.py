@@ -4,11 +4,13 @@ import pandas as pd
 import numpy as np
 import matplotlib.pyplot as plt
 import seaborn as sns
+from .ml import MLModels  # ✅ CRITICAL: Import ML engine
 
 class DataScienceAgent:
     def __init__(self):
         self.df = None
         self.last_file = None
+        self.ml = MLModels()  # ✅ CRITICAL: Initialize ML engine
     
     def load_data(self, fp):
         try:
@@ -85,34 +87,72 @@ class DataScienceAgent:
             out += f"• {name}: ₹{val:,.0f} ({pct:.1f}%)\n"
         return out
     
+    # ✅ REPLACED WITH ML-POWERED VERSION
     def predict_trend(self, col_name="revenue"):
-        if self.df is None: return "⚠️ Load data first"
-        col = next((c for c in self.df.columns if col_name.lower() in c.lower()), None)
-        if not col:
+        """Advanced ML prediction with fallback to rule-based"""
+        if self.df is None:
+            return "⚠️ Load data first (upload CSV)"
+        
+        # Auto-detect column
+        target_col = None
+        for col in self.df.columns:
+            if col_name.lower() in col.lower():
+                target_col = col
+                break
+        if not target_col:
             num_cols = self.df.select_dtypes('number').columns.tolist()
-            if not num_cols: return "❌ No numeric columns"
-            col = num_cols[0]
-        series = self.df[col].dropna()
-        if len(series) < 5: return f"⚠️ Need min 5 values in '{col}'"
-        last3 = series.iloc[-3:].values
+            if not num_cols:
+                return "❌ No numeric columns for prediction"
+            target_col = num_cols[0]
+        
+        # ✅ USE ML ENGINE (with fallback)
+        series = self.df[target_col].dropna().tolist()
+        if len(series) >= 3:
+            # Try time series forecast first
+            result = self.ml.forecast_time_series(series, periods=3)
+            if 'forecast' in result:
+                forecast_str = " → ".join([f"₹{v:,.0f}" for v in result['forecast']])
+                return f"📈 ML Forecast ({result.get('trend', 'N/A')}):\nNext 3: {forecast_str}"
+        
+        # Fallback to rule-based
+        last3 = series[-3:] if len(series) >= 3 else series
         trend = "↗️ Upward" if last3[-1] > last3[0] else "↘️ Downward" if last3[-1] < last3[0] else "➡️ Stable"
-        next_val = series.iloc[-1] + (series.iloc[-1] - series.iloc[-2]) if len(series) > 1 else series.iloc[-1]
-        return f"📈 '{col}': {trend}\nLast: ₹{series.iloc[-1]:,.0f}\nNext: ₹{next_val:,.0f}"
+        next_val = series[-1] + (series[-1] - series[-2]) if len(series) > 1 else series[-1]
+        return f"📈 Trend: {trend}\nNext: ₹{next_val:,.0f}"
     
+    # ✅ REPLACED WITH ML-POWERED VERSION
     def segment_customers(self):
-        if self.df is None: return "⚠️ Load data first"
-        rev_col = next((c for c in self.df.columns if any(x in c.lower() for x in ['revenue','sales','amount','total','price'])), None)
-        if not rev_col:
-            num_cols = self.df.select_dtypes('number').columns.tolist()
-            if not num_cols: return "❌ Need numeric column"
-            rev_col = num_cols[0]
-        q25 = self.df[rev_col].quantile(0.25)
-        q75 = self.df[rev_col].quantile(0.75)
-        high = self.df[self.df[rev_col] > q75]
-        medium = self.df[(self.df[rev_col] >= q25) & (self.df[rev_col] <= q75)]
-        low = self.df[self.df[rev_col] < q25]
-        total = len(self.df)
-        return f"👥 Segments:\nHigh (>₹{q75:,.0f}): {len(high)} ({len(high)/total*100:.0f}%)\nMedium: {len(medium)} ({len(medium)/total*100:.0f}%)\nLow (<₹{q25:,.0f}): {len(low)} ({len(low)/total*100:.0f}%)"
+        """Advanced ML segmentation with fallback"""
+        if self.df is None:
+            return "⚠️ Load data first (upload CSV)"
+        
+        # ✅ USE ML ENGINE (with fallback)
+        spend_col = next((c for c in self.df.columns if any(x in c.lower() for x in ['revenue','sales','amount','total','spend'])), None)
+        freq_col = next((c for c in self.df.columns if any(x in c.lower() for x in ['freq','purchase','order','quantity'])), None)
+        
+        sample = {
+            'annual_spend': self.df[spend_col].mean() * 12 if spend_col else 150000,
+            'purchase_frequency': self.df[freq_col].mean() if freq_col else 12
+        }
+        
+        result = self.ml.segment_customer(sample)
+        if 'error' in result:
+            # Fallback to quantile-based segmentation
+            rev_col = spend_col or self.df.select_dtypes('number').columns[0]
+            q25 = self.df[rev_col].quantile(0.25)
+            q75 = self.df[rev_col].quantile(0.75)
+            high = len(self.df[self.df[rev_col] > q75])
+            medium = len(self.df[(self.df[rev_col] >= q25) & (self.df[rev_col] <= q75)])
+            low = len(self.df[self.df[rev_col] < q25])
+            total = len(self.df)
+            return (f"👥 Segments (Rule-based):\n"
+                   f"High: {high} ({high/total*100:.0f}%)\n"
+                   f"Medium: {medium} ({medium/total*100:.0f}%)\n"
+                   f"Low: {low} ({low/total*100:.0f}%)")
+        
+        return (f"🏷️ {result['segment']} Segment\n"
+               f"Discount: {result['discount_eligible']}\n"
+               f"💡 {result['recommendation']}")
     
     def detect_outliers(self, col_name="revenue"):
         if self.df is None: return "⚠️ Load data first"
@@ -225,7 +265,7 @@ class DataScienceAgent:
         if not margin_col:
             return "⚠️ No profit margin column found"
         avg_margin = self.df[margin_col].mean() * 100
-        high_margin = len(self.df[df[margin_col] > 0.4])
+        high_margin = len(self.df[self.df[margin_col] > 0.4])
         return f"💡 Profit Analysis:\nAvg margin: {avg_margin:.1f}%\nHigh margin (>40%): {high_margin} items ({high_margin/len(self.df)*100:.0f}%)"
     
     def query(self, q):
@@ -270,7 +310,7 @@ class DataScienceAgent:
                     break
             return self.group_by(col)
         
-        # Prediction commands
+        # Prediction commands (NOW ML-POWERED)
         if "predict" in q or "trend" in q or "forecast" in q:
             col = "revenue"
             for word in ["revenue", "sales", "quantity", "price"]:
@@ -279,7 +319,7 @@ class DataScienceAgent:
                     break
             return self.predict_trend(col)
         
-        # Segmentation
+        # Segmentation (NOW ML-POWERED)
         if "segment" in q or "customer" in q:
             return self.segment_customers()
         
