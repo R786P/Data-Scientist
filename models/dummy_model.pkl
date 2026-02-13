@@ -1,4 +1,3 @@
-# Dummy model (empty but valid .pkl)
 import joblib
 dummy_model = {"status": "placeholder"}
 joblib.dump(dummy_model, 'dummy_model.pkl')
