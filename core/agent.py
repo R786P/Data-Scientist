@@ -271,7 +271,7 @@ class DataScienceAgent:
         return f"💡 Profit Analysis:\nAvg margin: {avg_margin:.1f}%\nHigh margin (>40%): {high_margin} items ({high_margin/len(self.df)*100:.0f}%)"
     
     # core/agent.py ke query() method ko replace karo
-    def query(self, q):
+def query(self, q):
     q = q.lower().strip()
     
     # FLEXIBLE PARSING (not exact match)
