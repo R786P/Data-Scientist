@@ -10,7 +10,7 @@ import joblib
 import pandas as pd
 import numpy as np
 from typing import Dict, List, Union, Optional
-
+from .stats import StatisticalTests
 class MLModels:
     """All-in-one ML engine for inference (no training on server)"""
     
@@ -18,7 +18,7 @@ class MLModels:
         self.models_dir = os.path.join(os.path.dirname(__file__), '..', 'models')
         self.models = {}
         self._load_models()
-    
+        self.stats = StatisticalTests()
     def _load_models(self):
         """Load pre-trained models from models/ folder"""
         try:
