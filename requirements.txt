@@ -8,7 +8,7 @@ google-generativeai==0.8.3
 python-dotenv==1.0.1
 matplotlib==3.8.4
 seaborn==0.13.2
-scikit-learn==1.6.1       <-- Version Updated
-joblib==1.4.2             <-- Version Updated
+scikit-learn==1.6.1
+joblib==1.4.2
 statsmodels==0.14.1
 scipy==1.11.4
