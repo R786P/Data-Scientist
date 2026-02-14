@@ -270,123 +270,120 @@ class DataScienceAgent:
         high_margin = len(self.df[self.df[margin_col] > 0.4])
         return f"💡 Profit Analysis:\nAvg margin: {avg_margin:.1f}%\nHigh margin (>40%): {high_margin} items ({high_margin/len(self.df)*100:.0f}%)"
     
-    # core/agent.py ke query() method ko replace karo
+    # ✅ FULLY FIXED query() METHOD WITH PROPER INDENTATION
     def query(self, q):
         q = q.lower().strip()
-    
-    # FLEXIBLE PARSING (not exact match)
-    if "load" in q and ".csv" in q:
-        m = re.search(r'[\w\-.]+\.csv', q)
-        return self.load_data(m.group()) if m else "❌ Specify filename"
-    
-    # Info (multiple variations)
-    if any(x in q for x in ["info", "basic", "shape", "columns", "structure"]):
-        return self.show_info()
-    
-    if any(x in q for x in ["missing", "null", "empty", "nan"]):
-        return self.show_missing()
-    
-    # Cleaning (multiple variations)
-    if "clean" in q and any(x in q for x in ["data", "dataset", "missing", "remove"]):
-        return self.clean_data()
-    
-    if "fill" in q and "missing" in q:
-        return self.fill_missing()
-    
-    if "remove" in q and any(x in q for x in ["duplicate", "dup", "copy"]):
-        return self.remove_duplicates()
-    
-    # Top N (flexible parsing)
-    if "top" in q:
-        n_match = re.search(r'top\s+(\d+)', q)
-        n = int(n_match.group(1)) if n_match else 5
-        metric = "revenue"
-        for word in ["revenue", "sales", "price", "quantity", "amount", "profit", "margin"]:
-            if word in q:
-                metric = word
-                break
-        return self.top_n(n=n, metric=metric)
-    
-    # Group by (flexible)
-    if "group" in q or "by" in q or "breakdown" in q:
-        col = "product"
-        for word in ["product", "region", "category", "customer", "date", "month", "year"]:
-            if word in q:
-                col = word
-                break
-        return self.group_by(col)
-    
-    # Prediction (flexible)
-    if any(x in q for x in ["predict", "trend", "forecast", "next", "future"]):
-        col = "revenue"
-        for word in ["revenue", "sales", "quantity", "price", "demand"]:
-            if word in q:
-                col = word
-                break
-        return self.predict_trend(col)
-    
-    # Segmentation (flexible)
-    if any(x in q for x in ["segment", "customer", "group", "cluster", "tier"]):
-        return self.segment_customers()
-    
-    # Outliers (flexible)
-    if any(x in q for x in ["outlier", "anomaly", "unusual", "weird", "strange"]):
-        col = "revenue"
-        for word in ["revenue", "sales", "price", "quantity", "amount"]:
-            if word in q:
-                col = word
-                break
-        return self.detect_outliers(col)
-    
-    # Visualization (flexible)
-    if any(x in q for x in ["plot", "chart", "graph", "visualize", "show", "display"]):
-        if "bar" in q or "count" in q:
-            return self.generate_plot("bar")
-        elif "hist" in q or "distribut" in q:
-            return self.generate_plot("histogram")
-        elif "scatter" in q or "relation" in q:
-            return self.generate_plot("scatter")
-        else:
-            return self.generate_plot("bar")  # Default
-    
-    # Correlations
-    if any(x in q for x in ["correlat", "relationship", "link", "connect"]):
-        return self.show_correlations()
-    
-    # Filters
-    if "filter" in q or "where" in q:
-        if any(x in q for x in ["high", "large", "big", ">100000"]):
-            return self.filter_high()
-        elif any(x in q for x in ["low", "small", "tiny", "<5"]):
-            return self.filter_low()
-    
-    # Aggregations
-    if "total" in q or "sum" in q:
-        return self.agg_stats("total")
-    if "average" in q or "mean" in q or "avg" in q:
-        return self.agg_stats("average")
-    if "max" in q or "maximum" in q or "highest" in q:
-        return self.agg_stats("max")
-    if "min" in q or "minimum" in q or "lowest" in q:
-        return self.agg_stats("min")
-    
-    # Business analysis
-    if any(x in q for x in ["return", "refund", "cancel"]):
-        return self.returns_analysis()
-    if any(x in q for x in ["profit", "margin", "earnings"]):
-        return self.profit_analysis()
-    
-    # Help
-    return ("💡 Try these commands:\n"
-           "• 'top 5 by revenue'\n"
-           "• 'group by region'\n"
-           "• 'predict trend'\n"
-           "• 'segment customers'\n"
-           "• 'detect outliers'\n"
-           "• 'create bar chart'\n"
-           "• 'show missing values'\n"
-           "• 'clean data'\n"
-           "• 'total revenue'")
         
+        # FLEXIBLE PARSING (not exact match)
+        if "load" in q and ".csv" in q:
+            m = re.search(r'[\w\-.]+\.csv', q)
+            return self.load_data(m.group()) if m else "❌ Specify filename"
         
+        # Info (multiple variations)
+        if any(x in q for x in ["info", "basic", "shape", "columns", "structure"]):
+            return self.show_info()
         
+        if any(x in q for x in ["missing", "null", "empty", "nan"]):
+            return self.show_missing()
+        
+        # Cleaning (multiple variations)
+        if "clean" in q and any(x in q for x in ["data", "dataset", "missing", "remove"]):
+            return self.clean_data()
+        
+        if "fill" in q and "missing" in q:
+            return self.fill_missing()
+        
+        if "remove" in q and any(x in q for x in ["duplicate", "dup", "copy"]):
+            return self.remove_duplicates()
+        
+        # Top N (flexible parsing)
+        if "top" in q:
+            n_match = re.search(r'top\s+(\d+)', q)
+            n = int(n_match.group(1)) if n_match else 5
+            metric = "revenue"
+            for word in ["revenue", "sales", "price", "quantity", "amount", "profit", "margin"]:
+                if word in q:
+                    metric = word
+                    break
+            return self.top_n(n=n, metric=metric)
+        
+        # Group by (flexible)
+        if "group" in q or "by" in q or "breakdown" in q:
+            col = "product"
+            for word in ["product", "region", "category", "customer", "date", "month", "year"]:
+                if word in q:
+                    col = word
+                    break
+            return self.group_by(col)
+        
+        # Prediction (flexible)
+        if any(x in q for x in ["predict", "trend", "forecast", "next", "future"]):
+            col = "revenue"
+            for word in ["revenue", "sales", "quantity", "price", "demand"]:
+                if word in q:
+                    col = word
+                    break
+            return self.predict_trend(col)
+        
+        # Segmentation (flexible)
+        if any(x in q for x in ["segment", "customer", "group", "cluster", "tier"]):
+            return self.segment_customers()
+        
+        # Outliers (flexible)
+        if any(x in q for x in ["outlier", "anomaly", "unusual", "weird", "strange"]):
+            col = "revenue"
+            for word in ["revenue", "sales", "price", "quantity", "amount"]:
+                if word in q:
+                    col = word
+                    break
+            return self.detect_outliers(col)
+        
+        # Visualization (flexible)
+        if any(x in q for x in ["plot", "chart", "graph", "visualize", "show", "display"]):
+            if "bar" in q or "count" in q:
+                return self.generate_plot("bar")
+            elif "hist" in q or "distribut" in q:
+                return self.generate_plot("histogram")
+            elif "scatter" in q or "relation" in q:
+                return self.generate_plot("scatter")
+            else:
+                return self.generate_plot("bar")  # Default
+        
+        # Correlations
+        if any(x in q for x in ["correlat", "relationship", "link", "connect"]):
+            return self.show_correlations()
+        
+        # Filters
+        if "filter" in q or "where" in q:
+            if any(x in q for x in ["high", "large", "big", ">100000"]):
+                return self.filter_high()
+            elif any(x in q for x in ["low", "small", "tiny", "<5"]):
+                return self.filter_low()
+        
+        # Aggregations
+        if "total" in q or "sum" in q:
+            return self.agg_stats("total")
+        if "average" in q or "mean" in q or "avg" in q:
+            return self.agg_stats("average")
+        if "max" in q or "maximum" in q or "highest" in q:
+            return self.agg_stats("max")
+        if "min" in q or "minimum" in q or "lowest" in q:
+            return self.agg_stats("min")
+        
+        # Business analysis
+        if any(x in q for x in ["return", "refund", "cancel"]):
+            return self.returns_analysis()
+        if any(x in q for x in ["profit", "margin", "earnings"]):
+            return self.profit_analysis()
+        
+        # Help
+        return ("💡 Try these commands:\n"
+               "• 'top 5 by revenue'\n"
+               "• 'group by region'\n"
+               "• 'predict trend'\n"
+               "• 'segment customers'\n"
+               "• 'detect outliers'\n"
+               "• 'create bar chart'\n"
+               "• 'show missing values'\n"
+               "• 'clean data'\n"
+               "• 'total revenue'")
