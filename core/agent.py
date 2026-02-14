@@ -3,6 +3,7 @@ import re
 import pandas as pd
 import numpy as np
 import matplotlib.pyplot as plt
+from .stats import StatisticalTests
 import seaborn as sns
 from .ml import MLModels  # ✅ CRITICAL: Import ML engine
 
@@ -14,6 +15,7 @@ class DataScienceAgent:
     
     def load_data(self, fp):
         try:
+            self.stats = StatisticalTests()
             self.df = pd.read_csv(fp)
             self.last_file = fp
             num = self.df.select_dtypes('number').columns.tolist()
