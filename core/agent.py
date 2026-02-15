@@ -54,10 +54,11 @@ class DataScienceAgent:
     def query(self, q):
         q = q.lower().strip)
 
-        # Add this inside the query method of agent.py
+        # New Month 3 Command
         if "auto clean" in q or "prepare data" in q:
             self.df, msg = self.pipeline.auto_clean(self.df)
             return msg
+            
         # New Month 2 Command
         if any(x in q for x in ["accuracy", "performance", "evaluate", "r2"]):
             return self.evaluate_model_performance()
