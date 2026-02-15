@@ -12,3 +12,4 @@ matplotlib
 seaborn
 scikit-learn
 openpyxl
+tabulate
