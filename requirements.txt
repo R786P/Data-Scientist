@@ -4,6 +4,7 @@ pandas==2.1.4
 numpy==1.26.4
 langchain==0.3.7
 langchain-google-genai==2.0.5
+langchain-experimental==0.0.64
 google-generativeai==0.8.3
 python-dotenv==1.0.1
 matplotlib==3.8.4
