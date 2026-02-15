@@ -18,7 +18,7 @@ class DataScienceAgent:
         
         # Flash model sabse fast hai, iska stable version use kar rahe hain
         return ChatGoogleGenerativeAI(
-            model="gemini-1.5-flash", 
+            model="Gemini 2.0 Flash", 
             google_api_key=self.api_key,
             temperature=0,
             safety_settings={}, # Restrictions hatane ke liye
