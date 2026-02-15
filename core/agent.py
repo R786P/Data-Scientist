@@ -1,4 +1,5 @@
 import os
+import re
 import pandas as pd
 from langchain_google_genai import ChatGoogleGenerativeAI
 from langchain_experimental.agents import create_pandas_dataframe_agent
@@ -7,72 +8,63 @@ class DataScienceAgent:
     def __init__(self):
         self.df = None
         self.agent_executor = None
+        # Render se API Key uthana
+        self.api_key = os.getenv("GOOGLE_API_KEY")
         
-        # Render ke 'Environment Variables' se API Key uthana
-        api_key = os.getenv("GOOGLE_API_KEY")
+    def _init_brain(self):
+        """AI Brain ko initialize karne ka internal tarika"""
+        if not self.api_key:
+            return None
         
-        if api_key:
-            # Gemini 1.5 Flash: Fast and Smart
-            self.llm = ChatGoogleGenerativeAI(
-                model="gemini-1.5-flash", 
-                google_api_key=api_key,
-                temperature=0
-            )
-        else:
-            self.llm = None
-            print("⚠️ Error: GOOGLE_API_KEY nahi mili!")
+        # Flash model sabse fast hai, iska stable version use kar rahe hain
+        return ChatGoogleGenerativeAI(
+            model="gemini-1.5-flash", 
+            google_api_key=self.api_key,
+            temperature=0,
+            safety_settings={}, # Restrictions hatane ke liye
+            convert_system_message_to_human=True
+        )
 
     def load_data(self, fp):
         try:
             ext = os.path.splitext(fp)[-1].lower()
-            
-            # Excel aur CSV dono ke liye support
             if ext == '.csv':
-                try:
-                    self.df = pd.read_csv(fp, encoding='utf-8')
-                except:
-                    self.df = pd.read_csv(fp, encoding='latin1')
+                self.df = pd.read_csv(fp, encoding='latin1')
             elif ext in ['.xlsx', '.xls']:
                 self.df = pd.read_excel(fp)
-            else:
-                return f"❌ Format {ext} support nahi hai. Sirf CSV/Excel chahiyen."
-
-            if self.llm is not None:
-                # Master Brain: Jo user ki query se khud code likhega
+            
+            llm = self._init_brain()
+            if llm:
+                # Master Executor jo aapka har sawal samjhega
                 self.agent_executor = create_pandas_dataframe_agent(
-                    self.llm, 
+                    llm, 
                     self.df, 
                     verbose=True, 
-                    allow_dangerous_code=True # Python logic execution ke liye
+                    allow_dangerous_code=True,
+                    handle_parsing_errors=True
                 )
-                return f"✅ Master Agent Live: {fp} load ho gayi hai. Ab kuch bhi poocho!"
-            else:
-                return "❌ AI Model ready nahi hai. API Key check karein."
-                
+                return f"✅ Master Agent Ready: {fp} load ho gayi. Ab jo mann mein aaye poocho!"
+            return "❌ API Key ka issue hai, Render settings check karein."
         except Exception as e:
-            return f"❌ Error: {str(e)}"
+            return f"❌ Data Load Error: {str(e)}"
 
     def query(self, q):
         q_lower = q.lower().strip()
         
-        # 1. Load command logic (Bina data ke bhi chalna chahiye)
+        # Load command backup
         if "load" in q_lower:
             m = re.search(r'[\w\-.]+\.(csv|xlsx|xls)', q_lower)
-            if m:
-                return self.load_data(m.group())
-            return "❌ Filename correct likhein (e.g. load data.xlsx)"
+            if m: return self.load_data(m.group())
 
-        # 2. Data check
         if self.df is None:
-            return "⚠️ Pehle file load karein (Type: load filename.xlsx)"
+            return "⚠️ Pehle file load kijiye (e.g. load test.xlsx)"
 
-        # 3. AI Execution (Unlimited Queries)
         try:
             if self.agent_executor:
-                # Gemini aapki query ko solve karega
+                # Unlimited Query Execution
                 response = self.agent_executor.invoke(q)
                 return response['output']
-            else:
-                return "❌ Agent Brain initialized nahi hai."
+            return "❌ Agent brain is offline."
         except Exception as e:
-            return f"💡 AI is trying to understand... Error: {str(e)}"
+            # Agar Gemini-1.5-Flash na chale, toh error message thoda helpful rakha hai
+            return f"💡 AI thinking: API connectivity issue ho sakta hai. Error: {str(e)}"
