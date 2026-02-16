@@ -3,7 +3,7 @@ import pandas as pd
 import time
 from langchain_groq import ChatGroq
 from langchain_experimental.agents import create_pandas_dataframe_agent
-from langchain.callbacks.manager import CallbackManager
+from langchain_core.callbacks import CallbackManager
 from langchain.callbacks.stdout import StdOutCallbackHandler
 
 class DataScienceAgent:
