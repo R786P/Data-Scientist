@@ -4,7 +4,7 @@ import time
 from langchain_groq import ChatGroq
 from langchain_experimental.agents import create_pandas_dataframe_agent
 from langchain_core.callbacks import CallbackManager
-from langchain.callbacks.stdout import StdOutCallbackHandler
+from langchain_core.callbacks.stdout import StdOutCallbackHandler
 
 class DataScienceAgent:
     def __init__(self):
