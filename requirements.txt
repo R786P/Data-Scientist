@@ -3,6 +3,7 @@ gunicorn
 pandas
 numpy
 langchain>=0.3.0
++ langchain-core>=0.3.0  
 langchain-community
 langchain-groq
 langchain-experimental
