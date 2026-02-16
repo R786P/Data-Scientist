@@ -1,28 +1,23 @@
 import os
 import re
 import pandas as pd
-from langchain_google_genai import ChatGoogleGenerativeAI
+from langchain_groq import ChatGroq
 from langchain_experimental.agents import create_pandas_dataframe_agent
 
 class DataScienceAgent:
     def __init__(self):
         self.df = None
         self.agent_executor = None
-        # Render se API Key uthana
-        self.api_key = os.getenv("GOOGLE_API_KEY")
-        
-    def _init_brain(self):
-        """AI Brain ko initialize karne ka internal tarika"""
-        if not self.api_key:
-            return None
-        
-        # Flash model sabse fast hai, iska stable version use kar rahe hain
-        return ChatGoogleGenerativeAI(
-            model="Gemini 2.0 Flash", 
-            google_api_key=self.api_key,
-            temperature=0,
-            safety_settings={}, # Restrictions hatane ke liye
-            convert_system_message_to_human=True
+        self.api_key = os.getenv("GROQ_API_KEY")
+        # Multiple models ki list aapke screenshot ke hisab se
+        self.models = ["llama-3.3-70b-versatile", "llama-3.1-8b-instant", "mixtral-8x7b-32768"]
+
+    def _get_llm(self, model_idx=0):
+        """Model switch karne ka logic"""
+        return ChatGroq(
+            temperature=0, 
+            groq_api_key=self.api_key, 
+            model_name=self.models[model_idx]
         )
 
     def load_data(self, fp):
@@ -33,9 +28,9 @@ class DataScienceAgent:
             elif ext in ['.xlsx', '.xls']:
                 self.df = pd.read_excel(fp)
             
-            llm = self._init_brain()
-            if llm:
-                # Master Executor jo aapka har sawal samjhega
+            if self.api_key:
+                # Pehle primary model try karein
+                llm = self._get_llm(0)
                 self.agent_executor = create_pandas_dataframe_agent(
                     llm, 
                     self.df, 
@@ -43,28 +38,22 @@ class DataScienceAgent:
                     allow_dangerous_code=True,
                     handle_parsing_errors=True
                 )
-                return f"✅ Master Agent Ready: {fp} load ho gayi. Ab jo mann mein aaye poocho!"
-            return "❌ API Key ka issue hai, Render settings check karein."
+                return f"✅ Groq Multi-Model Agent Active! {fp} loaded."
+            return "❌ GROQ_API_KEY missing in Render settings."
         except Exception as e:
-            return f"❌ Data Load Error: {str(e)}"
+            return f"❌ Load Error: {str(e)}"
 
     def query(self, q):
-        q_lower = q.lower().strip()
+        if self.df is None: return "⚠️ File load kijiye."
         
-        # Load command backup
-        if "load" in q_lower:
-            m = re.search(r'[\w\-.]+\.(csv|xlsx|xls)', q_lower)
-            if m: return self.load_data(m.group())
-
-        if self.df is None:
-            return "⚠️ Pehle file load kijiye (e.g. load test.xlsx)"
-
-        try:
-            if self.agent_executor:
-                # Unlimited Query Execution
-                response = self.agent_executor.invoke(q)
+        # Try-Except block for model fallback
+        for i in range(len(self.models)):
+            try:
+                response = self.agent_executor.invoke({"input": q})
                 return response['output']
-            return "❌ Agent brain is offline."
-        except Exception as e:
-            # Agar Gemini-1.5-Flash na chale, toh error message thoda helpful rakha hai
-            return f"💡 AI thinking: API connectivity issue ho sakta hai. Error: {str(e)}"
+            except Exception as e:
+                if i < len(self.models) - 1:
+                    print(f"🔄 Switching to fallback model: {self.models[i+1]}")
+                    self.agent_executor.agent.llm = self._get_llm(i+1)
+                    continue
+                return f"💡 All models busy. Error: {str(e)}"
