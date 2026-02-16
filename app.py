@@ -1,12 +1,16 @@
 import os
-from flask import Flask, request, jsonify, render_template
+from flask import Flask, request, jsonify, render_template, send_from_directory
 from werkzeug.utils import secure_filename
 from core.agent import DataScienceAgent
 
-app = Flask(__name__, template_folder='templates', static_folder='static')
+# Initialize app with static folder support
+app = Flask(__name__, 
+           template_folder='templates', 
+           static_folder='static')
 app.config['UPLOAD_FOLDER'] = '.'
 app.config['MAX_CONTENT_LENGTH'] = 5 * 1024 * 1024  # 5MB limit
 
+# Initialize agent
 agent = DataScienceAgent()
 
 @app.route('/')
@@ -25,7 +29,7 @@ def upload():
         filepath = os.path.join(app.config['UPLOAD_FOLDER'], filename)
         file.save(filepath)
         result = agent.load_data(filename)
-        return jsonify({"message": f"✅ File uploaded: {filename}\n{result}\n\nNow try commands like:\n• 'top 5 by revenue'\n• 'predict trend'\n• 'create bar chart'"})
+        return jsonify({"message": f"✅ Uploaded: {filename}\n{result}"}), 200
 
 @app.route('/chat', methods=['POST'])
 def chat():
@@ -33,8 +37,19 @@ def chat():
     user_message = data.get('message', '').strip()
     if not user_message:
         return jsonify({"error": "No message provided"}), 400
+    
     response = agent.query(user_message)
     return jsonify({"response": response})
+
+# ✅ Critical: Serve static files (plot.png)
+@app.route('/static/<path:filename>')
+def serve_static(filename):
+    return send_from_directory('static', filename)
+
+# Optional: Direct plot access
+@app.route('/plot.png')
+def plot_png():
+    return send_from_directory('static', 'plot.png')
 
 if __name__ == '__main__':
     port = int(os.environ.get('PORT', 10000))
