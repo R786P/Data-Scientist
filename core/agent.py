@@ -2,10 +2,11 @@ import os
 import pandas as pd
 import matplotlib.pyplot as plt
 import numpy as np
+import seaborn as sns  # Added missing import
 from langchain_groq import ChatGroq
 from langchain_experimental.agents import create_pandas_dataframe_agent
-from langchain.callbacks.manager import CallbackManager
-from langchain.callbacks.stdout import StdOutCallbackHandler
+from langchain_core.callbacks.manager import CallbackManager  # Updated for v0.2
+from langchain_core.callbacks.stdout import StdOutCallbackHandler  # Updated for v0.2
 
 class DataScienceAgent:
     def __init__(self):
@@ -39,6 +40,7 @@ class DataScienceAgent:
                         verbose=False,
                         allow_dangerous_code=True,
                         handle_parsing_errors="Try simpler query.",
+                        # Fixed the callback manager initialization
                         callback_manager=CallbackManager([StdOutCallbackHandler()]) if False else None
                     )
                     return f"✅ Agent Active: {os.path.basename(fp)} loaded."
@@ -94,12 +96,12 @@ class DataScienceAgent:
         if self.df is None:
             return "⚠️ Pehle file upload karo bhai!"
 
-        # ✅ Rule-based fallback (fast, no LLM)
+        # Rule-based fallback (fast, no LLM)
         rule_resp = self._rule_based(q)
         if rule_resp:
             return rule_resp
 
-        # ✅ Try LLM only if API key exists
+        # Try LLM only if API key exists
         if not self.api_key:
             return "💡 API Key missing. Use commands like 'top 5 by revenue'."
 
