@@ -41,14 +41,35 @@
             <button onclick="sendMessage()">Send</button>
         </div>
 
+        <!-- Plot Section -->
         <div style="padding: 15px; text-align: center;">
             <img id="plotImg" src="">
             <p id="plotStatus" style="font-size: 12px; color: #999;"></p>
+            
+            <!-- 💾 DOWNLOAD BUTTON -->
+            <a href="/static/plot.png" download="data-analysis-report.png">
+                <button style="
+                    background-color: #ff6b6b;
+                    color: white;
+                    border: none;
+                    padding: 10px 20px;
+                    margin-top: 10px;
+                    border-radius: 8px;
+                    cursor: pointer;
+                    font-size: 14px;
+                    width: 100%;
+                    transition: background-color 0.3s;
+                " onmouseover="this.style.backgroundColor='#ee5253'"
+                   onmouseout="this.style.backgroundColor='#ff6b6b'">
+                    💾 Download Report
+                </button>
+            </a>
         </div>
     </div>
 
     <script>
         let uploaded = false;
+
         function addMessage(text, sender) {
             const chatBox = document.getElementById('chatBox');
             const msgDiv = document.createElement('div');
@@ -64,7 +85,10 @@
             addMessage("⏳ Uploading...", "bot");
             fetch('/upload', { method: 'POST', body: formData })
             .then(res => res.json())
-            .then(data => { addMessage(data.message, 'bot'); uploaded = true; })
+            .then(data => { 
+                addMessage(data.message, 'bot'); 
+                uploaded = true; 
+            })
             .catch(err => addMessage("❌ Upload Error", 'bot'));
         }
 
@@ -88,6 +112,7 @@
             .catch(err => addMessage("⚠️ Server is slow, try a simpler command.", 'bot'));
         }
 
+        // Refresh plot image
         function refreshPlot() {
             const img = document.getElementById('plotImg');
             img.src = "/static/plot.png?t=" + new Date().getTime();
