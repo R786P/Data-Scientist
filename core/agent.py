@@ -2,26 +2,26 @@ import os
 import pandas as pd
 import matplotlib.pyplot as plt
 import numpy as np
-import seaborn as sns  # Added missing import
+import seaborn as sns
 
-# ✅ ADD THIS LINE: Import MLModels from ml.py
+# ✅ ML integration
 from .ml import MLModels
 
+# LangChain imports (LLM support)
 from langchain_groq import ChatGroq
 from langchain_experimental.agents import create_pandas_dataframe_agent
-from langchain_core.callbacks.manager import CallbackManager  # Updated for v0.2
-from langchain_core.callbacks.stdout import StdOutCallbackHandler  # Updated for v0.2
+from langchain_core.callbacks.manager import CallbackManager
+from langchain_core.callbacks.stdout import StdOutCallbackHandler
 
 class DataScienceAgent:
     def __init__(self):
         self.df = None
         self.agent_executor = None
         self.api_key = os.getenv("GROQ_API_KEY")
-        # Fastest model for free tier
         self.primary_model = "llama-3.1-8b-instant"
         self.fallback_model = "llama-3.2-90b-vision"
         
-        # ✅ ADD THIS LINE: Initialize the ML engine
+        # ✅ Initialize ML engine
         self.ml = MLModels()
 
     def load_data(self, fp):
@@ -38,7 +38,7 @@ class DataScienceAgent:
                         groq_api_key=self.api_key,
                         model_name=self.primary_model,
                         max_tokens=400,
-                        request_timeout=15  # Critical: avoid timeout
+                        request_timeout=15
                     )
                     
                     self.agent_executor = create_pandas_dataframe_agent(
@@ -102,12 +102,12 @@ class DataScienceAgent:
         if self.df is None:
             return "⚠️ Pehle file upload karo bhai!"
 
-        # Rule-based fallback (fast, no LLM)
+        # Rule-based fallback
         rule_resp = self._rule_based(q)
         if rule_resp:
             return rule_resp
 
-        # ✅ NEW: Connect Advance ML Models Here
+        # ✅ ADVANCE ML COMMANDS
         q_lower = q.lower()
 
         if "forecast sales" in q_lower or "predict revenue" in q_lower:
