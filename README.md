@@ -20,15 +20,7 @@ An autonomous AI agent that performs real data scientist tasks — just give it 
 
 ## 🚀 Quick Start
 
-### Option A: Google Colab (Recommended - No Setup)
-
-[![Open In Colab](https://colab.research.google.com/assets/colab-badge.svg)](https://colab.research.google.com/github/YOUR_USERNAME/data-science-ai-agent/blob/main/notebook.ipynb)
-
-1. Get FREE Gemini API Key: https://aistudio.google.com/app/apikey
-2. Open notebook → Paste API key → Run all cells
-3. Ask queries like: `"top 3 products by revenue"`
-
-### Option B: Local Setup
+###  Local Setup
 
 ```bash
 # 1. Clone repository
