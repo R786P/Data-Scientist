@@ -4,14 +4,22 @@ import matplotlib.pyplot as plt
 import numpy as np
 import seaborn as sns
 
-# ✅ ML integration
-from .ml import MLModels
+# ✅ ML integration with error safety
+try:
+    from .ml import MLModels
+except Exception as e:
+    print(f"⚠️ MLModels not loaded: {str(e)}")
+    MLModels = None  # Graceful fallback
 
 # LangChain imports (LLM support)
-from langchain_groq import ChatGroq
-from langchain_experimental.agents import create_pandas_dataframe_agent
-from langchain_core.callbacks.manager import CallbackManager
-from langchain_core.callbacks.stdout import StdOutCallbackHandler
+try:
+    from langchain_groq import ChatGroq
+    from langchain_experimental.agents import create_pandas_dataframe_agent
+    from langchain_core.callbacks.manager import CallbackManager
+    from langchain_core.callbacks.stdout import StdOutCallbackHandler
+    LLM_AVAILABLE = True
+except ImportError:
+    LLM_AVAILABLE = False
 
 class DataScienceAgent:
     def __init__(self):
@@ -21,8 +29,8 @@ class DataScienceAgent:
         self.primary_model = "llama-3.1-8b-instant"
         self.fallback_model = "llama-3.2-90b-vision"
         
-        # ✅ Initialize ML engine
-        self.ml = MLModels()
+        # ✅ Initialize ML engine (if available)
+        self.ml = MLModels() if MLModels is not None else None
 
     def load_data(self, fp):
         try:
@@ -31,7 +39,8 @@ class DataScienceAgent:
             else:
                 self.df = pd.read_excel(fp)
             
-            if self.api_key:
+            # Only initialize LLM if library and API key exist
+            if LLM_AVAILABLE and self.api_key:
                 try:
                     llm = ChatGroq(
                         temperature=0,
@@ -50,12 +59,17 @@ class DataScienceAgent:
                         callback_manager=CallbackManager([StdOutCallbackHandler()]) if False else None
                     )
                     return f"✅ Agent Active: {os.path.basename(fp)} loaded."
-                except Exception:
+                except Exception as e:
                     return "⚠️ LLM init failed. Using rule-based mode."
             else:
-                return "❌ GROQ_API_KEY missing. Set in Render env vars."
+                if not LLM_AVAILABLE:
+                    return "⚠️ LLM libraries not installed. Using rule-based commands only."
+                if not self.api_key:
+                    return "❌ GROQ_API_KEY missing. Set in Render env vars."
         except Exception as e:
             return f"❌ Load error: {str(e)}"
+        
+        return f"✅ Loaded data: {len(self.df)} rows × {len(self.df.columns)} columns"
 
     def generate_plot(self, plot_type="bar"):
         """Generate plot and save to static/ folder"""
@@ -98,6 +112,35 @@ class DataScienceAgent:
         except Exception as e:
             return f"❌ Plot error: {str(e)}"
 
+    def auto_eda(self):
+        """Auto EDA report generator"""
+        if self.df is None:
+            return "⚠️ Pehle file upload karo"
+        
+        num_cols = self.df.select_dtypes('number').columns.tolist()
+        cat_cols = self.df.select_dtypes('object').columns.tolist()
+        
+        revenue_col = next((c for c in num_cols if any(x in c.lower() for x in ['revenue','sales','amount'])), None)
+        product_col = cat_cols[0] if cat_cols else None
+        
+        top_product = "N/A"
+        if revenue_col and product_col:
+            try:
+                top_product = self.df.groupby(product_col)[revenue_col].sum().idxmax()
+            except:
+                top_product = "N/A"
+        
+        missing = int(self.df.isnull().sum().sum())
+        duplicates = int(self.df.duplicated().sum())
+
+        return f"""
+📊 Auto EDA Report:
+• Missing Values: {missing}
+• Duplicates: {duplicates}
+• Top Product: {top_product}
+💡 Use 'create bar chart' to visualize!
+"""
+
     def query(self, q):
         if self.df is None:
             return "⚠️ Pehle file upload karo bhai!"
@@ -107,57 +150,69 @@ class DataScienceAgent:
         if rule_resp:
             return rule_resp
 
-        # ✅ ADVANCE ML COMMANDS
         q_lower = q.lower()
 
-        if "forecast sales" in q_lower or "predict revenue" in q_lower:
-            sample = {'ad_spend': 60000, 'previous_month_sales': 250000}
-            result = self.ml.forecast_sales(sample)
-            return f"🚀 Predicted Sales: ₹{result.get('predicted_sales', 'N/A'):,.0f} | Confidence: {result.get('confidence', 'N/A')}"
+        # ✅ ADVANCE ML COMMANDS (only if ml is available)
+        if self.ml:
+            if "forecast sales" in q_lower or "predict revenue" in q_lower:
+                sample = {'ad_spend': 60000, 'previous_month_sales': 250000}
+                result = self.ml.forecast_sales(sample)
+                return f"🚀 Predicted Sales: ₹{result.get('predicted_sales', 'N/A'):,.0f} | Confidence: {result.get('confidence', 'N/A')}"
 
-        if "predict churn" in q_lower:
-            sample = {'age': 42, 'monthly_spend': 850, 'support_calls': 3}
-            result = self.ml.predict_churn(sample)
-            return f"{result.get('risk_level', '')}\nChurn Risk: {result.get('churn_probability', '')}"
+            if "predict churn" in q_lower:
+                sample = {'age': 42, 'monthly_spend': 850, 'support_calls': 3}
+                result = self.ml.predict_churn(sample)
+                return f"{result.get('risk_level', '')}\nChurn Risk: {result.get('churn_probability', '')}"
 
-        if "segment customer" in q_lower:
-            sample = {'annual_spend': 180000, 'purchase_frequency': 15}
-            result = self.ml.segment_customer(sample)
-            return f"🏷️ Segment: {result['segment']}\nDiscount: {result['discount_eligible']}"
+            if "segment customer" in q_lower:
+                sample = {'annual_spend': 180000, 'purchase_frequency': 15}
+                result = self.ml.segment_customer(sample)
+                return f"🏷️ Segment: {result['segment']}\nDiscount: {result['discount_eligible']}"
 
-        if "detect outliers" in q_lower:
-            try:
-                col_name = next((c for c in self.df.columns if any(x in c.lower() for x in ['revenue','sales','amount'])), None)
-                series = self.df[col_name].dropna().tolist() if col_name else [10000, 12000, 15000, 50000]
-                result = self.ml.detect_outliers(series)
-                return f"{result['status']}\nOutlier values: {result.get('outlier_values', [])}"
-            except Exception as e:
-                return f"❌ Outlier detection error: {str(e)}"
+            if "detect outliers" in q_lower:
+                try:
+                    col_name = next((c for c in self.df.columns if any(x in c.lower() for x in ['revenue','sales','amount'])), None)
+                    series = self.df[col_name].dropna().tolist() if col_name else [10000, 12000, 15000, 50000]
+                    result = self.ml.detect_outliers(series)
+                    return f"{result['status']}\nOutlier values: {result.get('outlier_values', [])}"
+                except Exception as e:
+                    return f"❌ Outlier detection error: {str(e)}"
 
-        if "forecast trend" in q_lower or "time series forecast" in q_lower:
-            try:
-                col_name = next((c for c in self.df.columns if any(x in c.lower() for x in ['revenue','sales','amount'])), None)
-                series = self.df[col_name].dropna().tolist() if col_name else [100000, 115000, 130000, 145000]
-                result = self.ml.forecast_time_series(series, periods=3)
-                forecast_str = " → ".join([f"₹{v:,.0f}" for v in result['forecast']])
-                return f"📈 Forecast: {forecast_str}\nTrend: {result.get('trend', 'N/A')}"
-            except Exception as e:
-                return f"❌ Forecast error: {str(e)}"
+            if "forecast trend" in q_lower or "time series forecast" in q_lower:
+                try:
+                    col_name = next((c for c in self.df.columns if any(x in c.lower() for x in ['revenue','sales','amount'])), None)
+                    series = self.df[col_name].dropna().tolist() if col_name else [100000, 115000, 130000, 145000]
+                    result = self.ml.forecast_time_series(series, periods=3)
+                    forecast_str = " → ".join([f"₹{v:,.0f}" for v in result['forecast']])
+                    return f"📈 Forecast: {forecast_str}\nTrend: {result.get('trend', 'N/A')}"
+                except Exception as e:
+                    return f"❌ Forecast error: {str(e)}"
+        else:
+            # Fallback messages if ml not loaded
+            if any(x in q_lower for x in ["forecast", "predict", "trend", "segment", "outlier"]):
+                return "⚠️ ML models not loaded. Using rule-based logic."
+
+        # Auto EDA command
+        if "auto eda" in q_lower or "quick analysis" in q_lower or "summary" in q_lower:
+            return self.auto_eda()
 
         # Try LLM only if API key exists
         if not self.api_key:
             return "💡 API Key missing. Use commands like 'top 5 by revenue'."
 
-        try:
-            prompt = f"Answer in 1-2 sentences max: {q}"
-            response = self.agent_executor.invoke({"input": prompt})
-            output = str(response.get('output', '')).strip()
-            if len(output) > 500:
-                output = output[:495] + "... [truncated]"
-            return output
-        except Exception:
-            return ("💡 AI slow chal raha hai (Render free tier limitation). "
-                   "Chhote sawal try karo ya Render billing upgrade karo.")
+        if LLM_AVAILABLE and self.api_key:
+            try:
+                prompt = f"Answer in 1-2 sentences max: {q}"
+                response = self.agent_executor.invoke({"input": prompt})
+                output = str(response.get('output', '')).strip()
+                if len(output) > 500:
+                    output = output[:495] + "... [truncated]"
+                return output
+            except Exception:
+                pass  # Fall back to rule-based
+
+        return ("💡 AI slow chal raha hai (Render free tier limitation). "
+               "Chhote sawal try karo ya 'top 5', 'predict trend' jaise commands use karo.")
 
     def _rule_based(self, q):
         q = q.lower()
@@ -171,4 +226,6 @@ class DataScienceAgent:
             return self.generate_plot("bar")
         if "info" in q or "basic" in q:
             return f"📊 Shape: {self.df.shape}" if self.df is not None else "⚠️ Load data"
+        if "auto eda" in q or "summary" in q:
+            return self.auto_eda()
         return None
