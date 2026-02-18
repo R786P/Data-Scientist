@@ -3,6 +3,10 @@ import pandas as pd
 import matplotlib.pyplot as plt
 import numpy as np
 import seaborn as sns  # Added missing import
+
+# ✅ ADD THIS LINE: Import MLModels from ml.py
+from .ml import MLModels
+
 from langchain_groq import ChatGroq
 from langchain_experimental.agents import create_pandas_dataframe_agent
 from langchain_core.callbacks.manager import CallbackManager  # Updated for v0.2
@@ -16,6 +20,9 @@ class DataScienceAgent:
         # Fastest model for free tier
         self.primary_model = "llama-3.1-8b-instant"
         self.fallback_model = "llama-3.2-90b-vision"
+        
+        # ✅ ADD THIS LINE: Initialize the ML engine
+        self.ml = MLModels()
 
     def load_data(self, fp):
         try:
@@ -40,7 +47,6 @@ class DataScienceAgent:
                         verbose=False,
                         allow_dangerous_code=True,
                         handle_parsing_errors="Try simpler query.",
-                        # Fixed the callback manager initialization
                         callback_manager=CallbackManager([StdOutCallbackHandler()]) if False else None
                     )
                     return f"✅ Agent Active: {os.path.basename(fp)} loaded."
@@ -100,6 +106,43 @@ class DataScienceAgent:
         rule_resp = self._rule_based(q)
         if rule_resp:
             return rule_resp
+
+        # ✅ NEW: Connect Advance ML Models Here
+        q_lower = q.lower()
+
+        if "forecast sales" in q_lower or "predict revenue" in q_lower:
+            sample = {'ad_spend': 60000, 'previous_month_sales': 250000}
+            result = self.ml.forecast_sales(sample)
+            return f"🚀 Predicted Sales: ₹{result.get('predicted_sales', 'N/A'):,.0f} | Confidence: {result.get('confidence', 'N/A')}"
+
+        if "predict churn" in q_lower:
+            sample = {'age': 42, 'monthly_spend': 850, 'support_calls': 3}
+            result = self.ml.predict_churn(sample)
+            return f"{result.get('risk_level', '')}\nChurn Risk: {result.get('churn_probability', '')}"
+
+        if "segment customer" in q_lower:
+            sample = {'annual_spend': 180000, 'purchase_frequency': 15}
+            result = self.ml.segment_customer(sample)
+            return f"🏷️ Segment: {result['segment']}\nDiscount: {result['discount_eligible']}"
+
+        if "detect outliers" in q_lower:
+            try:
+                col_name = next((c for c in self.df.columns if any(x in c.lower() for x in ['revenue','sales','amount'])), None)
+                series = self.df[col_name].dropna().tolist() if col_name else [10000, 12000, 15000, 50000]
+                result = self.ml.detect_outliers(series)
+                return f"{result['status']}\nOutlier values: {result.get('outlier_values', [])}"
+            except Exception as e:
+                return f"❌ Outlier detection error: {str(e)}"
+
+        if "forecast trend" in q_lower or "time series forecast" in q_lower:
+            try:
+                col_name = next((c for c in self.df.columns if any(x in c.lower() for x in ['revenue','sales','amount'])), None)
+                series = self.df[col_name].dropna().tolist() if col_name else [100000, 115000, 130000, 145000]
+                result = self.ml.forecast_time_series(series, periods=3)
+                forecast_str = " → ".join([f"₹{v:,.0f}" for v in result['forecast']])
+                return f"📈 Forecast: {forecast_str}\nTrend: {result.get('trend', 'N/A')}"
+            except Exception as e:
+                return f"❌ Forecast error: {str(e)}"
 
         # Try LLM only if API key exists
         if not self.api_key:
