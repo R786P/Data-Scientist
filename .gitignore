@@ -1,5 +1,16 @@
-__pycache__/
-*.pyc
+# Sensitive info
 .env
-.venv/
+*.env
+
+# Python kachra
+__pycache__/
+*.py[cod]
+*$py.class
 venv/
+env/
+
+# Data & Plots
+static/plot.png
+*.csv
+*.xlsx
+*.db
