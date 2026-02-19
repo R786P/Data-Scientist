@@ -2,6 +2,7 @@ from werkzeug.security import generate_password_hash, check_password_hash
 from sqlalchemy import Column, Integer, String
 from flask_login import UserMixin
 from core.database import Base, SessionLocal
+import os
 
 class User(Base, UserMixin):
     __tablename__ = "users"
@@ -16,13 +17,15 @@ def create_default_admin():
     try:
         admin = db.query(User).filter(User.username == "admin").first()
         if not admin:
+            admin_password = os.getenv("ADMIN_PASSWORD", "admin123")
+            
             admin = User(
                 username="admin",
-                password_hash=generate_password_hash("admin123")
+                password_hash=generate_password_hash(admin_password)
             )
             db.add(admin)
             db.commit()
-            print("✅ Default admin created: admin / admin123")
+            print(f"✅ Admin created: admin / {admin_password}")
         else:
             print("✅ Admin user already exists")
     except Exception as e:
