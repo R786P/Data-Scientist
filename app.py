@@ -3,7 +3,7 @@ import logging
 from flask import Flask, request, jsonify, render_template, send_from_directory, redirect, url_for
 from werkzeug.utils import secure_filename
 from flask_login import LoginManager, login_user, login_required, logout_user, current_user
-from werkzeug.security import check_password_hash
+from werkzeug.security import check_password_hash, generate_password_hash
 
 from core.database import engine, Base, SessionLocal
 from core.auth import User, create_default_admin
@@ -45,6 +45,49 @@ except Exception as e:
     logger.error(f"❌ Database initialization failed: {e}")
 
 agent = DataScienceAgent()
+
+# ✅ NEW: Register Route
+@app.route('/register', methods=['GET', 'POST'])
+def register():
+    if request.method == 'POST':
+        username = request.form.get('username')
+        password = request.form.get('password')
+        
+        # Validate input
+        if not username or not password:
+            return render_template('register.html', error="Username and password required")
+        
+        if len(username) < 3:
+            return render_template('register.html', error="Username must be at least 3 characters")
+        
+        if len(password) < 6:
+            return render_template('register.html', error="Password must be at least 6 characters")
+        
+        db = SessionLocal()
+        try:
+            # Check if user exists
+            existing_user = db.query(User).filter(User.username == username).first()
+            if existing_user:
+                return render_template('register.html', error="Username already exists")
+            
+            # Create new user
+            new_user = User(
+                username=username,
+                password_hash=generate_password_hash(password)
+            )
+            db.add(new_user)
+            db.commit()
+            
+            logger.info(f"✅ New user registered: {username}")
+            return redirect(url_for('login'))
+        except Exception as e:
+            logger.error(f"Registration error: {e}")
+            db.rollback()
+            return render_template('register.html', error="System error. Try again.")
+        finally:
+            db.close()
+    
+    return render_template('register.html')
 
 # Auth Routes
 @app.route('/login', methods=['GET', 'POST'])
@@ -120,7 +163,7 @@ def chat():
 
 @app.route('/health')
 def health():
-    return jsonify({"status": "healthy", "version": "1.2.0"}), 200
+    return jsonify({"status": "healthy", "version": "1.3.0"}), 200
 
 @app.route('/plot.png')
 def plot_png():
