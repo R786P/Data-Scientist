@@ -1,31 +1,21 @@
-Flask==3.0.3
-gunicorn==22.0.0
-pandas==2.1.4
-numpy==1.26.4
-matplotlib==3.8.4
-seaborn==0.13.2
-openpyxl==3.1.5
-tabulate==0.9.0
-python-dotenv==1.0.1
-
-# LangChain (Exact versions for stability)
-langchain==0.3.1
-langchain-core==0.3.1
-langchain-community==0.3.1
-langchain-groq==0.1.0
-langchain-experimental==0.0.67
-
-# ML
-scikit-learn==1.4.0
-
-# Database
-SQLAlchemy==2.0.20
-psycopg2-binary==2.9.9
-
-# Security & Auth
-cryptography==41.0.7
-flask-login==0.6.2
-werkzeug==2.3.7
-
-# Logging
-python-json-logger==2.0.7
+Flask
+gunicorn
+pandas
+numpy
+matplotlib
+seaborn
+openpyxl
+tabulate
+python-dotenv
+langchain
+langchain-core
+langchain-community
+langchain-groq
+langchain-experimental
+scikit-learn
+SQLAlchemy
+psycopg2-binary
+cryptography
+flask-login
+werkzeug
+python-json-logger
