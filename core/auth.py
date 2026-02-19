@@ -11,7 +11,6 @@ class User(Base):
 def create_default_admin():
     db = SessionLocal()
     try:
-        # Check if admin exists
         admin = db.query(User).filter(User.username == "admin").first()
         if not admin:
             admin = User(
