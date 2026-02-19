@@ -17,3 +17,5 @@ SQLAlchemy
 psycopg2-binary
 cryptography
 python-json-logger
+flask-login
+werkzeug
