@@ -15,6 +15,21 @@
         button { width: 100%; padding: 12px; background: linear-gradient(135deg, #667eea, #764ba2); color: white; border: none; border-radius: 8px; cursor: pointer; font-weight: bold; margin-top: 10px; }
         button:hover { opacity: 0.9; }
         .footer { margin-top: 20px; font-size: 12px; color: #888; }
+        
+        /* ✅ ADD THIS CSS FOR REGISTER LINK */
+        .register-link {
+            margin-top: 15px;
+            font-size: 14px;
+            color: #666;
+        }
+        .register-link a {
+            color: #667eea;
+            text-decoration: none;
+            font-weight: bold;
+        }
+        .register-link a:hover {
+            text-decoration: underline;
+        }
     </style>
 </head>
 <body>
@@ -30,6 +45,12 @@
             </div>
             <button type="submit">Login to Dashboard</button>
         </form>
+        
+        <!-- ✅ ADD THIS LINE (Register Link) -->
+        <div class="register-link">
+            Don't have an account? <a href="/register">Register here</a>
+        </div>
+        
         <div class="footer">
             Secure SQL Logging Active (v1.2)
         </div>
