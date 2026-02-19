@@ -4,6 +4,8 @@ from core.database import Base, SessionLocal
 
 class User(Base):
     __tablename__ = "users"
+    __table_args__ = {'extend_existing': True}  # ✅ FIX: Table redefinition error
+    
     id = Column(Integer, primary_key=True)
     username = Column(String, unique=True)
     password_hash = Column(String)
