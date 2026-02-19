@@ -1,15 +1,23 @@
 import os
+import logging
 import pandas as pd
 import matplotlib.pyplot as plt
 import numpy as np
 import seaborn as sns
 
+# Master Imports: DB aur Models
+from core.database import SessionLocal
+from core.models import UserQuery
+
+# Setup Logger
+logger = logging.getLogger(__name__)
+
 # ✅ ML integration with error safety
 try:
     from .ml import MLModels
 except Exception as e:
-    print(f"⚠️ MLModels not loaded: {str(e)}")
-    MLModels = None  # Graceful fallback
+    logger.warning(f"⚠️ MLModels not loaded: {str(e)}")
+    MLModels = None 
 
 # LangChain imports (LLM support)
 try:
@@ -29,17 +37,19 @@ class DataScienceAgent:
         self.primary_model = "llama-3.1-8b-instant"
         self.fallback_model = "llama-3.2-90b-vision"
         
-        # ✅ Initialize ML engine (if available)
+        # ✅ Initialize ML engine
         self.ml = MLModels() if MLModels is not None else None
 
     def load_data(self, fp):
+        """Master Feature: Professional file loading with logging"""
         try:
             if fp.endswith('.csv'):
                 self.df = pd.read_csv(fp, encoding='latin1')
             else:
                 self.df = pd.read_excel(fp)
             
-            # Only initialize LLM if library and API key exist
+            logger.info(f"✅ Data loaded: {fp}")
+
             if LLM_AVAILABLE and self.api_key:
                 try:
                     llm = ChatGroq(
@@ -51,181 +61,102 @@ class DataScienceAgent:
                     )
                     
                     self.agent_executor = create_pandas_dataframe_agent(
-                        llm,
-                        self.df,
-                        verbose=False,
-                        allow_dangerous_code=True,
-                        handle_parsing_errors="Try simpler query.",
-                        callback_manager=CallbackManager([StdOutCallbackHandler()]) if False else None
+                        llm, self.df, verbose=False, allow_dangerous_code=True,
+                        handle_parsing_errors="Try simpler query."
                     )
                     return f"✅ Agent Active: {os.path.basename(fp)} loaded."
                 except Exception as e:
+                    logger.error(f"LLM init failed: {e}")
                     return "⚠️ LLM init failed. Using rule-based mode."
-            else:
-                if not LLM_AVAILABLE:
-                    return "⚠️ LLM libraries not installed. Using rule-based commands only."
-                if not self.api_key:
-                    return "❌ GROQ_API_KEY missing. Set in Render env vars."
+            return f"✅ Loaded data: {len(self.df)} rows."
         except Exception as e:
+            logger.error(f"Load error: {e}")
             return f"❌ Load error: {str(e)}"
-        
-        return f"✅ Loaded data: {len(self.df)} rows × {len(self.df.columns)} columns"
 
     def generate_plot(self, plot_type="bar"):
-        """Generate plot and save to static/ folder"""
-        if self.df is None:
-            return "⚠️ Load data first"
+        """Master Feature: Safe directory handling & Plotting"""
+        if self.df is None: return "⚠️ Load data first"
         try:
-            plt.figure(figsize=(8, 5))
+            plt.figure(figsize=(10, 6))
             num_cols = self.df.select_dtypes('number').columns.tolist()
             cat_cols = self.df.select_dtypes('object').columns.tolist()
 
+            os.makedirs('static', exist_ok=True) # Directory check
+
             if "bar" in plot_type.lower() and cat_cols:
                 col = cat_cols[0]
-                counts = self.df[col].value_counts().head(10)
-                counts.plot(kind='bar', color='#667eea')
+                self.df[col].value_counts().head(10).plot(kind='bar', color='#667eea')
                 plt.title(f'Top: {col}')
-                plt.xticks(rotation=45, ha='right')
             elif "hist" in plot_type.lower() and num_cols:
-                col = num_cols[0]
-                self.df[col].hist(bins=20, edgecolor='black', color='#4ECDC4')
-                plt.title(f'Histogram: {col}')
+                self.df[num_cols[0]].hist(bins=20, color='#4ECDC4')
+                plt.title(f'Distribution: {num_cols[0]}')
             elif "scatter" in plot_type.lower() and len(num_cols) >= 2:
-                sns.scatterplot(data=self.df, x=num_cols[0], y=num_cols[1], alpha=0.6, color='#FF6B6B')
+                sns.scatterplot(data=self.df, x=num_cols[0], y=num_cols[1], color='#FF6B6B')
                 plt.title(f'{num_cols[0]} vs {num_cols[1]}')
             else:
-                if len(num_cols) >= 2:
-                    sns.scatterplot(data=self.df, x=num_cols[0], y=num_cols[1], alpha=0.6)
-                    plt.title(f'Scatter: {num_cols[0]} vs {num_cols[1]}')
-                elif num_cols:
-                    self.df[num_cols[0]].hist(bins=20)
-                    plt.title(f'Histogram: {num_cols[0]}')
-                else:
-                    return "⚠️ No numeric columns for plotting"
+                return "⚠️ No valid columns found for this plot type."
 
             plt.tight_layout()
-            os.makedirs('static', exist_ok=True)
-            plot_path = 'static/plot.png'
-            plt.savefig(plot_path, dpi=150, bbox_inches='tight')
+            plt.savefig('static/plot.png', dpi=150)
             plt.close()
-            return f"✅ Plot saved! View at: /static/plot.png"
+            return "✅ Plot saved! View at: /static/plot.png"
         except Exception as e:
+            logger.error(f"Plot error: {e}")
             return f"❌ Plot error: {str(e)}"
 
     def auto_eda(self):
-        """Auto EDA report generator"""
-        if self.df is None:
-            return "⚠️ Pehle file upload karo"
-        
-        num_cols = self.df.select_dtypes('number').columns.tolist()
-        cat_cols = self.df.select_dtypes('object').columns.tolist()
-        
-        revenue_col = next((c for c in num_cols if any(x in c.lower() for x in ['revenue','sales','amount'])), None)
-        product_col = cat_cols[0] if cat_cols else None
-        
-        top_product = "N/A"
-        if revenue_col and product_col:
-            try:
-                top_product = self.df.groupby(product_col)[revenue_col].sum().idxmax()
-            except:
-                top_product = "N/A"
-        
+        """Master Feature: Automated quick analysis"""
+        if self.df is None: return "⚠️ Load data first"
         missing = int(self.df.isnull().sum().sum())
         duplicates = int(self.df.duplicated().sum())
-
-        return f"""
-📊 Auto EDA Report:
-• Missing Values: {missing}
-• Duplicates: {duplicates}
-• Top Product: {top_product}
-💡 Use 'create bar chart' to visualize!
-"""
+        return f"📊 EDA: {len(self.df)} rows | Missing: {missing} | Dups: {duplicates}"
 
     def query(self, q):
-        if self.df is None:
-            return "⚠️ Pehle file upload karo bhai!"
+        """Master Feature: Every query is logged to PostgreSQL"""
+        if self.df is None: return "⚠️ Pehle file upload karo!"
 
-        # Rule-based fallback
-        rule_resp = self._rule_based(q)
-        if rule_resp:
-            return rule_resp
-
+        final_response = ""
         q_lower = q.lower()
 
-        # ✅ ADVANCE ML COMMANDS (only if ml is available)
-        if self.ml:
-            if "forecast sales" in q_lower or "predict revenue" in q_lower:
-                sample = {'ad_spend': 60000, 'previous_month_sales': 250000}
-                result = self.ml.forecast_sales(sample)
-                return f"🚀 Predicted Sales: ₹{result.get('predicted_sales', 'N/A'):,.0f} | Confidence: {result.get('confidence', 'N/A')}"
-
-            if "predict churn" in q_lower:
-                sample = {'age': 42, 'monthly_spend': 850, 'support_calls': 3}
-                result = self.ml.predict_churn(sample)
-                return f"{result.get('risk_level', '')}\nChurn Risk: {result.get('churn_probability', '')}"
-
-            if "segment customer" in q_lower:
-                sample = {'annual_spend': 180000, 'purchase_frequency': 15}
-                result = self.ml.segment_customer(sample)
-                return f"🏷️ Segment: {result['segment']}\nDiscount: {result['discount_eligible']}"
-
-            if "detect outliers" in q_lower:
-                try:
-                    col_name = next((c for c in self.df.columns if any(x in c.lower() for x in ['revenue','sales','amount'])), None)
-                    series = self.df[col_name].dropna().tolist() if col_name else [10000, 12000, 15000, 50000]
-                    result = self.ml.detect_outliers(series)
-                    return f"{result['status']}\nOutlier values: {result.get('outlier_values', [])}"
-                except Exception as e:
-                    return f"❌ Outlier detection error: {str(e)}"
-
-            if "forecast trend" in q_lower or "time series forecast" in q_lower:
-                try:
-                    col_name = next((c for c in self.df.columns if any(x in c.lower() for x in ['revenue','sales','amount'])), None)
-                    series = self.df[col_name].dropna().tolist() if col_name else [100000, 115000, 130000, 145000]
-                    result = self.ml.forecast_time_series(series, periods=3)
-                    forecast_str = " → ".join([f"₹{v:,.0f}" for v in result['forecast']])
-                    return f"📈 Forecast: {forecast_str}\nTrend: {result.get('trend', 'N/A')}"
-                except Exception as e:
-                    return f"❌ Forecast error: {str(e)}"
-        else:
-            # Fallback messages if ml not loaded
-            if any(x in q_lower for x in ["forecast", "predict", "trend", "segment", "outlier"]):
-                return "⚠️ ML models not loaded. Using rule-based logic."
-
-        # Auto EDA command
-        if "auto eda" in q_lower or "quick analysis" in q_lower or "summary" in q_lower:
-            return self.auto_eda()
-
-        # Try LLM only if API key exists
-        if not self.api_key:
-            return "💡 API Key missing. Use commands like 'top 5 by revenue'."
-
-        if LLM_AVAILABLE and self.api_key:
+        # Rule-based / Plotting Check
+        rule_resp = self._rule_based(q)
+        if rule_resp: final_response = rule_resp
+        
+        # ML Logic (Part 2 logic)
+        elif self.ml and any(x in q_lower for x in ["forecast", "predict", "segment"]):
             try:
-                prompt = f"Answer in 1-2 sentences max: {q}"
-                response = self.agent_executor.invoke({"input": prompt})
-                output = str(response.get('output', '')).strip()
-                if len(output) > 500:
-                    output = output[:495] + "... [truncated]"
-                return output
-            except Exception:
-                pass  # Fall back to rule-based
+                if "forecast" in q_lower:
+                    res = self.ml.forecast_time_series([100, 150, 200]) # Sample logic
+                    final_response = f"📈 Forecast: {res['forecast']}"
+                else:
+                    final_response = "🚀 ML Prediction activated."
+            except Exception as e:
+                final_response = f"❌ ML Error: {str(e)}"
+        
+        # LLM Logic
+        elif self.agent_executor and self.api_key:
+            try:
+                res = self.agent_executor.invoke({"input": q})
+                final_response = str(res.get('output', 'AI could not process this.'))
+            except Exception as e:
+                final_response = "💡 AI slow chal raha hai. Chhote sawal try karo."
 
-        return ("💡 AI slow chal raha hai (Render free tier limitation). "
-               "Chhote sawal try karo ya 'top 5', 'predict trend' jaise commands use karo.")
+        # --- DATABASE LOGGING ---
+        db = SessionLocal()
+        try:
+            new_log = UserQuery(query_text=q, response_text=final_response)
+            db.add(new_log)
+            db.commit()
+            logger.info("📊 Query & Response logged to SQL DB.")
+        except Exception as db_err:
+            logger.error(f"DB Log failed: {db_err}")
+        finally:
+            db.close()
+
+        return final_response
 
     def _rule_based(self, q):
         q = q.lower()
-        if "top" in q and ("by" in q or "revenue" in q):
-            return "📊 Rule-based: Top 5 by revenue — 1. Laptop (₹2,50,000), 2. Phone (₹2,40,000)..."
-        if "predict trend" in q or "forecast" in q:
-            return "📈 Rule-based: Next revenue ~₹2,55,000 (upward trend)"
-        if "segment customers" in q:
-            return "👥 Rule-based: High (25%), Medium (50%), Low (25%)"
-        if "create bar chart" in q or "plot" in q:
-            return self.generate_plot("bar")
-        if "info" in q or "basic" in q:
-            return f"📊 Shape: {self.df.shape}" if self.df is not None else "⚠️ Load data"
-        if "auto eda" in q or "summary" in q:
-            return self.auto_eda()
+        if "plot" in q or "chart" in q: return self.generate_plot("bar")
+        if "summary" in q or "eda" in q: return self.auto_eda()
         return None
