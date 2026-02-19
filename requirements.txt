@@ -13,3 +13,7 @@ seaborn
 scikit-learn==1.6.1
 openpyxl
 tabulate
+SQLAlchemy
+psycopg2-binary
+cryptography
+python-json-logger
