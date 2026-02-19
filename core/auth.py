@@ -1,14 +1,15 @@
 from werkzeug.security import generate_password_hash, check_password_hash
 from sqlalchemy import Column, Integer, String
+from flask_login import UserMixin
 from core.database import Base, SessionLocal
 
-class User(Base):
+class User(Base, UserMixin):
     __tablename__ = "users"
-    __table_args__ = {'extend_existing': True}  # ✅ FIX: Table redefinition error
+    __table_args__ = {'extend_existing': True}
     
     id = Column(Integer, primary_key=True)
-    username = Column(String, unique=True)
-    password_hash = Column(String)
+    username = Column(String, unique=True, nullable=False)
+    password_hash = Column(String, nullable=False)
 
 def create_default_admin():
     db = SessionLocal()
