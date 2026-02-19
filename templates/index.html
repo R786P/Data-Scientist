@@ -5,7 +5,6 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>🤖 DS Agent Master</title>
     <style>
-        /* Aapka Original Style + Master Upgrades */
         * { margin:0; padding:0; box-sizing:border-box }
         body { font-family: 'Segoe UI', Arial, sans-serif; background:#f0f2f5; padding:15px }
         .container { max-width:850px; margin:0 auto; background:white; border-radius:20px; box-shadow:0 10px 30px rgba(0,0,0,0.15); overflow:hidden; min-height: 90vh; display: flex; flex-direction: column; }
@@ -26,11 +25,13 @@
         
         .input-area { display:flex; gap:10px; padding:20px; background: white; }
         .input-area input { flex:1; padding:14px 20px; border:1px solid #dfe1e5; border-radius:30px; outline: none; transition: 0.3s; }
-        .input-area input:focus { border-color: #667eea; box-shadow: 0 0 8px rgba(102,126,234,0.2); }
         .input-area button { background:#667eea; color:white; border:none; padding:12px 28px; border-radius:30px; cursor:pointer; font-weight: bold; }
         
-        #plotSection { padding: 15px; margin: 15px; background: #fff; border-radius: 12px; border: 1px solid #eee; display: none; }
-        #plotImg { max-width:100%; border-radius:8px; border: 1px solid #ddd; }
+        /* 🛠️ Download Section: Shuruat mein hidden rahega */
+        #plotSection { padding: 15px; margin: 15px; background: #fff; border-radius: 12px; border: 1px solid #eee; display: none; text-align: center; }
+        #plotImg { max-width:100%; border-radius:8px; border: 1px solid #ddd; margin-bottom: 10px; }
+        .dl-btn { width:100%; padding:12px; background:#ff6b6b; color:white; border:none; border-radius:8px; cursor:pointer; font-weight: bold; transition: 0.3s; }
+        .dl-btn:hover { background: #ee5253; }
         
         .loader { border: 3px solid #f3f3f3; border-top: 3px solid #667eea; border-radius: 50%; width: 20px; height: 20px; animation: spin 1s linear infinite; display: inline-block; vertical-align: middle; margin-right: 10px; }
         @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
@@ -54,10 +55,10 @@
         </div>
         
         <div id="plotSection">
-            <h4 style="margin-bottom:10px; color:#555; font-size:13px;">Latest Visualization:</h4>
+            <h4 style="margin-bottom:10px; color:#555; font-size:13px; text-align: left;">Latest Visualization:</h4>
             <img id="plotImg" src="">
-            <a href="/plot.png" download="analysis_report.png">
-                <button style="width:100%; margin-top:10px; padding:8px; background:#ff6b6b; color:white; border:none; border-radius:5px; cursor:pointer;">💾 Download High-Res Plot</button>
+            <a id="downloadLink" href="/plot.png" download="analysis_report.png">
+                <button class="dl-btn">💾 Download High-Res Plot</button>
             </a>
         </div>
         
@@ -70,11 +71,11 @@
     <script>
         let isFileReady = false;
 
-        function addMessage(text, sender, isHtml = false) {
+        function addMessage(text, sender) {
             const chatBox = document.getElementById('chatBox');
             const msgDiv = document.createElement('div');
             msgDiv.className = 'message ' + sender;
-            if(isHtml) msgDiv.innerHTML = text; else msgDiv.innerText = text;
+            msgDiv.innerText = text;
             chatBox.appendChild(msgDiv);
             chatBox.scrollTop = chatBox.scrollHeight;
         }
@@ -119,21 +120,30 @@
             .then(res => res.json())
             .then(data => {
                 addMessage(data.response, 'bot');
-                // Auto-refresh plot logic
-                if(msg.toLowerCase().includes("plot") || msg.toLowerCase().includes("chart") || data.response.toLowerCase().includes("plot")) {
+                
+                // 🔍 Trigger plot visibility only when needed
+                const plotTriggers = ['plot', 'chart', 'graph', 'visualize', 'bar', 'hist'];
+                if(plotTriggers.some(t => msg.toLowerCase().includes(t)) || data.response.toLowerCase().includes("plot saved")) {
                     setTimeout(refreshPlot, 1000);
                 }
             })
-            .catch(err => addMessage("⚠️ AI slow hai, thoda chhota sawal pucho.", 'bot'));
+            .catch(err => addMessage("⚠️ Server slow hai, thoda wait kijiye.", 'bot'));
         }
 
         function refreshPlot() {
             const img = document.getElementById('plotImg');
             const section = document.getElementById('plotSection');
-            img.src = "/plot.png?t=" + new Date().getTime(); // Cache busting
-            section.style.display = "block";
-            document.getElementById('chatBox').scrollTop = document.getElementById('chatBox').scrollHeight;
+            
+            // Generate unique URL to bypass browser cache
+            const newSrc = "/plot.png?t=" + new Date().getTime();
+            img.src = newSrc;
+            document.getElementById('downloadLink').href = newSrc;
+
+            img.onload = function() {
+                section.style.display = "block"; // ✅ AB BUTTON SHOW HOGA
+                document.getElementById('chatBox').scrollTop = document.getElementById('chatBox').scrollHeight;
+            };
         }
     </script>
 </body>
-</html>￼Enter
+</html>
