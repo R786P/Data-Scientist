@@ -12,7 +12,7 @@ langchain-core
 langchain-community
 langchain-groq
 langchain-experimental
-scikit-learn
+scikit-learn==1.6.1
 SQLAlchemy
 psycopg2-binary
 cryptography
