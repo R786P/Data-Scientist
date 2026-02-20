@@ -27,20 +27,37 @@
         .input-area input { flex:1; padding:14px 20px; border:1px solid #dfe1e5; border-radius:30px; outline: none; transition: 0.3s; }
         .input-area button { background:#667eea; color:white; border:none; padding:12px 28px; border-radius:30px; cursor:pointer; font-weight: bold; }
         
-        /* 🛠️ Download Section: Shuruat mein hidden rahega */
+        /* Plot Section */
         #plotSection { padding: 15px; margin: 15px; background: #fff; border-radius: 12px; border: 1px solid #eee; display: none; text-align: center; }
         #plotImg { max-width:100%; border-radius:8px; border: 1px solid #ddd; margin-bottom: 10px; }
-        .dl-btn { width:100%; padding:12px; background:#ff6b6b; color:white; border:none; border-radius:8px; cursor:pointer; font-weight: bold; transition: 0.3s; }
+        .dl-btn { width:100%; padding:12px; background:#ff6b6b; color:white; border:none; border-radius:8px; cursor:pointer; font-weight: bold; transition: 0.3s; margin-bottom: 10px; }
         .dl-btn:hover { background: #ee5253; }
+        
+        /* ✅ PHASE 1: Email Button */
+        .email-btn { width:100%; padding:12px; background:linear-gradient(135deg, #11998e, #38ef7d); color:white; border:none; border-radius:8px; cursor:pointer; font-weight: bold; transition: 0.3s; }
+        .email-btn:hover { opacity: 0.9; }
+        
+        /* ✅ PHASE 1: Email Modal */
+        .modal { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.5); justify-content: center; align-items: center; z-index: 1000; }
+        .modal-content { background: white; padding: 30px; border-radius: 15px; width: 90%; max-width: 400px; }
+        .modal-content h3 { margin-bottom: 15px; color: #667eea; }
+        .modal-content input { width: 100%; padding: 10px; margin: 10px 0; border: 1px solid #ddd; border-radius: 8px; }
+        .modal-buttons { display: flex; gap: 10px; margin-top: 15px; }
+        .modal-buttons button { flex: 1; padding: 10px; border: none; border-radius: 8px; cursor: pointer; }
+        .btn-send { background: #667eea; color: white; }
+        .btn-cancel { background: #eee; color: #333; }
         
         .loader { border: 3px solid #f3f3f3; border-top: 3px solid #667eea; border-radius: 50%; width: 20px; height: 20px; animation: spin 1s linear infinite; display: inline-block; vertical-align: middle; margin-right: 10px; }
         @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
+        
+        .nav-links { padding: 10px 15px; border-top: 1px solid #eee; text-align: center; }
+        .nav-links a { color: #667eea; text-decoration: none; margin: 0 10px; font-weight: bold; }
     </style>
 </head>
 <body>
     <div class="container">
         <div class="header">
-            <div class="status-dot"><span class="dot"></span> Agent Live (v1.1)</div>
+            <div class="status-dot"><span class="dot"></span> Agent Live (v1.4)</div>
             <h1>🤖 Data Scientist Agent</h1>
             <p>Master Level AI Analysis & SQL Logging</p>
         </div>
@@ -57,14 +74,34 @@
         <div id="plotSection">
             <h4 style="margin-bottom:10px; color:#555; font-size:13px; text-align: left;">Latest Visualization:</h4>
             <img id="plotImg" src="">
+            <!-- Download Button -->
             <a id="downloadLink" href="/plot.png" download="analysis_report.png">
                 <button class="dl-btn">💾 Download High-Res Plot</button>
             </a>
+            <!-- ✅ PHASE 1: Email Button -->
+            <button onclick="openEmailModal()" class="email-btn">📧 Send Report via Email</button>
         </div>
         
         <div class="input-area">
             <input type="text" id="userInput" placeholder="Ask about trends, predictions, or charts...">
             <button onclick="sendMessage()">Send</button>
+        </div>
+        
+        <div class="nav-links">
+            <a href="/dashboard">📊 Dashboard</a> | 
+            <a href="/logout">🚪 Logout</a>
+        </div>
+    </div>
+
+    <!-- ✅ PHASE 1: Email Modal -->
+    <div id="emailModal" class="modal">
+        <div class="modal-content">
+            <h3>📧 Send Report</h3>
+            <input type="email" id="clientEmail" placeholder="Client Email">
+            <div class="modal-buttons">
+                <button onclick="sendReport()" class="btn-send">Send</button>
+                <button onclick="closeEmailModal()" class="btn-cancel">Cancel</button>
+            </div>
         </div>
     </div>
 
@@ -121,7 +158,6 @@
             .then(data => {
                 addMessage(data.response, 'bot');
                 
-                // 🔍 Trigger plot visibility only when needed
                 const plotTriggers = ['plot', 'chart', 'graph', 'visualize', 'bar', 'hist'];
                 if(plotTriggers.some(t => msg.toLowerCase().includes(t)) || data.response.toLowerCase().includes("plot saved")) {
                     setTimeout(refreshPlot, 1000);
@@ -134,15 +170,35 @@
             const img = document.getElementById('plotImg');
             const section = document.getElementById('plotSection');
             
-            // Generate unique URL to bypass browser cache
             const newSrc = "/plot.png?t=" + new Date().getTime();
             img.src = newSrc;
             document.getElementById('downloadLink').href = newSrc;
 
             img.onload = function() {
-                section.style.display = "block"; // ✅ AB BUTTON SHOW HOGA
+                section.style.display = "block";
                 document.getElementById('chatBox').scrollTop = document.getElementById('chatBox').scrollHeight;
             };
+        }
+        
+        // ✅ PHASE 1: Email Modal Functions
+        function openEmailModal() { document.getElementById('emailModal').style.display = 'flex'; }
+        function closeEmailModal() { document.getElementById('emailModal').style.display = 'none'; }
+        
+        function sendReport() {
+            const email = document.getElementById('clientEmail').value;
+            if(!email) { alert('Please enter email'); return; }
+            
+            fetch('/send_report', {
+                method: 'POST',
+                headers: {'Content-Type': 'application/json'},
+                body: JSON.stringify({email: email})
+            })
+            .then(res => res.json())
+            .then(data => {
+                alert(data.message || data.error);
+                if(data.message) closeEmailModal();
+            })
+            .catch(err => alert('Error sending report'));
         }
     </script>
 </body>
