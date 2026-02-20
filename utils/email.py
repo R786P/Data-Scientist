@@ -14,7 +14,7 @@ def send_report_email(to_email, subject, body, attachment_path=None):
         password = os.getenv("GMAIL_APP_PASSWORD")
         
         if not from_email or not password:
-            logger.error("❌ Email credentials not set")
+            logger.error("❌ Gmail credentials missing in Env Vars")
             return False
         
         msg = MIMEMultipart()
