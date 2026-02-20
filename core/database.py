@@ -10,9 +10,21 @@ if DATABASE_URL:
     if DATABASE_URL.startswith("postgres://"):
         DATABASE_URL = DATABASE_URL.replace("postgres://", "postgresql://", 1)
     
+    # ✅ FIX: SSL parameters add karo Neon ke liye
+    if "neon.tech" in DATABASE_URL:
+        if "?" not in DATABASE_URL:
+            DATABASE_URL += "?sslmode=require&sslcert=&sslkey="
+        elif "sslmode" not in DATABASE_URL:
+            DATABASE_URL += "&sslmode=require&sslcert=&sslkey="
+    
     try:
-        engine = create_engine(DATABASE_URL)
-        print("✅ PostgreSQL connected")
+        engine = create_engine(
+            DATABASE_URL,
+            pool_pre_ping=True,  # ✅ Connection health check
+            pool_recycle=300,    # ✅ Recycle connections every 5 min
+            connect_args={"sslmode": "require"}  # ✅ SSL enforce
+        )
+        print("✅ PostgreSQL connected (Neon SSL configured)")
     except Exception as e:
         print(f"⚠️ PostgreSQL failed: {e}")
         print("📁 Falling back to SQLite")
@@ -31,6 +43,15 @@ class UserQuery(Base):
     __table_args__ = {'extend_existing': True}
     
     id = Column(Integer, primary_key=True)
+    user_id = Column(Integer, nullable=True)
     query_text = Column(String, nullable=False)
     response_text = Column(Text, nullable=False)
     timestamp = Column(DateTime, default=datetime.utcnow)
+
+class User(Base):
+    __tablename__ = "users"
+    __table_args__ = {'extend_existing': True}
+    
+    id = Column(Integer, primary_key=True)
+    username = Column(String, unique=True, nullable=False)
+    password_hash = Column(String, nullable=False)
