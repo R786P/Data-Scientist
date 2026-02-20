@@ -80,28 +80,45 @@ class DataScienceAgent:
         except Exception as e:
             return f"❌ Plot error: {str(e)}"
 
+    # ... (imports same rahega) ...
+
     def query(self, q, user_id=None):
         if self.df is None: return "⚠️ Pehle file upload karo!"
         
         q_lower = q.lower()
         
-        # ✅ Rule-Based for Speed (Plot, Summary)
-        if "plot" in q_lower or "chart" in q_lower:
-            final_response = self.generate_plot("bar")
+        # ✅ Rule-Based for Plot (Always works)
+        if "plot" in q_lower or "chart" in q_lower or "graph" in q_lower:
+            return self.generate_plot("bar")
+        
+        # ✅ Generative AI for Conversation
+        if LLM_AVAILABLE and self.api_key and self.agent_executor:
+            try:
+                prompt = f"Answer in friendly Hindi/English mix. Keep it short (2-3 sentences). Question: {q}"
+                res = self.agent_executor.invoke({"input": prompt})
+                final_response = str(res.get('output', 'AI could not process this.'))
+            except Exception as e:
+                logger.error(f"❌ LLM Error: {str(e)}")
+                final_response = f"💡 AI Error. Try: 'top 5', 'average', 'summary'"
         else:
-            # ✅ Generative AI for Conversation
-            if LLM_AVAILABLE and self.api_key and self.agent_executor:
-                try:
-                    # ✅ Conversational Prompt
-                    prompt = f"Answer in friendly human language (Hindi/English mix). Keep it short (2-3 sentences). Question: {q}"
-                    res = self.agent_executor.invoke({"input": prompt})
-                    final_response = str(res.get('output', 'AI could not process this.'))
-                except Exception as e:
-                    logger.error(f"LLM error: {e}")
-                    final_response = "💡 AI busy hai. Thoda simple pucho (e.g., 'top 5', 'average')."
-            else:
-                final_response = "💡 AI Mode Off. Please ask: 'top 5', 'average', 'plot', or 'summary'."
+            final_response = self._rule_based_fallback(q_lower)
 
+        # ✅ Database Logging (Optional - Don't crash if DB fails)
+        try:
+            db = SessionLocal()
+            new_log = UserQuery(query_text=q, response_text=final_response, user_id=user_id)
+            db.add(new_log)
+            db.commit()
+        except Exception as e:
+            # ✅ Don't crash - just log warning
+            logger.warning(f"⚠️ Query logging failed (DB connection issue): {str(e)[:50]}")
+        finally:
+            try:
+                db.close()
+            except:
+                pass
+
+        return final_response
         # Database Logging
         try:
             db = SessionLocal()
