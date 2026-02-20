@@ -19,3 +19,4 @@ cryptography
 flask-login
 werkzeug
 python-json-logger
+reportlab==4.0.7
