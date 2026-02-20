@@ -33,10 +33,13 @@ def load_user(user_id):
         user = db.query(User).filter(User.id == int(user_id)).first()
         return user
     except Exception as e:
-        logger.error(f"Error loading user: {e}")
+        logger.error(f"Error loading user (DB connection): {str(e)[:50]}")
         return None
     finally:
-        db.close()
+        try:
+            db.close()
+        except:
+            pass
 
 # Database Init
 try:
