@@ -293,9 +293,63 @@ class DataScienceAgent:
         high_margin = len(self.df[self.df[margin_col] > 0.4])
         return f"💡 Profit Analysis:\nAvg margin: {avg_margin:.1f}%\nHigh margin (>40%): {high_margin} items ({high_margin/len(self.df)*100:.0f}%)"
     
-    # ✅ HYBRID QUERY METHOD (Fast Rule-Based + AI Fallback + DB Logging)
+    # ✅ PYTHON CODE EXECUTION (Optional - Advanced Users)
+    def execute_python_code(self, code, user_id=None):
+        """Execute raw Python code safely"""
+        try:
+            # Safe globals (limited access)
+            safe_globals = {
+                'pd': pd,
+                'np': np,
+                'plt': plt,
+                'sns': sns,
+                'df': self.df,
+                '__builtins__': {}  # ❌ No dangerous functions
+            }
+            
+            # Execute code
+            result = eval(code, safe_globals, {})
+            output = f"✅ Python Code Executed:\n```python\n{code}\n```\n\n**Output:**\n{result}"
+            
+            # Log to database
+            if user_id:
+                try:
+                    db = SessionLocal()
+                    db.add(UserQuery(query_text=f"CODE: {code}", response_text=output, user_id=user_id))
+                    db.commit()
+                    db.close()
+                except:
+                    pass
+            
+            return output
+        except Exception as e:
+            return f"❌ Code Error: {str(e)}"
+    
+    # ✅ HYBRID QUERY METHOD (Natural Language + Python Code + AI Fallback + DB Logging)
     def query(self, q, user_id=None):
+        q_original = q
         q = q.lower().strip()
+        
+        # ✅ DETECT PYTHON CODE (Advanced Users - Optional)
+        # Check if input looks like Python code
+        python_patterns = [
+            r'df\.',           # df.something
+            r'pd\.',           # pd.something
+            r'np\.',           # np.something
+            r'plt\.',          # plt.something
+            r'\.head\(',       # .head()
+            r'\.tail\(',       # .tail()
+            r'\.mean\(',       # .mean()
+            r'\.sum\(',        # .sum()
+            r'=',              # assignment
+            r'import',         # import statement
+        ]
+        
+        is_python_code = any(re.search(pattern, q) for pattern in python_patterns)
+        
+        if is_python_code and self.df is not None:
+            # ✅ Execute Python code
+            return self.execute_python_code(q_original, user_id)
         
         # ✅ GREETINGS (Instant - 0 sec)
         if q in ['hi', 'hello', 'hey', 'hii', 'namaste']:
@@ -303,7 +357,7 @@ class DataScienceAgent:
         
         # ✅ HELP (Instant - 0 sec)
         if 'help' in q or 'kya kar' in q or 'what can' in q:
-            return ("💡 Try these commands:\n"
+            return ("💡 **Natural Language Commands:**\n"
                    "• 'top 5 by revenue'\n"
                    "• 'group by region'\n"
                    "• 'predict trend'\n"
@@ -312,7 +366,11 @@ class DataScienceAgent:
                    "• 'create bar chart'\n"
                    "• 'show missing values'\n"
                    "• 'clean data'\n"
-                   "• 'total revenue'")
+                   "• 'total revenue'\n\n"
+                   "💻 **Python Code (Advanced):**\n"
+                   "• `df.head()`\n"
+                   "• `df['column'].mean()`\n"
+                   "• `df.nlargest(5, 'revenue')`\n")
         
         # FLEXIBLE PARSING (not exact match)
         if "load" in q and ".csv" in q:
@@ -419,7 +477,7 @@ class DataScienceAgent:
         # ✅ AI FALLBACK (For complex queries - 15-30 sec)
         if LLM_AVAILABLE and self.api_key and self.agent_executor and self.df is not None:
             try:
-                prompt = f"Answer in simple Hindi/English mix. Max 2 sentences. Question: {q}"
+                prompt = f"Answer in simple Hindi/English mix. Max 2 sentences. Question: {q_original}"
                 res = self.agent_executor.invoke({"input": prompt})
                 final_response = str(res.get('output', 'Could not process.'))
             except Exception as e:
@@ -439,7 +497,7 @@ class DataScienceAgent:
         # ✅ Database Logging (For current version with login)
         try:
             db = SessionLocal()
-            new_log = UserQuery(query_text=q, response_text=final_response, user_id=user_id)
+            new_log = UserQuery(query_text=q_original, response_text=final_response, user_id=user_id)
             db.add(new_log)
             db.commit()
             db.close()
