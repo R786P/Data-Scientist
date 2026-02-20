@@ -21,6 +21,10 @@ app.secret_key = os.getenv("SECRET_KEY", "super-secret-key-123")
 app.config['UPLOAD_FOLDER'] = '.'
 app.config['MAX_CONTENT_LENGTH'] = 10 * 1024 * 1024
 
+# ✅ FIX: Global variable to store uploaded file path
+uploaded_file_path = None
+uploaded_filename = None
+
 # Login Manager
 login_manager = LoginManager()
 login_manager.init_app(app)
@@ -138,6 +142,7 @@ def home():
 @app.route('/upload', methods=['POST'])
 @login_required
 def upload():
+    global uploaded_file_path, uploaded_filename  # ✅ FIX: Add global
     if 'file' not in request.files:
         return jsonify({"error": "No file part"}), 400
     file = request.files['file']
@@ -146,6 +151,8 @@ def upload():
         filepath = os.path.join(app.config['UPLOAD_FOLDER'], filename)
         try:
             file.save(filepath)
+            uploaded_file_path = filepath  # ✅ FIX: Save path globally
+            uploaded_filename = filename   # ✅ FIX: Save filename globally
             result = agent.load_data(filename)
             logger.info(f"📁 File uploaded: {filename}")
             return jsonify({"message": f"✅ Uploaded: {filename}\n{result}"}), 200
@@ -157,9 +164,20 @@ def upload():
 @app.route('/chat', methods=['POST'])
 @login_required
 def chat():
+    global uploaded_file_path, uploaded_filename  # ✅ FIX: Add global
     data = request.get_json()
     user_message = data.get('message', '').strip()
     logger.info(f"💬 User Query: {user_message}")
+    
+    # ✅ FIX: Reload data if agent.df is None but file was uploaded
+    if agent.df is None and uploaded_file_path:
+        try:
+            agent.load_data(uploaded_filename)
+            logger.info("🔄 Data reloaded from saved file")
+        except Exception as e:
+            logger.error(f"Reload error: {e}")
+            return jsonify({"response": "⚠️ Data load failed. Please re-upload."}), 500
+    
     try:
         # ✅ Pass user_id for proper logging
         response = agent.query(user_message, user_id=current_user.id)
