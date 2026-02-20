@@ -3,53 +3,52 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>📊 DS Agent - Master Dashboard</title>
-    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <title>Dashboard - DS Agent</title>
     <style>
-        body { background: #f4f7f6; font-family: 'Segoe UI', sans-serif; }
-        .dashboard-header { background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white; padding: 40px 20px; text-align: center; margin-bottom: 30px; }
-        .card { border: none; border-radius: 15px; transition: 0.3s; }
-        .card:hover { transform: translateY(-5px); box-shadow: 0 10px 20px rgba(0,0,0,0.1); }
-        .chart-img { border-radius: 10px; width: 100%; height: auto; }
-        .btn-back { position: absolute; top: 20px; left: 20px; color: white; border: 1px solid white; border-radius: 20px; padding: 5px 15px; text-decoration: none; }
+        * { margin:0; padding:0; box-sizing:border-box }
+        body { font-family: Arial, sans-serif; background: #f5f7fa; padding: 15px; }
+        .container { max-width: 1000px; margin: 0 auto; background: white; border-radius: 15px; box-shadow: 0 5px 25px rgba(0,0,0,0.1); overflow: hidden; }
+        .header { background: linear-gradient(135deg, #667eea, #764ba2); color: white; padding: 20px; text-align: center; }
+        .dashboard-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 20px; padding: 20px; }
+        .plot-card { background: #f8f9fa; border-radius: 12px; padding: 15px; text-align: center; }
+        .plot-card img { max-width: 100%; border-radius: 8px; }
+        .plot-card h3 { margin: 15px 0 10px; color: #333; }
+        .nav-links { padding: 15px; border-top: 1px solid #eee; text-align: center; }
+        .nav-links a { color: #667eea; text-decoration: none; margin: 0 10px; }
+        .btn { background: #667eea; color: white; padding: 10px 20px; border-radius: 8px; text-decoration: none; display: inline-block; margin: 5px; }
     </style>
 </head>
 <body>
-
-    <div class="dashboard-header">
-        <a href="/" class="btn-back">⬅ Back to Chat</a>
-        <h1>📊 Master Analytics Dashboard</h1>
-        <p>Real-time insights from your uploaded data</p>
-    </div>
-
     <div class="container">
-        <div class="row g-4">
-            <div class="col-md-6 col-lg-4">
-                <div class="card shadow-sm p-3">
-                    <h5 class="text-muted mb-3">Categorical Analysis</h5>
-                    <img src="/static/plot_bar.png" class="chart-img" onerror="this.src='https://via.placeholder.com/400x300?text=No+Bar+Chart+Generated'">
-                </div>
+        <div class="header">
+            <h1>📊 Analytics Dashboard</h1>
+            <p>Multi-Plot Visualization Suite</p>
+        </div>
+        
+        <div class="dashboard-grid">
+            <div class="plot-card">
+                <h3>📊 Category Distribution</h3>
+                <img src="/static/plot_bar.png" alt="Bar Chart" onerror="this.style.display='none'">
+                <p style="color:#999;font-size:12px;margin-top:10px">Top categories by frequency</p>
             </div>
-
-            <div class="col-md-6 col-lg-4">
-                <div class="card shadow-sm p-3">
-                    <h5 class="text-muted mb-3">Numerical Distribution</h5>
-                    <img src="/static/plot_dist.png" class="chart-img" onerror="this.src='https://via.placeholder.com/400x300?text=No+Distribution+Plot'">
-                </div>
+            
+            <div class="plot-card">
+                <h3>📈 Data Distribution</h3>
+                <img src="/static/plot_dist.png" alt="Distribution" onerror="this.style.display='none'">
+                <p style="color:#999;font-size:12px;margin-top:10px">Histogram of numeric values</p>
             </div>
-
-            <div class="col-md-6 col-lg-4">
-                <div class="card shadow-sm p-3">
-                    <h5 class="text-muted mb-3">Feature Correlation</h5>
-                    <img src="/static/plot_heatmap.png" class="chart-img" onerror="this.src='https://via.placeholder.com/400x300?text=No+Heatmap+Available'">
-                </div>
+            
+            <div class="plot-card">
+                <h3>🔥 Correlation Heatmap</h3>
+                <img src="/static/plot_heatmap.png" alt="Heatmap" onerror="this.style.display='none'">
+                <p style="color:#999;font-size:12px;margin-top:10px">Feature relationships</p>
             </div>
         </div>
+        
+        <div class="nav-links">
+            <a href="/" class="btn">💬 Chat Interface</a>
+            <a href="/logout" class="btn">🚪 Logout</a>
+        </div>
     </div>
-
-    <div class="text-center mt-5 mb-5">
-        <button class="btn btn-primary" onclick="window.location.reload()">🔄 Refresh Dashboard</button>
-    </div>
-
 </body>
-  </html>
+</html>
