@@ -1,13 +1,16 @@
 import os
 import logging
+from datetime import datetime
 from flask import Flask, request, jsonify, render_template, send_from_directory, redirect, url_for
 from werkzeug.utils import secure_filename
 from flask_login import LoginManager, login_user, login_required, logout_user, current_user
 from werkzeug.security import check_password_hash, generate_password_hash
 
-from core.database import engine, Base, SessionLocal
+from core.database import engine, Base, SessionLocal, UserQuery
 from core.auth import User, create_default_admin
 from core.agent import DataScienceAgent
+from utils.email import send_report_email
+from utils.pdf_generator import generate_pdf_report
 
 # Setup Logger
 logging.basicConfig(level=logging.INFO)
@@ -155,15 +158,62 @@ def chat():
     user_message = data.get('message', '').strip()
     logger.info(f"💬 User Query: {user_message}")
     try:
-        response = agent.query(user_message)
+        # ✅ Pass user_id for proper logging
+        response = agent.query(user_message, user_id=current_user.id)
         return jsonify({"response": response})
     except Exception as e:
         logger.error(f"Chat error: {e}")
         return jsonify({"response": "⚠️ Error processing query."}), 500
 
+# ✅ PHASE 1: Send Report Route (Email + PDF)
+@app.route('/send_report', methods=['POST'])
+@login_required
+def send_report():
+    try:
+        data = request.get_json()
+        client_email = data.get('email')
+        
+        if not client_email:
+            return jsonify({"error": "Email required"}), 400
+        
+        # Generate unique PDF filename
+        pdf_filename = f"static/report_{current_user.username}_{int(datetime.now().timestamp())}.pdf"
+        
+        # Get last query insight from database
+        db = SessionLocal()
+        last_query = db.query(UserQuery).filter_by(user_id=current_user.id).order_by(UserQuery.timestamp.desc()).first()
+        insights = last_query.response_text if last_query else "No analysis data available"
+        db.close()
+        
+        # Generate PDF
+        success = generate_pdf_report(pdf_filename, client_email, insights, 'static/plot.png')
+        
+        if success:
+            # Send Email
+            email_sent = send_report_email(
+                to_email=client_email,
+                subject="📊 Your Data Analysis Report",
+                body=f"Hi,\n\nPlease find attached your data analysis report.\n\nRegards,\nData Scientist Agent",
+                attachment_path=pdf_filename
+            )
+            
+            if email_sent:
+                logger.info(f"✅ Report sent to {client_email}")
+                return jsonify({"message": "✅ Report sent successfully!"}), 200
+            else:
+                logger.error("❌ Email failed")
+                return jsonify({"error": "PDF created but email failed. Check Gmail credentials."}), 500
+        else:
+            logger.error("❌ PDF generation failed")
+            return jsonify({"error": "PDF generation failed"}), 500
+            
+    except Exception as e:
+        logger.error(f"Report error: {e}")
+        return jsonify({"error": "Server error"}), 500
+
 @app.route('/health')
 def health():
-    return jsonify({"status": "healthy", "version": "1.3.0"}), 200
+    return jsonify({"status": "healthy", "version": "1.4.0"}), 200
 
 @app.route('/plot.png')
 def plot_png():
