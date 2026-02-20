@@ -6,6 +6,7 @@ from datetime import datetime
 DATABASE_URL = os.getenv("DATABASE_URL")
 
 if DATABASE_URL:
+    # ✅ FIX: postgres:// ko postgresql:// mein convert karo
     if DATABASE_URL.startswith("postgres://"):
         DATABASE_URL = DATABASE_URL.replace("postgres://", "postgresql://", 1)
     
@@ -14,6 +15,7 @@ if DATABASE_URL:
         print("✅ PostgreSQL connected")
     except Exception as e:
         print(f"⚠️ PostgreSQL failed: {e}")
+        print("📁 Falling back to SQLite")
         DATABASE_URL = "sqlite:///./local.db"
         engine = create_engine(DATABASE_URL, connect_args={"check_same_thread": False})
 else:
@@ -24,7 +26,6 @@ else:
 SessionLocal = sessionmaker(autocommit=False, autoflush=False, bind=engine)
 Base = declarative_base()
 
-# ✅ UserQuery Model (Ye import ho raha hai agent.py mein)
 class UserQuery(Base):
     __tablename__ = "user_queries"
     __table_args__ = {'extend_existing': True}
