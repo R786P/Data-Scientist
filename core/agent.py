@@ -42,11 +42,9 @@ class DataScienceAgent:
                         model_name=self.primary_model,
                         max_tokens=500,
                         timeout=15  # ✅ Fast timeout
-                    )
-                    self.agent_executor = create_pandas_dataframe_agent(
-                        llm, self.df, verbose=False, allow_dangerous_code=True,
-                        handle_parsing_errors=True
-                    )
+             self.agent_executor = create_pandas_dataframe_agent(
+             llm, self.df, verbose=False, allow_dangerous_code=True
+                    ) 
                     logger.info("✅ LLM Agent initialized")
                     return f"✅ Agent Active: {os.path.basename(fp)} loaded."
                 except Exception as e:
