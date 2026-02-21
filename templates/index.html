@@ -8,32 +8,26 @@
         * { margin:0; padding:0; box-sizing:border-box }
         body { font-family: 'Segoe UI', Arial, sans-serif; background:#f0f2f5; padding:15px }
         .container { max-width:850px; margin:0 auto; background:white; border-radius:20px; box-shadow:0 10px 30px rgba(0,0,0,0.15); overflow:hidden; min-height: 90vh; display: flex; flex-direction: column; }
-        
         .header { background:linear-gradient(135deg,#667eea,#764ba2); color:white; padding:25px; text-align:center; position: relative; }
         .status-dot { position: absolute; top: 15px; right: 20px; font-size: 12px; display: flex; align-items: center; gap: 5px; }
         .dot { height: 8px; width: 8px; background-color: #2ecc71; border-radius: 50%; display: inline-block; animation: pulse 2s infinite; }
-        
         @keyframes pulse { 0% { opacity: 1; } 50% { opacity: 0.4; } 100% { opacity: 1; } }
-
         .upload-box { border:2px dashed #667eea; border-radius:15px; padding:25px; text-align:center; margin:15px; cursor:pointer; background: #f8faff; transition: 0.3s; }
         .upload-box:hover { background: #edf2ff; border-style: solid; }
-        
         .chat-box { flex-grow: 1; height:450px; overflow-y:auto; padding:20px; margin:0 15px; background:#ffffff; border: 1px solid #eee; border-radius: 12px; }
         .message { margin-bottom:15px; padding:12px 18px; border-radius:15px; max-width:85%; line-height: 1.5; font-size: 14px; white-space: pre-wrap; word-wrap: break-word; position: relative; }
         .user { background:#667eea; color:white; margin-left:auto; border-bottom-right-radius: 2px; }
         .bot { background:#f1f3f4; color:#333; border-bottom-left-radius: 2px; border: 1px solid #e0e0e0; }
-        
         .msg-download { position: absolute; top: 5px; right: 5px; background: rgba(102,126,234,0.2); border: none; border-radius: 5px; padding: 3px 8px; cursor: pointer; font-size: 11px; color: #667eea; opacity: 0; transition: 0.3s; }
         .message:hover .msg-download { opacity: 1; }
         .msg-download:hover { background: #667eea; color: white; }
-        
         .input-area { display:flex; gap:10px; padding:20px; background: white; }
         .input-area input { flex:1; padding:14px 20px; border:1px solid #dfe1e5; border-radius:30px; outline: none; transition: 0.3s; }
         .input-area input:disabled { background: #f5f5f5; cursor: not-allowed; }
         .input-area button { background:#667eea; color:white; border:none; padding:12px 28px; border-radius:30px; cursor:pointer; font-weight: bold; }
         .input-area button:disabled { background: #ccc; cursor: not-allowed; }
         
-        /* ✅ FIXED: Download Section */
+        /* ✅ FIXED: Download Section with View + Download */
         #downloadSection { padding: 15px; margin: 15px; background: #fff; border-radius: 12px; border: 1px solid #eee; display: none; }
         #downloadSection h4 { margin-bottom:15px; color:#555; font-size:14px; text-align: left; }
         
@@ -43,9 +37,13 @@
         .download-card:hover { transform: translateY(-2px); box-shadow: 0 5px 15px rgba(0,0,0,0.1); }
         .download-card .icon { font-size: 30px; margin-bottom: 10px; }
         .download-card h5 { font-size: 13px; color: #333; margin-bottom: 10px; }
-        .download-card button { width: 100%; padding: 10px; background: #667eea; color: white; border: none; border-radius: 8px; cursor: pointer; font-weight: bold; font-size: 12px; }
+        .download-card .btn-group { display: flex; flex-direction: column; gap: 5px; }
+        .download-card button { width: 100%; padding: 8px; background: #667eea; color: white; border: none; border-radius: 6px; cursor: pointer; font-weight: bold; font-size: 11px; }
         .download-card button:hover { background: #5568d3; }
         .download-card button:disabled { background: #ccc; cursor: not-allowed; }
+        .download-card .view-btn { background: #11998e; }
+        .download-card .view-btn:hover { background: #0e8c7f; }
+        .download-card p { font-size:10px; color:#888; margin-top:5px; }
         
         .email-btn { width:100%; padding:12px; background:linear-gradient(135deg, #11998e, #38ef7d); color:white; border:none; border-radius:8px; cursor:pointer; font-weight: bold; transition: 0.3s; margin-top: 15px; }
         .email-btn:hover { opacity: 0.9; }
@@ -62,35 +60,40 @@
         .btn-send { background: #667eea; color: white; }
         .btn-cancel { background: #eee; color: #333; }
         
+        /* ✅ File Viewer Modal */
+        .viewer-modal { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.8); justify-content: center; align-items: center; z-index: 2000; }
+        .viewer-content { background: white; padding: 20px; border-radius: 15px; width: 95%; max-width: 800px; max-height: 80vh; overflow: auto; position: relative; }
+        .viewer-content iframe { width: 100%; height: 500px; border: none; }
+        .viewer-content img { max-width: 100%; border-radius: 8px; }
+        .viewer-content .close-btn { position: absolute; top: 10px; right: 15px; font-size: 30px; cursor: pointer; color: #667eea; }
+        
         .typing-indicator { display: inline-block; padding: 10px 15px; background: #f1f3f4; border-radius: 15px; }
         .typing-indicator span { height: 8px; width: 8px; background: #667eea; border-radius: 50%; display: inline-block; margin: 0 2px; animation: typing 1.4s infinite; }
         .typing-indicator span:nth-child(2) { animation-delay: 0.2s; }
         .typing-indicator span:nth-child(3) { animation-delay: 0.4s; }
-        
         @keyframes typing { 0%, 60%, 100% { transform: translateY(0); } 30% { transform: translateY(-5px); } }
-        
         .loader { border: 3px solid #f3f3f3; border-top: 3px solid #667eea; border-radius: 50%; width: 20px; height: 20px; animation: spin 1s linear infinite; display: inline-block; vertical-align: middle; margin-right: 10px; }
         @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
-        
         .nav-links { padding: 10px 15px; border-top: 1px solid #eee; text-align: center; }
         .nav-links a { color: #667eea; text-decoration: none; margin: 0 10px; font-weight: bold; }
-        
         .quick-commands { padding: 10px 15px; background: #f8f9fa; border-top: 1px solid #eee; }
         .quick-commands h4 { font-size: 12px; color: #666; margin-bottom: 8px; }
         .quick-commands button { background: white; border: 1px solid #667eea; color: #667eea; padding: 5px 12px; border-radius: 15px; margin: 3px; cursor: pointer; font-size: 11px; transition: 0.3s; }
         .quick-commands button:hover { background: #667eea; color: white; }
         
-        /* ✅ Download Info Box */
-        .download-info { background: #e8f4f8; border-left: 4px solid #667eea; padding: 12px; margin: 15px; border-radius: 8px; font-size: 13px; }
-        .download-info strong { color: #667eea; }
+        /* ✅ App Recommendations */
+        .app-recommendations { background: #fff3cd; border-left: 4px solid #ffc107; padding: 12px; margin: 15px; border-radius: 8px; font-size: 13px; }
+        .app-recommendations strong { color: #856404; }
+        .app-recommendations a { color: #667eea; text-decoration: none; font-weight: bold; }
+        .app-recommendations a:hover { text-decoration: underline; }
     </style>
 </head>
 <body>
     <div class="container">
         <div class="header">
-            <div class="status-dot"><span class="dot"></span> Agent Live (v1.7 Headmaster)</div>
+            <div class="status-dot"><span class="dot"></span> Agent Live (v1.8 Headmaster)</div>
             <h1>🤖 Data Scientist Agent</h1>
-            <p>Headmaster Edition - Tableau/Power BI Level</p>
+            <p>Headmaster Edition - View + Download</p>
         </div>
         
         <div class="upload-box" id="dropZone" onclick="document.getElementById('fileInput').click()">
@@ -99,37 +102,68 @@
         </div>
         
         <div class="chat-box" id="chatBox">
-            <div class="message bot">👋 Headmaster Mode Active! Upload data for Tableau-level insights. Your queries are being securely logged.</div>
+            <div class="message bot">👋 Headmaster Mode Active! Upload data for Tableau-level insights.</div>
         </div>
         
-        <!-- ✅ FIXED: Download Info -->
-        <div class="download-info">
-            <strong>📥 Download Location:</strong> Files save honge aapke phone/computer ke <strong>"Downloads"</strong> folder mein. Gallery mein PNG files dikh jayengi!
+        <!-- ✅ App Recommendations -->
+        <div class="app-recommendations">
+            <strong>📱 Recommended Apps (Free):</strong><br>
+            • Android: <a href="https://play.google.com/store/apps/details?id=com.google.android.apps.nbu.files" target="_blank">Google Files</a><br>
+            • iOS: <a href="https://apps.apple.com/app/documents-file-manager/id364901807" target="_blank">Documents by Readdle</a><br>
+            • Both: <a href="https://play.google.com/store/apps/details?id=com.google.android.apps.docs" target="_blank">Google Drive</a>
         </div>
         
-        <!-- ✅ FIXED: Download Section -->
+        <!-- ✅ Download Info -->
+        <div class="download-info" style="background: #e8f4f8; border-left: 4px solid #667eea; padding: 12px; margin: 15px; border-radius: 8px; font-size: 13px;">
+            <strong>📥 Download Location:</strong> Files save honge aapke <strong>"Downloads"</strong> folder mein. PNG files Gallery mein bhi dikhengi!
+        </div>
+        
+        <!-- ✅ FIXED: Download Section with View + Download -->
         <div id="downloadSection">
             <h4>📥 Download Your Analysis Files:</h4>
             <div class="download-grid">
-                <!-- Plot Download -->
+                <!-- Plot -->
                 <div class="download-card">
                     <div class="icon">📊</div>
                     <h5>Latest Plot (PNG)</h5>
-                    <button id="plotBtn" onclick="downloadPlot()" disabled>⏳ Wait for plot...</button>
+                    <div class="btn-group">
+                        <button class="view-btn" id="viewPlotBtn" onclick="viewPlot()" disabled>👁️ View</button>
+                        <button id="plotBtn" onclick="downloadPlot()" disabled>💾 Download</button>
+                    </div>
+                    <p>Opens in Gallery</p>
                 </div>
                 
-                <!-- Dashboard Download -->
+                <!-- Dashboard -->
                 <div class="download-card">
                     <div class="icon">📈</div>
                     <h5>Dashboard (PNG)</h5>
-                    <button id="dashboardBtn" onclick="downloadDashboard()" disabled>⏳ Wait for dashboard...</button>
+                    <div class="btn-group">
+                        <button class="view-btn" id="viewDashboardBtn" onclick="viewDashboard()" disabled>👁️ View</button>
+                        <button id="dashboardBtn" onclick="downloadDashboard()" disabled>💾 Download</button>
+                    </div>
+                    <p>Opens in Gallery</p>
                 </div>
                 
-                <!-- Excel Export -->
+                <!-- HTML Report -->
+                <div class="download-card">
+                    <div class="icon">🌐</div>
+                    <h5>HTML Report</h5>
+                    <div class="btn-group">
+                        <button class="view-btn" id="viewHTMLBtn" onclick="viewHTML()" disabled>👁️ View in Browser</button>
+                        <button id="htmlBtn" onclick="downloadHTML()" disabled>💾 Download</button>
+                    </div>
+                    <p>Opens in Any Browser</p>
+                </div>
+                
+                <!-- CSV Data -->
                 <div class="download-card">
                     <div class="icon">📄</div>
-                    <h5>Excel Report</h5>
-                    <button id="excelBtn" onclick="downloadExcel()" disabled>⏳ Wait for excel...</button>
+                    <h5>CSV Data</h5>
+                    <div class="btn-group">
+                        <button class="view-btn" id="viewCSVBtn" onclick="viewCSV()" disabled>👁️ View in Browser</button>
+                        <button id="csvBtn" onclick="downloadCSV()" disabled>💾 Download</button>
+                    </div>
+                    <p>Opens in Browser/Excel</p>
                 </div>
                 
                 <!-- Text Reports -->
@@ -137,6 +171,7 @@
                     <div class="icon">📝</div>
                     <h5>All Text Reports</h5>
                     <button onclick="downloadAllReports()">💾 Download All</button>
+                    <p>Opens in Any App</p>
                 </div>
             </div>
             
@@ -144,28 +179,35 @@
         </div>
         
         <div class="input-area">
-            <input type="text" id="userInput" placeholder="Ask: 'dashboard', 'kpi', 'export excel', 'top 5'..." disabled>
+            <input type="text" id="userInput" placeholder="Ask: 'dashboard', 'export html', 'top 5'..." disabled>
             <button onclick="sendMessage()" id="sendBtn" disabled>Send</button>
         </div>
         
         <div class="quick-commands">
             <h4>⚡ Quick Commands:</h4>
             <button onclick="quickCommand('dashboard')">📊 Dashboard</button>
-            <button onclick="quickCommand('kpi')">📈 KPI Cards</button>
+            <button onclick="quickCommand('kpi')">📈 KPI</button>
             <button onclick="quickCommand('top 5')">🏆 Top 5</button>
             <button onclick="quickCommand('average')">📊 Average</button>
-            <button onclick="quickCommand('line chart')">📈 Line Chart</button>
-            <button onclick="quickCommand('pie chart')">🥧 Pie Chart</button>
-            <button onclick="quickCommand('box plot')">📦 Box Plot</button>
-            <button onclick="quickCommand('export excel')">📄 Export Excel</button>
+            <button onclick="quickCommand('bar chart')">📊 Bar Chart</button>
+            <button onclick="quickCommand('export html')">🌐 Export HTML</button>
+            <button onclick="quickCommand('export csv')">📄 Export CSV</button>
         </div>
         
         <div class="nav-links">
-            <a href="/dashboard">📊 Web Dashboard</a> | 
-            <a href="/logout">🚪 Logout</a>
+            <a href="/dashboard">📊 Dashboard</a> | <a href="/logout">🚪 Logout</a>
         </div>
     </div>
-
+    
+    <!-- ✅ File Viewer Modal -->
+    <div id="viewerModal" class="viewer-modal">
+        <div class="viewer-content">
+            <span class="close-btn" onclick="closeViewer()">&times;</span>
+            <div id="viewerContainer"></div>
+        </div>
+    </div>
+    
+    <!-- Email Modal -->
     <div id="emailModal" class="modal">
         <div class="modal-content">
             <h3>📧 Send Report</h3>
@@ -183,34 +225,24 @@
         let chatHistory = [];
         let plotReady = false;
         let dashboardReady = false;
-        let excelReady = false;
+        let htmlReady = false;
+        let csvReady = false;
 
         function addMessage(text, sender) {
             const chatBox = document.getElementById('chatBox');
             const msgDiv = document.createElement('div');
             msgDiv.className = 'message ' + sender;
             msgDiv.innerText = text;
-            
             if (sender === 'bot') {
                 const downloadBtn = document.createElement('button');
                 downloadBtn.className = 'msg-download';
                 downloadBtn.innerText = '💾 Download';
                 downloadBtn.onclick = function() { downloadSingleMessage(text); };
                 msgDiv.appendChild(downloadBtn);
-                
-                chatHistory.push({
-                    type: sender,
-                    text: text,
-                    timestamp: new Date().toLocaleString()
-                });
+                chatHistory.push({ type: sender, text: text, timestamp: new Date().toLocaleString() });
             } else {
-                chatHistory.push({
-                    type: sender,
-                    text: text,
-                    timestamp: new Date().toLocaleString()
-                });
+                chatHistory.push({ type: sender, text: text, timestamp: new Date().toLocaleString() });
             }
-            
             chatBox.appendChild(msgDiv);
             chatBox.scrollTop = chatBox.scrollHeight;
         }
@@ -220,7 +252,7 @@
             const url = URL.createObjectURL(blob);
             const a = document.createElement('a');
             a.href = url;
-            a.download = `response_${new Date().getTime()}.txt`;
+            a.download = 'response_' + new Date().getTime() + '.txt';
             document.body.appendChild(a);
             a.click();
             document.body.removeChild(a);
@@ -228,26 +260,20 @@
         }
 
         function downloadAllReports() {
-            if (chatHistory.length === 0) {
-                alert('No chat history to download!');
-                return;
-            }
-            
+            if (chatHistory.length === 0) { alert('No chat history!'); return; }
             let content = "🤖 Data Scientist Agent - Full Report\n";
-            content += "=" .repeat(50) + "\n";
-            content += `Generated: ${new Date().toLocaleString()}\n\n`;
-            
-            chatHistory.forEach((msg, index) => {
-                content += `[${msg.timestamp}] ${msg.type === 'user' ? '👤 You' : '🤖 Bot'}:\n`;
-                content += `${msg.text}\n\n`;
+            content += "=".repeat(50) + "\n";
+            content += "Generated: " + new Date().toLocaleString() + "\n\n";
+            chatHistory.forEach((msg) => {
+                content += "[" + msg.timestamp + "] " + (msg.type === 'user' ? '👤 You' : '🤖 Bot') + ":\n";
+                content += msg.text + "\n\n";
                 content += "-".repeat(50) + "\n\n";
             });
-            
             const blob = new Blob([content], { type: 'text/plain' });
             const url = URL.createObjectURL(blob);
             const a = document.createElement('a');
             a.href = url;
-            a.download = `full_analysis_report_${new Date().getTime()}.txt`;
+            a.download = 'full_report_' + new Date().getTime() + '.txt';
             document.body.appendChild(a);
             a.click();
             document.body.removeChild(a);
@@ -266,9 +292,7 @@
 
         function removeTypingIndicator() {
             const typingIndicator = document.getElementById('typingIndicator');
-            if (typingIndicator) {
-                typingIndicator.remove();
-            }
+            if (typingIndicator) { typingIndicator.remove(); }
         }
 
         function setInputState(enabled) {
@@ -285,10 +309,8 @@
             if(!input.files[0]) return;
             const formData = new FormData();
             formData.append('file', input.files[0]);
-            
-            document.getElementById('uploadText').innerHTML = '<div class="loader"></div> Syncing with DB...';
+            document.getElementById('uploadText').innerHTML = '<div class="loader"></div> Syncing...';
             setInputState(false);
-            
             fetch('/upload', { method: 'POST', body: formData })
             .then(res => res.json())
             .then(data => { 
@@ -308,18 +330,15 @@
             const input = document.getElementById('userInput');
             const msg = input.value.trim();
             if(!msg || isProcessing) return;
-            
             if(!isFileReady) {
-                addMessage("⚠️ Bhai, pehle file upload toh kar lo!", "bot");
+                addMessage("⚠️ Pehle file upload karo!", "bot");
                 return;
             }
-
             addMessage(msg, 'user');
             input.value = '';
             isProcessing = true;
             setInputState(false);
             showTypingIndicator();
-
             fetch('/chat', {
                 method: 'POST',
                 headers: {'Content-Type': 'application/json'},
@@ -329,52 +348,57 @@
             .then(data => {
                 removeTypingIndicator();
                 addMessage(data.response, 'bot');
-                
                 if (data.response.includes("Load data first")) {
                     isFileReady = false;
-                    document.getElementById('uploadText').innerText = "📁 Click to upload CSV/Excel to Database";
+                    document.getElementById('uploadText').innerText = "📁 Click to upload CSV";
                     setInputState(false);
-                    addMessage("⚠️ Session reset! Please re-upload your file.", "bot");
                 }
-                
-                // ✅ FIXED: Enable buttons only when files are ready
                 const plotTriggers = ['plot', 'chart', 'graph', 'visualize', 'bar', 'hist'];
-                const dashboardTriggers = ['dashboard', 'multiple plots', 'all charts'];
-                const excelTriggers = ['export', 'excel', 'download data'];
-                
+                const dashboardTriggers = ['dashboard', 'multiple plots'];
+                const htmlTriggers = ['export', 'html'];
+                const csvTriggers = ['csv', 'download data'];
                 if(plotTriggers.some(t => msg.toLowerCase().includes(t)) || data.response.toLowerCase().includes("plot saved")) {
                     setTimeout(() => {
                         plotReady = true;
-                        document.getElementById('plotBtn').innerText = '💾 Download Plot';
+                        document.getElementById('plotBtn').innerText = '💾 Download';
                         document.getElementById('plotBtn').disabled = false;
+                        document.getElementById('viewPlotBtn').disabled = false;
                         showDownloadSection();
                     }, 1500);
                 }
-                
                 if(dashboardTriggers.some(t => msg.toLowerCase().includes(t)) || data.response.toLowerCase().includes('dashboard saved')) {
                     setTimeout(() => {
                         dashboardReady = true;
-                        document.getElementById('dashboardBtn').innerText = '💾 Download Dashboard';
+                        document.getElementById('dashboardBtn').innerText = '💾 Download';
                         document.getElementById('dashboardBtn').disabled = false;
+                        document.getElementById('viewDashboardBtn').disabled = false;
                         showDownloadSection();
                     }, 2500);
                 }
-                
-                if(excelTriggers.some(t => msg.toLowerCase().includes(t)) || data.response.toLowerCase().includes('excel')) {
+                if(htmlTriggers.some(t => msg.toLowerCase().includes(t)) || data.response.toLowerCase().includes('html')) {
                     setTimeout(() => {
-                        excelReady = true;
-                        document.getElementById('excelBtn').innerText = '💾 Download Excel';
-                        document.getElementById('excelBtn').disabled = false;
+                        htmlReady = true;
+                        document.getElementById('htmlBtn').innerText = '💾 Download';
+                        document.getElementById('htmlBtn').disabled = false;
+                        document.getElementById('viewHTMLBtn').disabled = false;
                         showDownloadSection();
                     }, 1500);
                 }
-                
+                if(csvTriggers.some(t => msg.toLowerCase().includes(t)) || data.response.toLowerCase().includes('csv')) {
+                    setTimeout(() => {
+                        csvReady = true;
+                        document.getElementById('csvBtn').innerText = '💾 Download';
+                        document.getElementById('csvBtn').disabled = false;
+                        document.getElementById('viewCSVBtn').disabled = false;
+                        showDownloadSection();
+                    }, 1500);
+                }
                 isProcessing = false;
                 setInputState(true);
             })
             .catch(err => {
                 removeTypingIndicator();
-                addMessage("⚠️ Server slow hai, thoda wait kijiye.", 'bot');
+                addMessage("⚠️ Server slow hai.", 'bot');
                 isProcessing = false;
                 setInputState(true);
             });
@@ -385,41 +409,72 @@
             document.getElementById('chatBox').scrollTop = document.getElementById('chatBox').scrollHeight;
         }
 
-        // ✅ FIXED: Actual Download Functions
+        // ✅ View Functions (In-Browser Preview)
+        function viewPlot() {
+            const container = document.getElementById('viewerContainer');
+            container.innerHTML = '<img src="/plot.png?t=' + new Date().getTime() + '" alt="Plot">';
+            document.getElementById('viewerModal').style.display = 'flex';
+        }
+
+        function viewDashboard() {
+            const container = document.getElementById('viewerContainer');
+            container.innerHTML = '<img src="/dashboard.png?t=' + new Date().getTime() + '" alt="Dashboard">';
+            document.getElementById('viewerModal').style.display = 'flex';
+        }
+
+        function viewHTML() {
+            const container = document.getElementById('viewerContainer');
+            container.innerHTML = '<iframe src="/static/analysis_report.html?t=' + new Date().getTime() + '"></iframe>';
+            document.getElementById('viewerModal').style.display = 'flex';
+        }
+
+        function viewCSV() {
+            const container = document.getElementById('viewerContainer');
+            container.innerHTML = '<iframe src="/static/analysis_report.csv?t=' + new Date().getTime() + '"></iframe>';
+            document.getElementById('viewerModal').style.display = 'flex';
+        }
+
+        function closeViewer() {
+            document.getElementById('viewerModal').style.display = 'none';
+            document.getElementById('viewerContainer').innerHTML = '';
+        }
+
+        // ✅ Download Functions
         function downloadPlot() {
-            if (!plotReady) {
-                alert('Plot abhi ready nahi hai! Pehle "create bar chart" command do.');
-                return;
-            }
+            if (!plotReady) { alert('Plot ready nahi hai! "create bar chart" command do.'); return; }
             const link = document.createElement('a');
             link.href = '/plot.png?t=' + new Date().getTime();
-            link.download = 'analysis_plot_' + new Date().getTime() + '.png';
+            link.download = 'plot_' + new Date().getTime() + '.png';
             document.body.appendChild(link);
             link.click();
             document.body.removeChild(link);
         }
 
         function downloadDashboard() {
-            if (!dashboardReady) {
-                alert('Dashboard abhi ready nahi hai! Pehle "show dashboard" command do.');
-                return;
-            }
+            if (!dashboardReady) { alert('Dashboard ready nahi hai! "show dashboard" command do.'); return; }
             const link = document.createElement('a');
             link.href = '/dashboard.png?t=' + new Date().getTime();
-            link.download = 'analytics_dashboard_' + new Date().getTime() + '.png';
+            link.download = 'dashboard_' + new Date().getTime() + '.png';
             document.body.appendChild(link);
             link.click();
             document.body.removeChild(link);
         }
 
-        function downloadExcel() {
-            if (!excelReady) {
-                alert('Excel abhi ready nahi hai! Pehle "export excel" command do.');
-                return;
-            }
+        function downloadHTML() {
+            if (!htmlReady) { alert('HTML ready nahi hai! "export html" command do.'); return; }
             const link = document.createElement('a');
-            link.href = '/static/analysis_report.xlsx?t=' + new Date().getTime();
-            link.download = 'analysis_report_' + new Date().getTime() + '.xlsx';
+            link.href = '/static/analysis_report.html?t=' + new Date().getTime();
+            link.download = 'report_' + new Date().getTime() + '.html';
+            document.body.appendChild(link);
+            link.click();
+            document.body.removeChild(link);
+        }
+
+        function downloadCSV() {
+            if (!csvReady) { alert('CSV ready nahi hai! "export csv" command do.'); return; }
+            const link = document.createElement('a');
+            link.href = '/static/analysis_report.csv?t=' + new Date().getTime();
+            link.download = 'data_' + new Date().getTime() + '.csv';
             document.body.appendChild(link);
             link.click();
             document.body.removeChild(link);
@@ -430,8 +485,7 @@
         
         function sendReport() {
             const email = document.getElementById('clientEmail').value;
-            if(!email) { alert('Please enter email'); return; }
-            
+            if(!email) { alert('Email enter karo'); return; }
             fetch('/send_report', {
                 method: 'POST',
                 headers: {'Content-Type': 'application/json'},
@@ -442,11 +496,16 @@
                 alert(data.message || data.error);
                 if(data.message) closeEmailModal();
             })
-            .catch(err => alert('Error sending report'));
+            .catch(err => alert('Error'));
         }
         
         document.getElementById('userInput').addEventListener('keypress', function(e) {
             if (e.key === 'Enter' && !this.disabled) sendMessage();
+        });
+        
+        // Close viewer on outside click
+        document.getElementById('viewerModal').addEventListener('click', function(e) {
+            if (e.target === this) closeViewer();
         });
     </script>
 </body>
