@@ -23,7 +23,6 @@
         .user { background:#667eea; color:white; margin-left:auto; border-bottom-right-radius: 2px; }
         .bot { background:#f1f3f4; color:#333; border-bottom-left-radius: 2px; border: 1px solid #e0e0e0; }
         
-        /* ✅ Download Button for Each Message */
         .msg-download { position: absolute; top: 5px; right: 5px; background: rgba(102,126,234,0.2); border: none; border-radius: 5px; padding: 3px 8px; cursor: pointer; font-size: 11px; color: #667eea; opacity: 0; transition: 0.3s; }
         .message:hover .msg-download { opacity: 1; }
         .msg-download:hover { background: #667eea; color: white; }
@@ -34,26 +33,26 @@
         .input-area button { background:#667eea; color:white; border:none; padding:12px 28px; border-radius:30px; cursor:pointer; font-weight: bold; }
         .input-area button:disabled { background: #ccc; cursor: not-allowed; }
         
-        /* ✅ Plot Section */
-        #plotSection { padding: 15px; margin: 15px; background: #fff; border-radius: 12px; border: 1px solid #eee; display: none; text-align: center; }
-        #plotImg { max-width:100%; border-radius:8px; border: 1px solid #ddd; margin-bottom: 10px; }
+        /* ✅ Download Section - FIXED */
+        #downloadSection { padding: 15px; margin: 15px; background: #fff; border-radius: 12px; border: 1px solid #eee; display: none; }
+        #downloadSection h4 { margin-bottom:15px; color:#555; font-size:14px; text-align: left; }
         
-        /* ✅ HEADMASTER: Dashboard Section */
-        #dashboardSection { padding: 15px; margin: 15px; background: #fff; border-radius: 12px; border: 1px solid #eee; display: none; text-align: center; }
-        #dashboardImg { max-width:100%; border-radius:8px; border: 1px solid #ddd; margin-bottom: 10px; }
+        .download-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 10px; }
         
-        .dl-btn { width:100%; padding:12px; background:#ff6b6b; color:white; border:none; border-radius:8px; cursor:pointer; font-weight: bold; transition: 0.3s; margin-bottom: 10px; }
-        .dl-btn:hover { background: #ee5253; }
+        .download-card { background: #f8f9fa; border: 1px solid #e0e0e0; border-radius: 10px; padding: 15px; text-align: center; transition: 0.3s; }
+        .download-card:hover { transform: translateY(-2px); box-shadow: 0 5px 15px rgba(0,0,0,0.1); }
+        .download-card .icon { font-size: 30px; margin-bottom: 10px; }
+        .download-card h5 { font-size: 13px; color: #333; margin-bottom: 10px; }
+        .download-card a { text-decoration: none; }
+        .download-card button { width: 100%; padding: 10px; background: #667eea; color: white; border: none; border-radius: 8px; cursor: pointer; font-weight: bold; font-size: 12px; }
+        .download-card button:hover { background: #5568d3; }
         
-        /* ✅ PHASE 1: Email Button */
-        .email-btn { width:100%; padding:12px; background:linear-gradient(135deg, #11998e, #38ef7d); color:white; border:none; border-radius:8px; cursor:pointer; font-weight: bold; transition: 0.3s; margin-top: 10px; }
+        .email-btn { width:100%; padding:12px; background:linear-gradient(135deg, #11998e, #38ef7d); color:white; border:none; border-radius:8px; cursor:pointer; font-weight: bold; transition: 0.3s; margin-top: 15px; }
         .email-btn:hover { opacity: 0.9; }
         
-        /* ✅ Download All Reports Button */
         .download-all-btn { width:100%; padding:12px; background:linear-gradient(135deg, #667eea, #764ba2); color:white; border:none; border-radius:8px; cursor:pointer; font-weight: bold; transition: 0.3s; margin-top: 10px; }
         .download-all-btn:hover { opacity: 0.9; }
         
-        /* ✅ PHASE 1: Email Modal */
         .modal { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.5); justify-content: center; align-items: center; z-index: 1000; }
         .modal-content { background: white; padding: 30px; border-radius: 15px; width: 90%; max-width: 400px; }
         .modal-content h3 { margin-bottom: 15px; color: #667eea; }
@@ -63,7 +62,6 @@
         .btn-send { background: #667eea; color: white; }
         .btn-cancel { background: #eee; color: #333; }
         
-        /* ✅ Loading Indicator */
         .typing-indicator { display: inline-block; padding: 10px 15px; background: #f1f3f4; border-radius: 15px; }
         .typing-indicator span { height: 8px; width: 8px; background: #667eea; border-radius: 50%; display: inline-block; margin: 0 2px; animation: typing 1.4s infinite; }
         .typing-indicator span:nth-child(2) { animation-delay: 0.2s; }
@@ -77,7 +75,6 @@
         .nav-links { padding: 10px 15px; border-top: 1px solid #eee; text-align: center; }
         .nav-links a { color: #667eea; text-decoration: none; margin: 0 10px; font-weight: bold; }
         
-        /* ✅ Quick Commands */
         .quick-commands { padding: 10px 15px; background: #f8f9fa; border-top: 1px solid #eee; }
         .quick-commands h4 { font-size: 12px; color: #666; margin-bottom: 8px; }
         .quick-commands button { background: white; border: 1px solid #667eea; color: #667eea; padding: 5px 12px; border-radius: 15px; margin: 3px; cursor: pointer; font-size: 11px; transition: 0.3s; }
@@ -101,34 +98,53 @@
             <div class="message bot">👋 Headmaster Mode Active! Upload data for Tableau-level insights. Your queries are being securely logged.</div>
         </div>
         
-        <!-- ✅ Single Plot Section -->
-        <div id="plotSection">
-            <h4 style="margin-bottom:10px; color:#555; font-size:13px; text-align: left;">📊 Latest Visualization:</h4>
-            <img id="plotImg" src="">
-            <a id="downloadLink" href="/plot.png" download="analysis_report.png">
-                <button class="dl-btn">💾 Download High-Res Plot</button>
-            </a>
-            <!-- ✅ Download All Text Reports -->
-            <button onclick="downloadAllReports()" class="download-all-btn">📄 Download All Text Reports</button>
-            <!-- ✅ PHASE 1: Email Button -->
-            <button onclick="openEmailModal()" class="email-btn">📧 Send Report via Email</button>
-        </div>
-        
-        <!-- ✅ HEADMASTER: Dashboard Section (FIXED - No Duplicate ID) -->
-        <div id="dashboardSection">
-            <h4 style="margin-bottom:10px; color:#555; font-size:13px; text-align: left;">📈 Analytics Dashboard (Tableau Style):</h4>
-            <img id="dashboardImg" src="">
-            <a id="dashboardLink" href="/dashboard.png" download="analytics_dashboard.png">
-                <button class="dl-btn">💾 Download Full Dashboard</button>
-            </a>
+        <!-- ✅ FIXED: Unified Download Section -->
+        <div id="downloadSection">
+            <h4>📥 Download Your Analysis Files:</h4>
+            <div class="download-grid">
+                <!-- Plot Download -->
+                <div class="download-card">
+                    <div class="icon">📊</div>
+                    <h5>Latest Plot (PNG)</h5>
+                    <a href="/plot.png" download="analysis_plot.png" id="plotDownloadLink">
+                        <button>💾 Download Plot</button>
+                    </a>
+                </div>
+                
+                <!-- Dashboard Download -->
+                <div class="download-card">
+                    <div class="icon">📈</div>
+                    <h5>Dashboard (PNG)</h5>
+                    <a href="/dashboard.png" download="analytics_dashboard.png" id="dashboardDownloadLink">
+                        <button>💾 Download Dashboard</button>
+                    </a>
+                </div>
+                
+                <!-- Excel Export -->
+                <div class="download-card">
+                    <div class="icon">📄</div>
+                    <h5>Excel Report</h5>
+                    <a href="/static/analysis_report.xlsx" download="analysis_report.xlsx" id="excelDownloadLink">
+                        <button>💾 Download Excel</button>
+                    </a>
+                </div>
+                
+                <!-- Text Reports -->
+                <div class="download-card">
+                    <div class="icon">📝</div>
+                    <h5>All Text Reports</h5>
+                    <button onclick="downloadAllReports()">💾 Download All</button>
+                </div>
+            </div>
+            
+            <button onclick="openEmailModal()" class="email-btn">📧 Send All Reports via Email</button>
         </div>
         
         <div class="input-area">
-            <input type="text" id="userInput" placeholder="Ask: 'dashboard', 'kpi', 'line chart', 'export excel'..." disabled>
+            <input type="text" id="userInput" placeholder="Ask: 'dashboard', 'kpi', 'export excel', 'top 5'..." disabled>
             <button onclick="sendMessage()" id="sendBtn" disabled>Send</button>
         </div>
         
-        <!-- ✅ Quick Commands -->
         <div class="quick-commands">
             <h4>⚡ Quick Commands:</h4>
             <button onclick="quickCommand('dashboard')">📊 Dashboard</button>
@@ -147,7 +163,6 @@
         </div>
     </div>
 
-    <!-- ✅ PHASE 1: Email Modal -->
     <div id="emailModal" class="modal">
         <div class="modal-content">
             <h3>📧 Send Report</h3>
@@ -316,15 +331,29 @@
                     addMessage("⚠️ Session reset! Please re-upload your file.", "bot");
                 }
                 
-                // ✅ Check for Plot
+                // ✅ Show Download Section
                 const plotTriggers = ['plot', 'chart', 'graph', 'visualize', 'bar', 'hist'];
+                const dashboardTriggers = ['dashboard', 'multiple plots', 'all charts'];
+                const excelTriggers = ['export', 'excel', 'download data'];
+                
                 if(plotTriggers.some(t => msg.toLowerCase().includes(t)) || data.response.toLowerCase().includes("plot saved")) {
-                    setTimeout(refreshPlot, 1000);
+                    setTimeout(() => {
+                        refreshPlot();
+                        showDownloadSection();
+                    }, 1000);
                 }
                 
-                // ✅ Check for Dashboard
-                if(msg.toLowerCase().includes('dashboard') || data.response.toLowerCase().includes('dashboard saved')) {
-                    setTimeout(refreshDashboard, 2000);
+                if(dashboardTriggers.some(t => msg.toLowerCase().includes(t)) || data.response.toLowerCase().includes('dashboard saved')) {
+                    setTimeout(() => {
+                        refreshDashboard();
+                        showDownloadSection();
+                    }, 2000);
+                }
+                
+                if(excelTriggers.some(t => msg.toLowerCase().includes(t)) || data.response.toLowerCase().includes('excel')) {
+                    setTimeout(() => {
+                        showDownloadSection();
+                    }, 1000);
                 }
                 
                 isProcessing = false;
@@ -338,36 +367,25 @@
             });
         }
 
-        function refreshPlot() {
-            const img = document.getElementById('plotImg');
-            const section = document.getElementById('plotSection');
-            
-            const newSrc = "/plot.png?t=" + new Date().getTime();
-            img.src = newSrc;
-            document.getElementById('downloadLink').href = newSrc;
-
-            img.onload = function() {
-                section.style.display = "block";
-                document.getElementById('chatBox').scrollTop = document.getElementById('chatBox').scrollHeight;
-            };
+        function showDownloadSection() {
+            document.getElementById('downloadSection').style.display = 'block';
+            document.getElementById('chatBox').scrollTop = document.getElementById('chatBox').scrollHeight;
         }
 
-        // ✅ HEADMASTER: Dashboard Refresh
-        function refreshDashboard() {
-            const img = document.getElementById('dashboardImg');
-            const section = document.getElementById('dashboardSection');
-            
-            const newSrc = "/dashboard.png?t=" + new Date().getTime();
-            img.src = newSrc;
-            document.getElementById('dashboardLink').href = newSrc;
+        function refreshPlot() {
+            const link = document.getElementById('plotDownloadLink');
+            const newSrc = "/plot.png?t=" + new Date().getTime();
+            link.href = newSrc;
+            link.download = `analysis_plot_${new Date().getTime()}.png`;
+        }
 
-            img.onload = function() {
-                section.style.display = "block";
-                document.getElementById('chatBox').scrollTop = document.getElementById('chatBox').scrollHeight;
-            };
+        function refreshDashboard() {
+            const link = document.getElementById('dashboardDownloadLink');
+            const newSrc = "/dashboard.png?t=" + new Date().getTime();
+            link.href = newSrc;
+            link.download = `analytics_dashboard_${new Date().getTime()}.png`;
         }
         
-        // ✅ PHASE 1: Email Modal Functions
         function openEmailModal() { document.getElementById('emailModal').style.display = 'flex'; }
         function closeEmailModal() { document.getElementById('emailModal').style.display = 'none'; }
         
@@ -388,7 +406,6 @@
             .catch(err => alert('Error sending report'));
         }
         
-        // ✅ Enter key to send
         document.getElementById('userInput').addEventListener('keypress', function(e) {
             if (e.key === 'Enter' && !this.disabled) sendMessage();
         });
