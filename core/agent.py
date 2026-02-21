@@ -7,7 +7,6 @@ import seaborn as sns
 from core.database import SessionLocal, UserQuery
 from core.ml import MLModels
 
-# ✅ LangChain Imports (Optional)
 try:
     from langchain_groq import ChatGroq
     from langchain_experimental.agents import create_pandas_dataframe_agent
@@ -22,15 +21,16 @@ class DataScienceAgent:
         self.ml = MLModels()
         self.agent_executor = None
         self.api_key = os.getenv("GROQ_API_KEY")
+        self.available_columns = []
+        self.numeric_columns = []
+        self.categorical_columns = []
         
-        # ✅ Tableau-style color palettes
         self.color_palettes = {
             'default': ['#667eea', '#764ba2', '#f093fb', '#f5576c', '#4facfe'],
             'business': ['#2c3e50', '#3498db', '#e74c3c', '#2ecc71', '#f39c12'],
             'modern': ['#667eea', '#764ba2', '#4ECDC4', '#FF6B6B', '#95E1D3']
         }
         
-        # ✅ Initialize AI if available
         if LLM_AVAILABLE and self.api_key:
             try:
                 llm = ChatGroq(
@@ -44,14 +44,15 @@ class DataScienceAgent:
             except Exception as e:
                 print(f"⚠️ AI Mode: OFF (API Key issue: {e})")
     
+    # ✅ NEW: Auto EDA + Smart Suggestions
     def load_data(self, fp):
         try:
             self.df = pd.read_csv(fp, encoding='latin1')
             self.last_file = fp
-            num = self.df.select_dtypes('number').columns.tolist()
-            cat = self.df.select_dtypes('object').columns.tolist()
+            self.numeric_columns = self.df.select_dtypes('number').columns.tolist()
+            self.categorical_columns = self.df.select_dtypes('object').columns.tolist()
+            self.available_columns = list(self.df.columns)
             
-            # ✅ Initialize AI Agent with data
             if LLM_AVAILABLE and self.api_key:
                 try:
                     llm = ChatGroq(
@@ -67,38 +68,101 @@ class DataScienceAgent:
                 except Exception as e:
                     print(f"⚠️ AI Agent init failed: {e}")
             
-            # ✅ Store column info for better suggestions
-            self.available_columns = list(self.df.columns)
-            self.numeric_columns = num
-            self.categorical_columns = cat
+            # ✅ Generate Auto EDA Report
+            eda_report = self._generate_auto_eda()
             
-            return f"✅ Loaded {len(self.df)} rows × {len(self.df.columns)} columns\nNumeric: {num[:3]}\nCategorical: {cat[:3]}"
+            return f"✅ Loaded {len(self.df)} rows × {len(self.df.columns)} columns\n\n{eda_report}"
         except Exception as e:
             return f"❌ Error loading {fp}: {str(e)}"
     
-    # ✅ ENHANCED: Better column matching
+    # ✅ NEW: Auto EDA Generator
+    def _generate_auto_eda(self):
+        """Generate automatic EDA with smart command suggestions"""
+        
+        report = []
+        report.append("📊 **AUTO EDA REPORT**\n")
+        
+        # Basic Info
+        report.append(f"📋 **Total Records:** {len(self.df):,}")
+        report.append(f"📋 **Total Columns:** {len(self.df.columns)}\n")
+        
+        # Column Types
+        report.append("📁 **Column Types:**")
+        report.append(f"   • Numeric: {', '.join(self.numeric_columns) if self.numeric_columns else 'None'}")
+        report.append(f"   • Text: {', '.join(self.categorical_columns) if self.categorical_columns else 'None'}\n")
+        
+        # Missing Values
+        missing = self.df.isnull().sum().sum()
+        report.append(f"⚠️ **Missing Values:** {missing} ({missing/len(self.df)*100:.1f}%)\n")
+        
+        # ✅ SMART COMMAND SUGGESTIONS
+        report.append("💡 **WORKING Natural Language Commands:**")
+        
+        # Numeric column suggestions
+        if self.numeric_columns:
+            first_num = self.numeric_columns[0]
+            report.append(f"   ✅ `Total {first_num}`")
+            report.append(f"   ✅ `Average {first_num}`")
+            report.append(f"   ✅ `Max {first_num}`")
+            report.append(f"   ✅ `Min {first_num}`")
+        
+        # Categorical column suggestions
+        if self.categorical_columns:
+            first_cat = self.categorical_columns[0]
+            report.append(f"   ✅ `Top 5 {first_cat}`")
+            report.append(f"   ✅ `Group by {first_cat}`")
+        
+        # Chart suggestions
+        report.append(f"   ✅ `Create bar chart`")
+        report.append(f"   ✅ `Create pie chart`")
+        report.append(f"   ✅ `Show dashboard`")
+        
+        # Export suggestions
+        report.append(f"   ✅ `Export to excel`")
+        report.append(f"   ✅ `KPI cards`\n")
+        
+        # ✅ PYTHON CODE SUGGESTIONS
+        report.append("💻 **WORKING Python Code:**")
+        if self.numeric_columns:
+            first_num = self.numeric_columns[0]
+            report.append(f"   ✅ `df['{first_num}'].mean()`")
+            report.append(f"   ✅ `df['{first_num}'].sum()`")
+            report.append(f"   ✅ `df.nlargest(5, '{first_num}')`")
+        
+        if self.categorical_columns:
+            first_cat = self.categorical_columns[0]
+            report.append(f"   ✅ `df['{first_cat}'].value_counts()`")
+        
+        report.append(f"   ✅ `df.head()`")
+        report.append(f"   ✅ `df.describe()`")
+        report.append(f"   ✅ `df.columns`\n")
+        
+        # ⚠️ WARNINGS
+        report.append("⚠️ **Commands That WON'T Work:**")
+        report.append("   ❌ `Total revenue` (column doesn't exist)")
+        report.append("   ❌ `Average salary` (column doesn't exist)")
+        report.append("   ❌ `Top 5 sales` (column doesn't exist)")
+        report.append("   💡 Use actual column names from above!\n")
+        
+        return "\n".join(report)
+    
     def find_column(self, search_term):
-        """Find best matching column name"""
         if self.df is None:
             return None
         
         search_lower = search_term.lower()
         
-        # Exact match
         for col in self.df.columns:
             if search_lower in col.lower() or col.lower() in search_lower:
                 return col
         
-        # Partial match
         for col in self.df.columns:
             if any(word in col.lower() for word in search_lower.split()):
                 return col
         
         return None
     
-    # ✅ ENHANCED: Better error messages with suggestions
-    def get_column_suggestions(self, search_term):
-        """Suggest available columns"""
+    def get_column_suggestions(self, search_term=""):
         if self.df is None:
             return "⚠️ No data loaded"
         
@@ -293,7 +357,7 @@ class DataScienceAgent:
                 plt.setp(axes[1, 0].get_xticklabels(), rotation=45, ha='right', fontsize=8)
             
             if len(num_cols) >= 2:
-                corr_matrix = self.df[num_cols[:6]].corr()
+                corr_matrix = self.df[num_cols].corr()
                 im = axes[1, 1].imshow(corr_matrix, cmap='coolwarm', aspect='auto', vmin=-1, vmax=1)
                 axes[1, 1].set_title('Correlation Matrix', fontsize=12, fontweight='bold')
                 plt.colorbar(im, ax=axes[1, 1])
@@ -355,12 +419,10 @@ class DataScienceAgent:
         except Exception as e:
             return f"❌ Export error: {str(e)}"
     
-    # ✅ ENHANCED: Better Natural Language Processing
     def query(self, q, user_id=None):
         q_original = q
         q = q.lower().strip()
         
-        # ✅ DETECT PYTHON CODE
         python_patterns = [
             r'df\.', r'pd\.', r'np\.', r'plt\.',
             r'\.head\(', r'\.tail\(', r'\.mean\(', r'\.sum\(',
@@ -372,12 +434,10 @@ class DataScienceAgent:
         if is_python_code and self.df is not None:
             return self.execute_python_code(q_original, user_id)
         
-        # ✅ GREETINGS
         if q in ['hi', 'hello', 'hey', 'hii', 'namaste']:
             return "👋 Hello! Main aapka Data Scientist Agent hoon. CSV upload karo aur kuch bhi pucho!"
         
-        # ✅ HELP
-        if 'help' in q or 'kya kar' in q or 'what can' in q:
+        if 'help' in q or 'kya kar' in q or 'what can' in q or 'columns' in q or 'suggest' in q:
             return ("💡 **Natural Language Commands:**\n"
                    "• 'top 5 by revenue'\n"
                    "• 'group by region'\n"
@@ -390,25 +450,20 @@ class DataScienceAgent:
                    "• `df.head()`\n"
                    "• `df['column'].mean()`\n"
                    "• `df.nlargest(5, 'revenue')`\n\n"
-                   + self.get_column_suggestions(""))
+                   + self.get_column_suggestions(q))
         
-        # ✅ HEADMASTER: Dashboard Command
         if 'dashboard' in q or 'multiple plots' in q or 'all charts' in q:
             return self.generate_dashboard()
         
-        # ✅ HEADMASTER: KPI Cards
         if 'kpi' in q or 'metrics' in q or 'summary cards' in q:
             return self.get_kpi_cards()
         
-        # ✅ HEADMASTER: Export to Excel
         if 'export' in q or 'excel' in q or 'download data' in q:
             return self.export_to_excel()
         
-        # ✅ HEADMASTER: Chart Recommendation
         if 'recommend' in q or 'suggest chart' in q or 'best chart' in q:
             return self.recommend_chart(q_original)
         
-        # ✅ HEADMASTER: Advanced Chart Types
         if 'line chart' in q or 'time series' in q or 'trend line' in q:
             return self.generate_plot('line')
         
@@ -421,10 +476,7 @@ class DataScienceAgent:
         if 'area chart' in q:
             return self.generate_plot('area')
         
-        # ✅ ENHANCED: Better Column Matching for Aggregations
-        # Total/Sum
         if 'total' in q or 'sum' in q:
-            # Try to find column name from query
             col = self.find_column(q.replace('total', '').replace('sum', '').strip())
             if not col and self.numeric_columns:
                 col = self.numeric_columns[0]
@@ -433,7 +485,6 @@ class DataScienceAgent:
             else:
                 return "⚠️ No numeric column found. " + self.get_column_suggestions(q)
         
-        # Average/Mean
         if 'average' in q or 'mean' in q or 'avg' in q:
             col = self.find_column(q.replace('average', '').replace('mean', '').replace('avg', '').strip())
             if not col and self.numeric_columns:
@@ -443,7 +494,6 @@ class DataScienceAgent:
             else:
                 return "⚠️ No numeric column found. " + self.get_column_suggestions(q)
         
-        # Max/Highest
         if 'max' in q or 'maximum' in q or 'highest' in q:
             col = self.find_column(q.replace('max', '').replace('maximum', '').replace('highest', '').strip())
             if not col and self.numeric_columns:
@@ -453,7 +503,6 @@ class DataScienceAgent:
             else:
                 return "⚠️ No numeric column found. " + self.get_column_suggestions(q)
         
-        # Min/Lowest
         if 'min' in q or 'minimum' in q or 'lowest' in q:
             col = self.find_column(q.replace('min', '').replace('minimum', '').replace('lowest', '').strip())
             if not col and self.numeric_columns:
@@ -463,16 +512,13 @@ class DataScienceAgent:
             else:
                 return "⚠️ No numeric column found. " + self.get_column_suggestions(q)
         
-        # ✅ ENHANCED: Top N with Better Column Matching
         if 'top' in q:
             n_match = re.search(r'top\s+(\d+)', q)
             n = int(n_match.group(1)) if n_match else 5
             
-            # Try to find column from query
             col = self.find_column(q.replace(f'top {n}', '').replace('top 5', '').replace('top', '').strip())
             
             if not col:
-                # Try categorical first for "top" queries
                 if self.categorical_columns:
                     col = self.categorical_columns[0]
                     top_vals = self.df[col].value_counts().head(n)
@@ -503,7 +549,6 @@ class DataScienceAgent:
             else:
                 return "⚠️ Column not found. " + self.get_column_suggestions(q)
         
-        # Group by
         if 'group' in q or 'by' in q or 'breakdown' in q:
             col = "product"
             for word in ["product", "region", "category", "customer", "date", "month", "year", "name"]:
@@ -525,7 +570,6 @@ class DataScienceAgent:
             
             return "⚠️ Group by column not found. " + self.get_column_suggestions(q)
         
-        # Prediction/Trend
         if any(x in q for x in ["predict", "trend", "forecast", "next", "future"]):
             col = "revenue"
             for word in ["revenue", "sales", "quantity", "price", "demand"]:
@@ -541,11 +585,9 @@ class DataScienceAgent:
             else:
                 return "⚠️ No numeric column for prediction. " + self.get_column_suggestions(q)
         
-        # Segmentation
         if any(x in q for x in ["segment", "customer", "group", "cluster", "tier"]):
             return self.segment_customers()
         
-        # Outliers
         if any(x in q for x in ["outlier", "anomaly", "unusual", "weird", "strange"]):
             col = "revenue"
             for word in ["revenue", "sales", "price", "quantity", "amount"]:
@@ -561,7 +603,6 @@ class DataScienceAgent:
             else:
                 return "⚠️ No numeric column for outlier detection. " + self.get_column_suggestions(q)
         
-        # Visualization
         if any(x in q for x in ["plot", "chart", "graph", "visualize", "show", "display"]):
             if "bar" in q or "count" in q:
                 return self.generate_plot("bar")
@@ -572,24 +613,20 @@ class DataScienceAgent:
             else:
                 return self.generate_plot("bar")
         
-        # Correlations
         if any(x in q for x in ["correlat", "relationship", "link", "connect"]):
             return self.show_correlations()
         
-        # Filters
         if "filter" in q or "where" in q:
             if any(x in q for x in ["high", "large", "big", ">100000"]):
                 return self.filter_high()
             elif any(x in q for x in ["low", "small", "tiny", "<5"]):
                 return self.filter_low()
         
-        # Business analysis
         if any(x in q for x in ["return", "refund", "cancel"]):
             return self.returns_analysis()
         if any(x in q for x in ["profit", "margin", "earnings"]):
             return self.profit_analysis()
         
-        # ✅ ENHANCED: Default Response with Column Suggestions
         return ("💡 Command not recognized. Try these:\n"
                "• 'top 5'\n"
                "• 'average'\n"
@@ -599,7 +636,6 @@ class DataScienceAgent:
                + self.get_column_suggestions(q))
     
     def execute_python_code(self, code, user_id=None):
-        """Execute raw Python code safely"""
         try:
             safe_globals = {
                 'pd': pd,
@@ -628,8 +664,6 @@ class DataScienceAgent:
             if self.df is not None:
                 error_msg += f"\n\n💡 **Available Columns:** {list(self.df.columns)}"
             return error_msg
-    
-    # ... (rest of methods remain same: show_info, top_n, group_by, predict_trend, etc.)
     
     def show_info(self):
         if self.df is None: return "⚠️ Load data first (upload CSV)"
