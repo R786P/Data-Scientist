@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>🤖 DS Agent Master</title>
+    <title>🤖 DS Agent Headmaster</title>
     <style>
         * { margin:0; padding:0; box-sizing:border-box }
         body { font-family: 'Segoe UI', Arial, sans-serif; background:#f0f2f5; padding:15px }
@@ -40,8 +40,12 @@
         .dl-btn { width:100%; padding:12px; background:#ff6b6b; color:white; border:none; border-radius:8px; cursor:pointer; font-weight: bold; transition: 0.3s; margin-bottom: 10px; }
         .dl-btn:hover { background: #ee5253; }
         
+        /* ✅ HEADMASTER: Dashboard Section */
+        #dashboardSection { padding: 15px; margin: 15px; background: #fff; border-radius: 12px; border: 1px solid #eee; display: none; text-align: center; }
+        #dashboardImg { max-width:100%; border-radius:8px; border: 1px solid #ddd; margin-bottom: 10px; }
+        
         /* ✅ PHASE 1: Email Button */
-        .email-btn { width:100%; padding:12px; background:linear-gradient(135deg, #11998e, #38ef7d); color:white; border:none; border-radius:8px; cursor:pointer; font-weight: bold; transition: 0.3s; }
+        .email-btn { width:100%; padding:12px; background:linear-gradient(135deg, #11998e, #38ef7d); color:white; border:none; border-radius:8px; cursor:pointer; font-weight: bold; transition: 0.3s; margin-top: 10px; }
         .email-btn:hover { opacity: 0.9; }
         
         /* ✅ Download All Reports Button */
@@ -71,14 +75,20 @@
         
         .nav-links { padding: 10px 15px; border-top: 1px solid #eee; text-align: center; }
         .nav-links a { color: #667eea; text-decoration: none; margin: 0 10px; font-weight: bold; }
+        
+        /* ✅ Quick Commands */
+        .quick-commands { padding: 10px 15px; background: #f8f9fa; border-top: 1px solid #eee; }
+        .quick-commands h4 { font-size: 12px; color: #666; margin-bottom: 8px; }
+        .quick-commands button { background: white; border: 1px solid #667eea; color: #667eea; padding: 5px 12px; border-radius: 15px; margin: 3px; cursor: pointer; font-size: 11px; transition: 0.3s; }
+        .quick-commands button:hover { background: #667eea; color: white; }
     </style>
 </head>
 <body>
     <div class="container">
         <div class="header">
-            <div class="status-dot"><span class="dot"></span> Agent Live (v1.5)</div>
+            <div class="status-dot"><span class="dot"></span> Agent Live (v1.6 Headmaster)</div>
             <h1>🤖 Data Scientist Agent</h1>
-            <p>Master Level AI Analysis & SQL Logging</p>
+            <p>Headmaster Edition - Tableau/Power BI Level</p>
         </div>
         
         <div class="upload-box" id="dropZone" onclick="document.getElementById('fileInput').click()">
@@ -87,13 +97,48 @@
         </div>
         
         <div class="chat-box" id="chatBox">
-            <div class="message bot">👋 Master Mode Active! Upload data and let's find insights. Your queries are being securely logged.</div>
+            <div class="message bot">👋 Headmaster Mode Active! Upload data for Tableau-level insights. Your queries are being securely logged.</div>
         </div>
         
+        <!-- ✅ Single Plot Section -->
         <div id="plotSection">
+            <h4 style="margin-bottom:10px; color:#555; font-size:13px; text-align: left;">📊 Latest Visualization:</h4>
+            <img id="plotImg" src="">
+            <a id="downloadLink" href="/plot.png" download="analysis_report.png">
+                <button class="dl-btn">💾 Download High-Res Plot</button>
+            </a>
+        </div>
+        
+        <!-- ✅ HEADMASTER: Dashboard Section -->
+        <div id="dashboardSection">
+            <h4 style="margin-bottom:10px; color:#555; font-size:13px; text-align: left;">📈 Analytics Dashboard (Tableau Style):</h4>
+            <img id="dashboardImg" src="">
+            <a id="dashboardLink" href="/dashboard.png" download="analytics_dashboard.png">
+                <button class="dl-btn">💾 Download Full Dashboard</button>
+            </a>
+        </div>
+        
+        <div class="input-area">
+            <input type="text" id="userInput" placeholder="Ask: 'dashboard', 'kpi', 'line chart', 'export excel'..." disabled>
+            <button onclick="sendMessage()" id="sendBtn" disabled>Send</button>
+        </div>
+        
+        <!-- ✅ Quick Commands -->
+        <div class="quick-commands">
+            <h4>⚡ Quick Commands:</h4>
+            <button onclick="quickCommand('dashboard')">📊 Dashboard</button>
+            <button onclick="quickCommand('kpi')">📈 KPI Cards</button>
+            <button onclick="quickCommand('top 5')">🏆 Top 5</button>
+            <button onclick="quickCommand('average')">📊 Average</button>
+            <button onclick="quickCommand('line chart')">📈 Line Chart</button>
+            <button onclick="quickCommand('pie chart')">🥧 Pie Chart</button>
+            <button onclick="quickCommand('box plot')">📦 Box Plot</button>
+            <button onclick="quickCommand('export excel')">📄 Export Excel</button>
+        </div>
+        
+        <div id="plotSection" style="padding: 15px; margin: 15px; background: #fff; border-radius: 12px; border: 1px solid #eee; display: none; text-align: center;">
             <h4 style="margin-bottom:10px; color:#555; font-size:13px; text-align: left;">Latest Visualization:</h4>
             <img id="plotImg" src="">
-            <!-- Download Button -->
             <a id="downloadLink" href="/plot.png" download="analysis_report.png">
                 <button class="dl-btn">💾 Download High-Res Plot</button>
             </a>
@@ -103,13 +148,8 @@
             <button onclick="openEmailModal()" class="email-btn">📧 Send Report via Email</button>
         </div>
         
-        <div class="input-area">
-            <input type="text" id="userInput" placeholder="Ask about trends, predictions, or charts..." disabled>
-            <button onclick="sendMessage()" id="sendBtn" disabled>Send</button>
-        </div>
-        
         <div class="nav-links">
-            <a href="/dashboard">📊 Dashboard</a> | 
+            <a href="/dashboard">📊 Web Dashboard</a> | 
             <a href="/logout">🚪 Logout</a>
         </div>
     </div>
@@ -129,7 +169,7 @@
     <script>
         let isFileReady = false;
         let isProcessing = false;
-        let chatHistory = [];  // ✅ Store all messages for download
+        let chatHistory = [];
 
         function addMessage(text, sender) {
             const chatBox = document.getElementById('chatBox');
@@ -137,7 +177,6 @@
             msgDiv.className = 'message ' + sender;
             msgDiv.innerText = text;
             
-            // ✅ Add download button for bot messages
             if (sender === 'bot') {
                 const downloadBtn = document.createElement('button');
                 downloadBtn.className = 'msg-download';
@@ -145,7 +184,6 @@
                 downloadBtn.onclick = function() { downloadSingleMessage(text); };
                 msgDiv.appendChild(downloadBtn);
                 
-                // ✅ Store in chat history
                 chatHistory.push({
                     type: sender,
                     text: text,
@@ -224,6 +262,11 @@
             document.getElementById('sendBtn').disabled = !enabled;
         }
 
+        function quickCommand(cmd) {
+            document.getElementById('userInput').value = cmd;
+            sendMessage();
+        }
+
         function uploadFile(input) {
             if(!input.files[0]) return;
             const formData = new FormData();
@@ -280,9 +323,15 @@
                     addMessage("⚠️ Session reset! Please re-upload your file.", "bot");
                 }
                 
+                // ✅ Check for Plot
                 const plotTriggers = ['plot', 'chart', 'graph', 'visualize', 'bar', 'hist'];
                 if(plotTriggers.some(t => msg.toLowerCase().includes(t)) || data.response.toLowerCase().includes("plot saved")) {
                     setTimeout(refreshPlot, 1000);
+                }
+                
+                // ✅ Check for Dashboard
+                if(msg.toLowerCase().includes('dashboard') || data.response.toLowerCase().includes('dashboard saved')) {
+                    setTimeout(refreshDashboard, 2000);
                 }
                 
                 isProcessing = false;
@@ -303,6 +352,21 @@
             const newSrc = "/plot.png?t=" + new Date().getTime();
             img.src = newSrc;
             document.getElementById('downloadLink').href = newSrc;
+
+            img.onload = function() {
+                section.style.display = "block";
+                document.getElementById('chatBox').scrollTop = document.getElementById('chatBox').scrollHeight;
+            };
+        }
+
+        // ✅ HEADMASTER: Dashboard Refresh
+        function refreshDashboard() {
+            const img = document.getElementById('dashboardImg');
+            const section = document.getElementById('dashboardSection');
+            
+            const newSrc = "/dashboard.png?t=" + new Date().getTime();
+            img.src = newSrc;
+            document.getElementById('dashboardLink').href = newSrc;
 
             img.onload = function() {
                 section.style.display = "block";
