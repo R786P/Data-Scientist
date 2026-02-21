@@ -39,7 +39,7 @@ class DataScienceAgent:
                 self.llm = ChatGroq(
                     temperature=0.7,
                     groq_api_key=self.api_key,
-                    model_name="llama-3.3-70b-versatile",
+                    model_name="openai/gpt-oss-120b",
                     max_tokens=500,
                     timeout=15
                 )
