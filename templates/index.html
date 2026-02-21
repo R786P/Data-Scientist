@@ -26,13 +26,9 @@
         .input-area input:disabled { background: #f5f5f5; cursor: not-allowed; }
         .input-area button { background:#667eea; color:white; border:none; padding:12px 28px; border-radius:30px; cursor:pointer; font-weight: bold; }
         .input-area button:disabled { background: #ccc; cursor: not-allowed; }
-        
-        /* ✅ FIXED: Download Section with View + Download */
         #downloadSection { padding: 15px; margin: 15px; background: #fff; border-radius: 12px; border: 1px solid #eee; display: none; }
         #downloadSection h4 { margin-bottom:15px; color:#555; font-size:14px; text-align: left; }
-        
         .download-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 10px; }
-        
         .download-card { background: #f8f9fa; border: 1px solid #e0e0e0; border-radius: 10px; padding: 15px; text-align: center; transition: 0.3s; }
         .download-card:hover { transform: translateY(-2px); box-shadow: 0 5px 15px rgba(0,0,0,0.1); }
         .download-card .icon { font-size: 30px; margin-bottom: 10px; }
@@ -44,13 +40,10 @@
         .download-card .view-btn { background: #11998e; }
         .download-card .view-btn:hover { background: #0e8c7f; }
         .download-card p { font-size:10px; color:#888; margin-top:5px; }
-        
         .email-btn { width:100%; padding:12px; background:linear-gradient(135deg, #11998e, #38ef7d); color:white; border:none; border-radius:8px; cursor:pointer; font-weight: bold; transition: 0.3s; margin-top: 15px; }
         .email-btn:hover { opacity: 0.9; }
-        
         .download-all-btn { width:100%; padding:12px; background:linear-gradient(135deg, #667eea, #764ba2); color:white; border:none; border-radius:8px; cursor:pointer; font-weight: bold; transition: 0.3s; margin-top: 10px; }
         .download-all-btn:hover { opacity: 0.9; }
-        
         .modal { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.5); justify-content: center; align-items: center; z-index: 1000; }
         .modal-content { background: white; padding: 30px; border-radius: 15px; width: 90%; max-width: 400px; }
         .modal-content h3 { margin-bottom: 15px; color: #667eea; }
@@ -59,14 +52,11 @@
         .modal-buttons button { flex: 1; padding: 10px; border: none; border-radius: 8px; cursor: pointer; }
         .btn-send { background: #667eea; color: white; }
         .btn-cancel { background: #eee; color: #333; }
-        
-        /* ✅ File Viewer Modal */
         .viewer-modal { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.8); justify-content: center; align-items: center; z-index: 2000; }
         .viewer-content { background: white; padding: 20px; border-radius: 15px; width: 95%; max-width: 800px; max-height: 80vh; overflow: auto; position: relative; }
         .viewer-content iframe { width: 100%; height: 500px; border: none; }
         .viewer-content img { max-width: 100%; border-radius: 8px; }
         .viewer-content .close-btn { position: absolute; top: 10px; right: 15px; font-size: 30px; cursor: pointer; color: #667eea; }
-        
         .typing-indicator { display: inline-block; padding: 10px 15px; background: #f1f3f4; border-radius: 15px; }
         .typing-indicator span { height: 8px; width: 8px; background: #667eea; border-radius: 50%; display: inline-block; margin: 0 2px; animation: typing 1.4s infinite; }
         .typing-indicator span:nth-child(2) { animation-delay: 0.2s; }
@@ -80,12 +70,12 @@
         .quick-commands h4 { font-size: 12px; color: #666; margin-bottom: 8px; }
         .quick-commands button { background: white; border: 1px solid #667eea; color: #667eea; padding: 5px 12px; border-radius: 15px; margin: 3px; cursor: pointer; font-size: 11px; transition: 0.3s; }
         .quick-commands button:hover { background: #667eea; color: white; }
-        
-        /* ✅ App Recommendations */
         .app-recommendations { background: #fff3cd; border-left: 4px solid #ffc107; padding: 12px; margin: 15px; border-radius: 8px; font-size: 13px; }
         .app-recommendations strong { color: #856404; }
         .app-recommendations a { color: #667eea; text-decoration: none; font-weight: bold; }
         .app-recommendations a:hover { text-decoration: underline; }
+        .download-info { background: #e8f4f8; border-left: 4px solid #667eea; padding: 12px; margin: 15px; border-radius: 8px; font-size: 13px; }
+        .download-info strong { color: #667eea; }
     </style>
 </head>
 <body>
@@ -93,7 +83,7 @@
         <div class="header">
             <div class="status-dot"><span class="dot"></span> Agent Live (v1.8 Headmaster)</div>
             <h1>🤖 Data Scientist Agent</h1>
-            <p>Headmaster Edition - View + Download</p>
+            <p>Headmaster Edition - Excel + CSV + HTML</p>
         </div>
         
         <div class="upload-box" id="dropZone" onclick="document.getElementById('fileInput').click()">
@@ -105,20 +95,18 @@
             <div class="message bot">👋 Headmaster Mode Active! Upload data for Tableau-level insights.</div>
         </div>
         
-        <!-- ✅ App Recommendations -->
         <div class="app-recommendations">
             <strong>📱 Recommended Apps (Free):</strong><br>
             • Android: <a href="https://play.google.com/store/apps/details?id=com.google.android.apps.nbu.files" target="_blank">Google Files</a><br>
             • iOS: <a href="https://apps.apple.com/app/documents-file-manager/id364901807" target="_blank">Documents by Readdle</a><br>
-            • Both: <a href="https://play.google.com/store/apps/details?id=com.google.android.apps.docs" target="_blank">Google Drive</a>
+            • Both: <a href="https://play.google.com/store/apps/details?id=com.google.android.apps.docs" target="_blank">Google Drive</a><br>
+            • Excel: <strong>Microsoft 365 (Already on your phone!)</strong>
         </div>
         
-        <!-- ✅ Download Info -->
-        <div class="download-info" style="background: #e8f4f8; border-left: 4px solid #667eea; padding: 12px; margin: 15px; border-radius: 8px; font-size: 13px;">
+        <div class="download-info">
             <strong>📥 Download Location:</strong> Files save honge aapke <strong>"Downloads"</strong> folder mein. PNG files Gallery mein bhi dikhengi!
         </div>
         
-        <!-- ✅ FIXED: Download Section with View + Download -->
         <div id="downloadSection">
             <h4>📥 Download Your Analysis Files:</h4>
             <div class="download-grid">
@@ -144,15 +132,15 @@
                     <p>Opens in Gallery</p>
                 </div>
                 
-                <!-- HTML Report -->
+                <!-- ✅ EXCEL REPORT (ADDED!) -->
                 <div class="download-card">
-                    <div class="icon">🌐</div>
-                    <h5>HTML Report</h5>
+                    <div class="icon">📄</div>
+                    <h5>Excel Report (.xlsx)</h5>
                     <div class="btn-group">
-                        <button class="view-btn" id="viewHTMLBtn" onclick="viewHTML()" disabled>👁️ View in Browser</button>
-                        <button id="htmlBtn" onclick="downloadHTML()" disabled>💾 Download</button>
+                        <button class="view-btn" id="viewExcelBtn" onclick="viewExcel()" disabled>👁️ View Info</button>
+                        <button id="excelBtn" onclick="downloadExcel()" disabled>💾 Download</button>
                     </div>
-                    <p>Opens in Any Browser</p>
+                    <p>Opens in Microsoft 365</p>
                 </div>
                 
                 <!-- CSV Data -->
@@ -160,10 +148,21 @@
                     <div class="icon">📄</div>
                     <h5>CSV Data</h5>
                     <div class="btn-group">
-                        <button class="view-btn" id="viewCSVBtn" onclick="viewCSV()" disabled>👁️ View in Browser</button>
+                        <button class="view-btn" id="viewCSVBtn" onclick="viewCSV()" disabled>👁️ View</button>
                         <button id="csvBtn" onclick="downloadCSV()" disabled>💾 Download</button>
                     </div>
-                    <p>Opens in Browser/Excel</p>
+                    <p>Opens in Excel/Sheets</p>
+                </div>
+                
+                <!-- HTML Report -->
+                <div class="download-card">
+                    <div class="icon">🌐</div>
+                    <h5>HTML Report</h5>
+                    <div class="btn-group">
+                        <button class="view-btn" id="viewHTMLBtn" onclick="viewHTML()" disabled>👁️ View</button>
+                        <button id="htmlBtn" onclick="downloadHTML()" disabled>💾 Download</button>
+                    </div>
+                    <p>Opens in Browser</p>
                 </div>
                 
                 <!-- Text Reports -->
@@ -179,7 +178,7 @@
         </div>
         
         <div class="input-area">
-            <input type="text" id="userInput" placeholder="Ask: 'dashboard', 'export html', 'top 5'..." disabled>
+            <input type="text" id="userInput" placeholder="Ask: 'export excel', 'export csv', 'dashboard'..." disabled>
             <button onclick="sendMessage()" id="sendBtn" disabled>Send</button>
         </div>
         
@@ -190,8 +189,9 @@
             <button onclick="quickCommand('top 5')">🏆 Top 5</button>
             <button onclick="quickCommand('average')">📊 Average</button>
             <button onclick="quickCommand('bar chart')">📊 Bar Chart</button>
-            <button onclick="quickCommand('export html')">🌐 Export HTML</button>
+            <button onclick="quickCommand('export excel')">📄 Export Excel</button>
             <button onclick="quickCommand('export csv')">📄 Export CSV</button>
+            <button onclick="quickCommand('export html')">🌐 Export HTML</button>
         </div>
         
         <div class="nav-links">
@@ -199,7 +199,6 @@
         </div>
     </div>
     
-    <!-- ✅ File Viewer Modal -->
     <div id="viewerModal" class="viewer-modal">
         <div class="viewer-content">
             <span class="close-btn" onclick="closeViewer()">&times;</span>
@@ -207,7 +206,6 @@
         </div>
     </div>
     
-    <!-- Email Modal -->
     <div id="emailModal" class="modal">
         <div class="modal-content">
             <h3>📧 Send Report</h3>
@@ -227,6 +225,7 @@
         let dashboardReady = false;
         let htmlReady = false;
         let csvReady = false;
+        let excelReady = false;
 
         function addMessage(text, sender) {
             const chatBox = document.getElementById('chatBox');
@@ -355,8 +354,9 @@
                 }
                 const plotTriggers = ['plot', 'chart', 'graph', 'visualize', 'bar', 'hist'];
                 const dashboardTriggers = ['dashboard', 'multiple plots'];
-                const htmlTriggers = ['export', 'html'];
-                const csvTriggers = ['csv', 'download data'];
+                const excelTriggers = ['excel', 'xlsx'];
+                const csvTriggers = ['csv'];
+                const htmlTriggers = ['html'];
                 if(plotTriggers.some(t => msg.toLowerCase().includes(t)) || data.response.toLowerCase().includes("plot saved")) {
                     setTimeout(() => {
                         plotReady = true;
@@ -375,21 +375,30 @@
                         showDownloadSection();
                     }, 2500);
                 }
-                if(htmlTriggers.some(t => msg.toLowerCase().includes(t)) || data.response.toLowerCase().includes('html')) {
+                if(excelTriggers.some(t => msg.toLowerCase().includes(t)) || data.response.toLowerCase().includes('excel')) {
                     setTimeout(() => {
-                        htmlReady = true;
-                        document.getElementById('htmlBtn').innerText = '💾 Download';
-                        document.getElementById('htmlBtn').disabled = false;
-                        document.getElementById('viewHTMLBtn').disabled = false;
+                        excelReady = true;
+                        document.getElementById('excelBtn').innerText = '💾 Download Excel';
+                        document.getElementById('excelBtn').disabled = false;
+                        document.getElementById('viewExcelBtn').disabled = false;
                         showDownloadSection();
                     }, 1500);
                 }
                 if(csvTriggers.some(t => msg.toLowerCase().includes(t)) || data.response.toLowerCase().includes('csv')) {
                     setTimeout(() => {
                         csvReady = true;
-                        document.getElementById('csvBtn').innerText = '💾 Download';
+                        document.getElementById('csvBtn').innerText = '💾 Download CSV';
                         document.getElementById('csvBtn').disabled = false;
                         document.getElementById('viewCSVBtn').disabled = false;
+                        showDownloadSection();
+                    }, 1500);
+                }
+                if(htmlTriggers.some(t => msg.toLowerCase().includes(t)) || data.response.toLowerCase().includes('html')) {
+                    setTimeout(() => {
+                        htmlReady = true;
+                        document.getElementById('htmlBtn').innerText = '💾 Download HTML';
+                        document.getElementById('htmlBtn').disabled = false;
+                        document.getElementById('viewHTMLBtn').disabled = false;
                         showDownloadSection();
                     }, 1500);
                 }
@@ -409,7 +418,6 @@
             document.getElementById('chatBox').scrollTop = document.getElementById('chatBox').scrollHeight;
         }
 
-        // ✅ View Functions (In-Browser Preview)
         function viewPlot() {
             const container = document.getElementById('viewerContainer');
             container.innerHTML = '<img src="/plot.png?t=' + new Date().getTime() + '" alt="Plot">';
@@ -420,6 +428,10 @@
             const container = document.getElementById('viewerContainer');
             container.innerHTML = '<img src="/dashboard.png?t=' + new Date().getTime() + '" alt="Dashboard">';
             document.getElementById('viewerModal').style.display = 'flex';
+        }
+
+        function viewExcel() {
+            alert('📄 Excel file Microsoft 365 app mein open hogi!\n\nDownload button dabao → File download hogi → Microsoft 365 se kholein.');
         }
 
         function viewHTML() {
@@ -439,7 +451,6 @@
             document.getElementById('viewerContainer').innerHTML = '';
         }
 
-        // ✅ Download Functions
         function downloadPlot() {
             if (!plotReady) { alert('Plot ready nahi hai! "create bar chart" command do.'); return; }
             const link = document.createElement('a');
@@ -455,6 +466,16 @@
             const link = document.createElement('a');
             link.href = '/dashboard.png?t=' + new Date().getTime();
             link.download = 'dashboard_' + new Date().getTime() + '.png';
+            document.body.appendChild(link);
+            link.click();
+            document.body.removeChild(link);
+        }
+
+        function downloadExcel() {
+            if (!excelReady) { alert('Excel ready nahi hai! "export excel" command do.'); return; }
+            const link = document.createElement('a');
+            link.href = '/static/analysis_report.xlsx?t=' + new Date().getTime();
+            link.download = 'analysis_report_' + new Date().getTime() + '.xlsx';
             document.body.appendChild(link);
             link.click();
             document.body.removeChild(link);
@@ -503,7 +524,6 @@
             if (e.key === 'Enter' && !this.disabled) sendMessage();
         });
         
-        // Close viewer on outside click
         document.getElementById('viewerModal').addEventListener('click', function(e) {
             if (e.target === this) closeViewer();
         });
