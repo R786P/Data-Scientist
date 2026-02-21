@@ -34,15 +34,16 @@
         .input-area button { background:#667eea; color:white; border:none; padding:12px 28px; border-radius:30px; cursor:pointer; font-weight: bold; }
         .input-area button:disabled { background: #ccc; cursor: not-allowed; }
         
-        /* Plot Section */
+        /* ✅ Plot Section */
         #plotSection { padding: 15px; margin: 15px; background: #fff; border-radius: 12px; border: 1px solid #eee; display: none; text-align: center; }
         #plotImg { max-width:100%; border-radius:8px; border: 1px solid #ddd; margin-bottom: 10px; }
-        .dl-btn { width:100%; padding:12px; background:#ff6b6b; color:white; border:none; border-radius:8px; cursor:pointer; font-weight: bold; transition: 0.3s; margin-bottom: 10px; }
-        .dl-btn:hover { background: #ee5253; }
         
         /* ✅ HEADMASTER: Dashboard Section */
         #dashboardSection { padding: 15px; margin: 15px; background: #fff; border-radius: 12px; border: 1px solid #eee; display: none; text-align: center; }
         #dashboardImg { max-width:100%; border-radius:8px; border: 1px solid #ddd; margin-bottom: 10px; }
+        
+        .dl-btn { width:100%; padding:12px; background:#ff6b6b; color:white; border:none; border-radius:8px; cursor:pointer; font-weight: bold; transition: 0.3s; margin-bottom: 10px; }
+        .dl-btn:hover { background: #ee5253; }
         
         /* ✅ PHASE 1: Email Button */
         .email-btn { width:100%; padding:12px; background:linear-gradient(135deg, #11998e, #38ef7d); color:white; border:none; border-radius:8px; cursor:pointer; font-weight: bold; transition: 0.3s; margin-top: 10px; }
@@ -107,9 +108,13 @@
             <a id="downloadLink" href="/plot.png" download="analysis_report.png">
                 <button class="dl-btn">💾 Download High-Res Plot</button>
             </a>
+            <!-- ✅ Download All Text Reports -->
+            <button onclick="downloadAllReports()" class="download-all-btn">📄 Download All Text Reports</button>
+            <!-- ✅ PHASE 1: Email Button -->
+            <button onclick="openEmailModal()" class="email-btn">📧 Send Report via Email</button>
         </div>
         
-        <!-- ✅ HEADMASTER: Dashboard Section -->
+        <!-- ✅ HEADMASTER: Dashboard Section (FIXED - No Duplicate ID) -->
         <div id="dashboardSection">
             <h4 style="margin-bottom:10px; color:#555; font-size:13px; text-align: left;">📈 Analytics Dashboard (Tableau Style):</h4>
             <img id="dashboardImg" src="">
@@ -134,18 +139,6 @@
             <button onclick="quickCommand('pie chart')">🥧 Pie Chart</button>
             <button onclick="quickCommand('box plot')">📦 Box Plot</button>
             <button onclick="quickCommand('export excel')">📄 Export Excel</button>
-        </div>
-        
-        <div id="plotSection" style="padding: 15px; margin: 15px; background: #fff; border-radius: 12px; border: 1px solid #eee; display: none; text-align: center;">
-            <h4 style="margin-bottom:10px; color:#555; font-size:13px; text-align: left;">Latest Visualization:</h4>
-            <img id="plotImg" src="">
-            <a id="downloadLink" href="/plot.png" download="analysis_report.png">
-                <button class="dl-btn">💾 Download High-Res Plot</button>
-            </a>
-            <!-- ✅ Download All Text Reports -->
-            <button onclick="downloadAllReports()" class="download-all-btn">📄 Download All Text Reports</button>
-            <!-- ✅ PHASE 1: Email Button -->
-            <button onclick="openEmailModal()" class="email-btn">📧 Send Report via Email</button>
         </div>
         
         <div class="nav-links">
