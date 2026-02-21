@@ -11,6 +11,7 @@ from core.ml import MLModels
 try:
     from langchain_groq import ChatGroq
     from langchain_experimental.agents import create_pandas_dataframe_agent
+    from langchain_core.messages import HumanMessage, SystemMessage
     LLM_AVAILABLE = True
 except ImportError:
     LLM_AVAILABLE = False
@@ -25,17 +26,18 @@ class DataScienceAgent:
         self.available_columns = []
         self.numeric_columns = []
         self.categorical_columns = []
-        
+        self.chat_history = []  # ✅ Conversation memory for AI mode
+
         self.color_palettes = {
             'default': ['#667eea', '#764ba2', '#f093fb', '#f5576c', '#4facfe'],
             'business': ['#2c3e50', '#3498db', '#e74c3c', '#2ecc71', '#f39c12'],
             'modern': ['#667eea', '#764ba2', '#4ECDC4', '#FF6B6B', '#95E1D3']
         }
-        
+
         if LLM_AVAILABLE and self.api_key:
             try:
-                llm = ChatGroq(
-                    temperature=0.5,
+                self.llm = ChatGroq(
+                    temperature=0.7,
                     groq_api_key=self.api_key,
                     model_name="llama-3.1-8b-instant",
                     max_tokens=500,
@@ -43,8 +45,11 @@ class DataScienceAgent:
                 )
                 print("✅ AI Mode: ON")
             except Exception as e:
+                self.llm = None
                 print(f"⚠️ AI Mode: OFF (API Key issue: {e})")
-    
+        else:
+            self.llm = None
+
     def load_data(self, fp):
         try:
             self.df = pd.read_csv(fp, encoding='latin1')
@@ -52,7 +57,8 @@ class DataScienceAgent:
             self.numeric_columns = self.df.select_dtypes('number').columns.tolist()
             self.categorical_columns = self.df.select_dtypes('object').columns.tolist()
             self.available_columns = list(self.df.columns)
-            
+            self.chat_history = []  # Reset chat history on new file
+
             if LLM_AVAILABLE and self.api_key:
                 try:
                     llm = ChatGroq(
@@ -67,12 +73,12 @@ class DataScienceAgent:
                     )
                 except Exception as e:
                     print(f"⚠️ AI Agent init failed: {e}")
-            
+
             eda_report = self._generate_auto_eda()
             return f"✅ Loaded {len(self.df)} rows × {len(self.df.columns)} columns\n\n{eda_report}"
         except Exception as e:
             return f"❌ Error loading {fp}: {str(e)}"
-    
+
     def _generate_auto_eda(self):
         report = []
         report.append("📊 **AUTO EDA REPORT**\n")
@@ -115,7 +121,7 @@ class DataScienceAgent:
         report.append("   ❌ `Average salary` (column doesn't exist)")
         report.append("   💡 Use actual column names from above!\n")
         return "\n".join(report)
-    
+
     def find_column(self, search_term):
         if self.df is None:
             return None
@@ -127,7 +133,7 @@ class DataScienceAgent:
             if any(word in col.lower() for word in search_lower.split()):
                 return col
         return None
-    
+
     def get_column_suggestions(self, search_term=""):
         if self.df is None:
             return "⚠️ No data loaded"
@@ -137,7 +143,7 @@ class DataScienceAgent:
         if self.categorical_columns:
             suggestions += f"\n📋 **Text Columns:** {', '.join(self.categorical_columns)}"
         return suggestions
-    
+
     def recommend_chart(self, query=""):
         if self.df is None:
             return "⚠️ Load data first"
@@ -154,9 +160,9 @@ class DataScienceAgent:
         if len(cat_cols) > 0:
             recommendations.append("🥧 Pie Chart (Composition)")
         return "💡 **Recommended Charts:**\n" + "\n".join(recommendations[:5])
-    
+
     def generate_plot(self, plot_type="bar", column=None, groupby=None, color_scheme="default"):
-        if self.df is None: 
+        if self.df is None:
             return "⚠️ Pehle file upload karo!"
         try:
             plt.style.use('seaborn-v0_8-whitegrid')
@@ -204,7 +210,7 @@ class DataScienceAgent:
             return f"✅ {plot_type.title()} Chart saved! View at: /plot.png"
         except Exception as e:
             return f"❌ Plot error: {str(e)}"
-    
+
     def generate_dashboard(self):
         if self.df is None:
             return "⚠️ Load data first"
@@ -240,7 +246,7 @@ class DataScienceAgent:
             return "✅ Dashboard saved! View at: /dashboard.png"
         except Exception as e:
             return f"❌ Dashboard error: {str(e)}"
-    
+
     def get_kpi_cards(self):
         if self.df is None:
             return "⚠️ Load data first"
@@ -255,8 +261,7 @@ class DataScienceAgent:
         missing = int(self.df.isnull().sum().sum())
         kpis.append(f"⚠️ **Missing Values:** {missing} ({missing/len(self.df)*100:.1f}%)")
         return "\n".join(kpis)
-    
-    # ✅ EXCEL EXPORT (Microsoft 365 Compatible)
+
     def export_to_excel(self, filename="analysis_report.xlsx"):
         if self.df is None:
             return "⚠️ Load data first"
@@ -273,8 +278,7 @@ class DataScienceAgent:
             return f"✅ Excel report saved: {filepath}\n\n📱 **Opens in Microsoft 365 App!**"
         except Exception as e:
             return f"❌ Export error: {str(e)}"
-    
-    # ✅ CSV EXPORT (Excel/Google Sheets Compatible)
+
     def export_to_csv(self, filename="analysis_report.csv"):
         if self.df is None:
             return "⚠️ Load data first"
@@ -285,8 +289,7 @@ class DataScienceAgent:
             return f"✅ CSV report saved: {filepath}\n\n📱 **Opens in Excel/Google Sheets!**"
         except Exception as e:
             return f"❌ Export error: {str(e)}"
-    
-    # ✅ HTML EXPORT (Browser Friendly)
+
     def export_to_html(self, filename="analysis_report.html"):
         if self.df is None:
             return "⚠️ Load data first"
@@ -324,7 +327,81 @@ class DataScienceAgent:
             return f"✅ HTML report saved: {filepath}\n\n📱 **Opens in ANY browser!**"
         except Exception as e:
             return f"❌ Export error: {str(e)}"
-    
+
+    # ═══════════════════════════════════════════════════
+    # ✅ NEW: CONVERSATIONAL AI MODE
+    # ═══════════════════════════════════════════════════
+    def conversational_query(self, user_message, user_id=None):
+        """
+        AI Chat Mode — Groq se natural conversational response leta hai.
+        Data context automatically inject hota hai system prompt mein.
+        """
+        if self.llm is None:
+            return "⚠️ AI Chat Mode ke liye GROQ_API_KEY required hai."
+
+        # Dataset ka context banao
+        if self.df is not None:
+            data_context = f"""
+Dataset loaded: {self.last_file}
+Shape: {len(self.df)} rows × {len(self.df.columns)} columns
+Numeric Columns: {', '.join(self.numeric_columns) if self.numeric_columns else 'None'}
+Text Columns: {', '.join(self.categorical_columns) if self.categorical_columns else 'None'}
+Missing Values: {int(self.df.isnull().sum().sum())}
+
+Quick Stats:
+{self.df.describe().to_string() if self.numeric_columns else 'No numeric data'}
+"""
+        else:
+            data_context = "Abhi koi dataset load nahi hua hai."
+
+        system_prompt = f"""Tu ek friendly aur expert Data Scientist AI Agent hai.
+Tu Hinglish mein baat karta hai — matlab Hindi aur English mix — bilkul natural tarike se, jaise dost baat karta hai.
+Tu data analysis, machine learning, statistics, aur visualization mein expert hai.
+
+Current Dataset Info:
+{data_context}
+
+Rules:
+- Friendly aur conversational reh, formal mat ban
+- Emojis use kar expressions ke liye
+- Short aur clear answers de
+- Agar koi chart ya export karna ho toh bata: "bar chart banao", "export csv" etc commands use kar sakte hain
+- Agar dataset ke baare mein kuch specific pucha jaye toh upar diye stats se answer de
+- Hinglish mein baat kar — pure Hindi ya pure English nahi"""
+
+        try:
+            # Chat history add karo (last 6 messages — memory)
+            messages = [SystemMessage(content=system_prompt)]
+            for hist in self.chat_history[-6:]:
+                messages.append(hist)
+            messages.append(HumanMessage(content=user_message))
+
+            response = self.llm.invoke(messages)
+            ai_reply = response.content.strip()
+
+            # History update karo
+            self.chat_history.append(HumanMessage(content=user_message))
+            self.chat_history.append(response)
+
+            # DB mein save karo
+            if user_id:
+                try:
+                    db = SessionLocal()
+                    db.add(UserQuery(
+                        query_text=f"[AI MODE] {user_message}",
+                        response_text=ai_reply,
+                        user_id=user_id
+                    ))
+                    db.commit()
+                    db.close()
+                except:
+                    pass
+
+            return ai_reply
+
+        except Exception as e:
+            return f"⚠️ AI Mode error: {str(e)}\n\nNormal mode mein switch karo."
+
     def query(self, q, user_id=None):
         q_original = q
         q = q.lower().strip()
@@ -468,7 +545,7 @@ class DataScienceAgent:
                "• 'export csv'\n"
                "• 'export html'\n\n"
                + self.get_column_suggestions(q))
-    
+
     def execute_python_code(self, code, user_id=None):
         try:
             safe_globals = {'pd': pd, 'np': np, 'plt': plt, 'sns': sns, 'df': self.df, '__builtins__': {}}
@@ -488,7 +565,7 @@ class DataScienceAgent:
             if self.df is not None:
                 error_msg += f"\n\n💡 **Available Columns:** {list(self.df.columns)}"
             return error_msg
-    
+
     def show_correlations(self):
         if self.df is None:
             return "⚠️ Load data first"
@@ -504,7 +581,7 @@ class DataScienceAgent:
         if not pairs:
             return "⚠️ No strong correlations (>0.5) found"
         return "🔗 Strong correlations:\n" + "\n".join(pairs[:5])
-    
+
     def predict_trend(self, col_name=None):
         if self.df is None:
             return "⚠️ Load data first"
@@ -523,7 +600,7 @@ class DataScienceAgent:
         trend = "↗️ Upward" if last3[-1] > last3[0] else "↘️ Downward" if last3[-1] < last3[0] else "➡️ Stable"
         next_val = series[-1] + (series[-1] - series[-2]) if len(series) > 1 else series[-1]
         return f"📈 Trend: {trend}\nNext: {next_val:,.2f}"
-    
+
     def segment_customers(self):
         if self.df is None:
             return "⚠️ Load data first"
@@ -541,7 +618,7 @@ class DataScienceAgent:
             total = len(self.df)
             return f"👥 Segments:\nHigh: {high} ({high/total*100:.0f}%)\nMedium: {medium} ({medium/total*100:.0f}%)\nLow: {low} ({low/total*100:.0f}%)"
         return f"🏷️ {result['segment']} Segment\nDiscount: {result['discount_eligible']}"
-    
+
     def detect_outliers(self, col_name=None):
         if self.df is None:
             return "⚠️ Load data first"
