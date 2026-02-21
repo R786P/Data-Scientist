@@ -18,6 +18,7 @@
         .message { margin-bottom:15px; padding:12px 18px; border-radius:15px; max-width:85%; line-height: 1.5; font-size: 14px; white-space: pre-wrap; word-wrap: break-word; position: relative; }
         .user { background:#667eea; color:white; margin-left:auto; border-bottom-right-radius: 2px; }
         .bot { background:#f1f3f4; color:#333; border-bottom-left-radius: 2px; border: 1px solid #e0e0e0; }
+        .bot.ai-mode { background: linear-gradient(135deg, #f0f4ff, #e8f0fe); border: 1px solid #667eea; }
         .msg-download { position: absolute; top: 5px; right: 5px; background: rgba(102,126,234,0.2); border: none; border-radius: 5px; padding: 3px 8px; cursor: pointer; font-size: 11px; color: #667eea; opacity: 0; transition: 0.3s; }
         .message:hover .msg-download { opacity: 1; }
         .msg-download:hover { background: #667eea; color: white; }
@@ -26,6 +27,21 @@
         .input-area input:disabled { background: #f5f5f5; cursor: not-allowed; }
         .input-area button { background:#667eea; color:white; border:none; padding:12px 28px; border-radius:30px; cursor:pointer; font-weight: bold; }
         .input-area button:disabled { background: #ccc; cursor: not-allowed; }
+
+        /* ✅ AI MODE TOGGLE */
+        .ai-toggle-bar { display: flex; align-items: center; justify-content: center; gap: 12px; padding: 10px 20px; background: #f8f9ff; border-top: 1px solid #eee; border-bottom: 1px solid #eee; }
+        .ai-toggle-bar span { font-size: 13px; color: #555; font-weight: 500; }
+        .toggle-switch { position: relative; width: 52px; height: 26px; }
+        .toggle-switch input { opacity: 0; width: 0; height: 0; }
+        .toggle-slider { position: absolute; cursor: pointer; top: 0; left: 0; right: 0; bottom: 0; background-color: #ccc; border-radius: 26px; transition: 0.3s; }
+        .toggle-slider:before { position: absolute; content: ""; height: 20px; width: 20px; left: 3px; bottom: 3px; background-color: white; border-radius: 50%; transition: 0.3s; }
+        input:checked + .toggle-slider { background: linear-gradient(135deg, #667eea, #764ba2); }
+        input:checked + .toggle-slider:before { transform: translateX(26px); }
+        .ai-mode-badge { background: linear-gradient(135deg, #667eea, #764ba2); color: white; padding: 3px 10px; border-radius: 12px; font-size: 11px; font-weight: bold; display: none; }
+        .ai-mode-badge.visible { display: inline-block; }
+        .ai-mode-hint { font-size: 11px; color: #888; text-align: center; padding: 5px 15px; display: none; }
+        .ai-mode-hint.visible { display: block; }
+
         #downloadSection { padding: 15px; margin: 15px; background: #fff; border-radius: 12px; border: 1px solid #eee; display: none; }
         #downloadSection h4 { margin-bottom:15px; color:#555; font-size:14px; text-align: left; }
         .download-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 10px; }
@@ -71,7 +87,6 @@
         .app-recommendations { background: #fff3cd; border-left: 4px solid #ffc107; padding: 12px; margin: 15px; border-radius: 8px; font-size: 13px; }
         .app-recommendations strong { color: #856404; }
         .app-recommendations a { color: #667eea; text-decoration: none; font-weight: bold; }
-        .app-recommendations a:hover { text-decoration: underline; }
         .download-info { background: #e8f4f8; border-left: 4px solid #667eea; padding: 12px; margin: 15px; border-radius: 8px; font-size: 13px; }
         .download-info strong { color: #667eea; }
     </style>
@@ -79,20 +94,34 @@
 <body>
     <div class="container">
         <div class="header">
-            <div class="status-dot"><span class="dot"></span> Agent Live (v1.8 Headmaster)</div>
+            <div class="status-dot"><span class="dot"></span> Agent Live (v1.9 Headmaster)</div>
             <h1>🤖 Data Scientist Agent</h1>
             <p>Headmaster Edition - Excel + CSV + HTML</p>
         </div>
-        
+
         <div class="upload-box" id="dropZone" onclick="document.getElementById('fileInput').click()">
             <p id="uploadText">📁 Click to upload CSV/Excel to Database</p>
             <input type="file" id="fileInput" accept=".csv,.xlsx" style="display:none" onchange="uploadFile(this)">
         </div>
-        
+
         <div class="chat-box" id="chatBox">
             <div class="message bot">👋 Headmaster Mode Active! Upload data for Tableau-level insights.</div>
         </div>
-        
+
+        <!-- ✅ AI MODE TOGGLE BAR -->
+        <div class="ai-toggle-bar">
+            <span>⚡ Command Mode</span>
+            <label class="toggle-switch">
+                <input type="checkbox" id="aiModeToggle" onchange="toggleAIMode(this)">
+                <span class="toggle-slider"></span>
+            </label>
+            <span>🤖 AI Chat Mode</span>
+            <span class="ai-mode-badge" id="aiModeBadge">AI ON</span>
+        </div>
+        <div class="ai-mode-hint" id="aiModeHint">
+            🤖 AI Chat Mode ON — Ab seedha Hinglish mein baat karo! (e.g. "Bhai yeh data mujhe samjha")
+        </div>
+
         <div class="app-recommendations">
             <strong>📱 Recommended Apps (Free):</strong><br>
             • Android: <a href="https://play.google.com/store/apps/details?id=com.google.android.apps.nbu.files" target="_blank">Google Files</a><br>
@@ -100,15 +129,14 @@
             • Both: <a href="https://play.google.com/store/apps/details?id=com.google.android.apps.docs" target="_blank">Google Drive</a><br>
             • Excel: <strong>Microsoft 365 (Already on your phone!)</strong>
         </div>
-        
+
         <div class="download-info">
             <strong>📥 Download Location:</strong> Files save honge aapke <strong>"Downloads"</strong> folder mein. PNG files Gallery mein bhi dikhengi!
         </div>
-        
+
         <div id="downloadSection">
             <h4>📥 Download Your Analysis Files:</h4>
             <div class="download-grid">
-                <!-- Plot -->
                 <div class="download-card">
                     <div class="icon">📊</div>
                     <h5>Latest Plot (PNG)</h5>
@@ -118,8 +146,6 @@
                     </div>
                     <p>Opens in Gallery</p>
                 </div>
-                
-                <!-- Dashboard -->
                 <div class="download-card">
                     <div class="icon">📈</div>
                     <h5>Dashboard (PNG)</h5>
@@ -129,8 +155,6 @@
                     </div>
                     <p>Opens in Gallery</p>
                 </div>
-                
-                <!-- Excel Report -->
                 <div class="download-card">
                     <div class="icon">📄</div>
                     <h5>Excel Report (.xlsx)</h5>
@@ -140,8 +164,6 @@
                     </div>
                     <p>Opens in Microsoft 365</p>
                 </div>
-                
-                <!-- CSV Data -->
                 <div class="download-card">
                     <div class="icon">📄</div>
                     <h5>CSV Data</h5>
@@ -151,8 +173,6 @@
                     </div>
                     <p>Opens in Excel/Sheets</p>
                 </div>
-                
-                <!-- HTML Report -->
                 <div class="download-card">
                     <div class="icon">🌐</div>
                     <h5>HTML Report</h5>
@@ -162,8 +182,6 @@
                     </div>
                     <p>Opens in Browser</p>
                 </div>
-                
-                <!-- Text Reports -->
                 <div class="download-card">
                     <div class="icon">📝</div>
                     <h5>All Text Reports</h5>
@@ -171,15 +189,14 @@
                     <p>Opens in Any App</p>
                 </div>
             </div>
-            
             <button onclick="openEmailModal()" class="email-btn">📧 Send All Reports via Email</button>
         </div>
-        
+
         <div class="input-area">
-            <input type="text" id="userInput" placeholder="Ask: 'export excel', 'export csv', 'dashboard'..." disabled>
+            <input type="text" id="userInput" placeholder="Ask: 'export excel', 'dashboard', ya AI mode mein kuch bhi..." disabled>
             <button onclick="sendMessage()" id="sendBtn" disabled>Send</button>
         </div>
-        
+
         <div class="quick-commands">
             <h4>⚡ Quick Commands:</h4>
             <button onclick="quickCommand('dashboard')">📊 Dashboard</button>
@@ -191,19 +208,19 @@
             <button onclick="quickCommand('export csv')">📄 Export CSV</button>
             <button onclick="quickCommand('export html')">🌐 Export HTML</button>
         </div>
-        
+
         <div class="nav-links">
             <a href="/dashboard">📊 Dashboard</a> | <a href="/logout">🚪 Logout</a>
         </div>
     </div>
-    
+
     <div id="viewerModal" class="viewer-modal">
         <div class="viewer-content">
             <span class="close-btn" onclick="closeViewer()">&times;</span>
             <div id="viewerContainer"></div>
         </div>
     </div>
-    
+
     <div id="emailModal" class="modal">
         <div class="modal-content">
             <h3>📧 Send Report</h3>
@@ -224,21 +241,41 @@
         let htmlReady = false;
         let csvReady = false;
         let excelReady = false;
+        let aiModeEnabled = false; // ✅ AI Mode state
+
+        // ✅ AI MODE TOGGLE
+        function toggleAIMode(checkbox) {
+            aiModeEnabled = checkbox.checked;
+            const badge = document.getElementById('aiModeBadge');
+            const hint = document.getElementById('aiModeHint');
+            const input = document.getElementById('userInput');
+            if (aiModeEnabled) {
+                badge.classList.add('visible');
+                hint.classList.add('visible');
+                input.placeholder = "Bhai seedha puch lo kuch bhi... 🤖";
+                addMessage("🤖 AI Chat Mode ON! Ab natural Hinglish mein baat karo. Dataset ke baare mein kuch bhi puch sakte ho!", 'bot ai-mode');
+            } else {
+                badge.classList.remove('visible');
+                hint.classList.remove('visible');
+                input.placeholder = "Ask: 'export excel', 'dashboard', 'top 5'...";
+                addMessage("⚡ Command Mode ON! Normal commands use karo.", 'bot');
+            }
+        }
 
         function addMessage(text, sender) {
             const chatBox = document.getElementById('chatBox');
             const msgDiv = document.createElement('div');
             msgDiv.className = 'message ' + sender;
             msgDiv.innerText = text;
-            if (sender === 'bot') {
+            if (sender.includes('bot')) {
                 const downloadBtn = document.createElement('button');
                 downloadBtn.className = 'msg-download';
-                downloadBtn.innerText = '💾 Download';
+                downloadBtn.innerText = '💾';
                 downloadBtn.onclick = function() { downloadSingleMessage(text); };
                 msgDiv.appendChild(downloadBtn);
-                chatHistory.push({ type: sender, text: text, timestamp: new Date().toLocaleString() });
+                chatHistory.push({ type: 'bot', text: text, timestamp: new Date().toLocaleString() });
             } else {
-                chatHistory.push({ type: sender, text: text, timestamp: new Date().toLocaleString() });
+                chatHistory.push({ type: 'user', text: text, timestamp: new Date().toLocaleString() });
             }
             chatBox.appendChild(msgDiv);
             chatBox.scrollTop = chatBox.scrollHeight;
@@ -263,8 +300,7 @@
             content += "Generated: " + new Date().toLocaleString() + "\n\n";
             chatHistory.forEach((msg) => {
                 content += "[" + msg.timestamp + "] " + (msg.type === 'user' ? '👤 You' : '🤖 Bot') + ":\n";
-                content += msg.text + "\n\n";
-                content += "-".repeat(50) + "\n\n";
+                content += msg.text + "\n\n" + "-".repeat(50) + "\n\n";
             });
             const blob = new Blob([content], { type: 'text/plain' });
             const url = URL.createObjectURL(blob);
@@ -288,8 +324,8 @@
         }
 
         function removeTypingIndicator() {
-            const typingIndicator = document.getElementById('typingIndicator');
-            if (typingIndicator) { typingIndicator.remove(); }
+            const el = document.getElementById('typingIndicator');
+            if (el) el.remove();
         }
 
         function setInputState(enabled) {
@@ -310,8 +346,8 @@
             setInputState(false);
             fetch('/upload', { method: 'POST', body: formData })
             .then(res => res.json())
-            .then(data => { 
-                addMessage("✅ " + data.message, 'bot'); 
+            .then(data => {
+                addMessage("✅ " + data.message, 'bot');
                 document.getElementById('uploadText').innerText = "📁 File Synced: " + input.files[0].name;
                 isFileReady = true;
                 setInputState(true);
@@ -336,64 +372,44 @@
             isProcessing = true;
             setInputState(false);
             showTypingIndicator();
+
             fetch('/chat', {
                 method: 'POST',
                 headers: {'Content-Type': 'application/json'},
-                body: JSON.stringify({message: msg})
+                body: JSON.stringify({
+                    message: msg,
+                    ai_mode: aiModeEnabled  // ✅ AI mode flag backend ko bhejo
+                })
             })
             .then(res => res.json())
             .then(data => {
                 removeTypingIndicator();
-                addMessage(data.response, 'bot');
-                if (data.response.includes("Load data first")) {
-                    isFileReady = false;
-                    document.getElementById('uploadText').innerText = "📁 Click to upload CSV";
-                    setInputState(false);
-                }
-                const plotTriggers = ['plot', 'chart', 'graph', 'visualize', 'bar', 'hist'];
-                const dashboardTriggers = ['dashboard', 'multiple plots'];
-                const excelTriggers = ['excel', 'xlsx'];
-                const csvTriggers = ['csv'];
-                const htmlTriggers = ['html'];
-                if(plotTriggers.some(t => msg.toLowerCase().includes(t)) || data.response.toLowerCase().includes("plot saved")) {
-                    setTimeout(() => {
-                        plotReady = true;
-                        document.getElementById('plotBtn').disabled = false;
-                        document.getElementById('viewPlotBtn').disabled = false;
-                        showDownloadSection();
-                    }, 1500);
-                }
-                if(dashboardTriggers.some(t => msg.toLowerCase().includes(t)) || data.response.toLowerCase().includes('dashboard saved')) {
-                    setTimeout(() => {
-                        dashboardReady = true;
-                        document.getElementById('dashboardBtn').disabled = false;
-                        document.getElementById('viewDashboardBtn').disabled = false;
-                        showDownloadSection();
-                    }, 2500);
-                }
-                if(excelTriggers.some(t => msg.toLowerCase().includes(t)) || data.response.toLowerCase().includes('excel')) {
-                    setTimeout(() => {
-                        excelReady = true;
-                        document.getElementById('excelBtn').disabled = false;
-                        document.getElementById('viewExcelBtn').disabled = false;
-                        showDownloadSection();
-                    }, 1500);
-                }
-                if(csvTriggers.some(t => msg.toLowerCase().includes(t)) || data.response.toLowerCase().includes('csv')) {
-                    setTimeout(() => {
-                        csvReady = true;
-                        document.getElementById('csvBtn').disabled = false;
-                        document.getElementById('viewCSVBtn').disabled = false;
-                        showDownloadSection();
-                    }, 1500);
-                }
-                if(htmlTriggers.some(t => msg.toLowerCase().includes(t)) || data.response.toLowerCase().includes('html')) {
-                    setTimeout(() => {
-                        htmlReady = true;
-                        document.getElementById('htmlBtn').disabled = false;
-                        document.getElementById('viewHTMLBtn').disabled = false;
-                        showDownloadSection();
-                    }, 1500);
+                // ✅ AI mode mein alag style
+                const msgClass = aiModeEnabled ? 'bot ai-mode' : 'bot';
+                addMessage(data.response, msgClass);
+
+                // Normal mode triggers (same as before)
+                if (!aiModeEnabled) {
+                    const plotTriggers = ['plot', 'chart', 'graph', 'visualize', 'bar', 'hist'];
+                    const dashboardTriggers = ['dashboard', 'multiple plots'];
+                    const excelTriggers = ['excel', 'xlsx'];
+                    const csvTriggers = ['csv'];
+                    const htmlTriggers = ['html'];
+                    if(plotTriggers.some(t => msg.toLowerCase().includes(t)) || data.response.toLowerCase().includes("plot saved")) {
+                        setTimeout(() => { plotReady = true; document.getElementById('plotBtn').disabled = false; document.getElementById('viewPlotBtn').disabled = false; showDownloadSection(); }, 1500);
+                    }
+                    if(dashboardTriggers.some(t => msg.toLowerCase().includes(t)) || data.response.toLowerCase().includes('dashboard saved')) {
+                        setTimeout(() => { dashboardReady = true; document.getElementById('dashboardBtn').disabled = false; document.getElementById('viewDashboardBtn').disabled = false; showDownloadSection(); }, 2500);
+                    }
+                    if(excelTriggers.some(t => msg.toLowerCase().includes(t)) || data.response.toLowerCase().includes('excel')) {
+                        setTimeout(() => { excelReady = true; document.getElementById('excelBtn').disabled = false; document.getElementById('viewExcelBtn').disabled = false; showDownloadSection(); }, 1500);
+                    }
+                    if(csvTriggers.some(t => msg.toLowerCase().includes(t)) || data.response.toLowerCase().includes('csv')) {
+                        setTimeout(() => { csvReady = true; document.getElementById('csvBtn').disabled = false; document.getElementById('viewCSVBtn').disabled = false; showDownloadSection(); }, 1500);
+                    }
+                    if(htmlTriggers.some(t => msg.toLowerCase().includes(t)) || data.response.toLowerCase().includes('html')) {
+                        setTimeout(() => { htmlReady = true; document.getElementById('htmlBtn').disabled = false; document.getElementById('viewHTMLBtn').disabled = false; showDownloadSection(); }, 1500);
+                    }
                 }
                 isProcessing = false;
                 setInputState(true);
@@ -408,121 +424,65 @@
 
         function showDownloadSection() {
             document.getElementById('downloadSection').style.display = 'block';
-            document.getElementById('chatBox').scrollTop = document.getElementById('chatBox').scrollHeight;
         }
 
-        // ✅ View Functions
         function viewPlot() {
-            const container = document.getElementById('viewerContainer');
-            container.innerHTML = '<img src="/plot.png?t=' + new Date().getTime() + '" alt="Plot">';
+            document.getElementById('viewerContainer').innerHTML = '<img src="/plot.png?t=' + Date.now() + '" alt="Plot">';
             document.getElementById('viewerModal').style.display = 'flex';
         }
-
         function viewDashboard() {
-            const container = document.getElementById('viewerContainer');
-            container.innerHTML = '<img src="/dashboard.png?t=' + new Date().getTime() + '" alt="Dashboard">';
+            document.getElementById('viewerContainer').innerHTML = '<img src="/dashboard.png?t=' + Date.now() + '" alt="Dashboard">';
             document.getElementById('viewerModal').style.display = 'flex';
         }
-
         function viewExcel() {
-            alert('📄 Excel file Microsoft 365 app mein open hogi!\n\nDownload button dabao → File download hogi → Microsoft 365 se kholein.');
+            alert('📄 Excel file Microsoft 365 mein open hogi!\nDownload karo phir Microsoft 365 se kholo.');
         }
-
-        // ✅ FIXED: Memory se serve hoga — Render pe kaam karega!
         function viewHTML() {
-            const container = document.getElementById('viewerContainer');
-            container.innerHTML = '<iframe src="/download/html?t=' + new Date().getTime() + '"></iframe>';
+            document.getElementById('viewerContainer').innerHTML = '<iframe src="/download/html?t=' + Date.now() + '"></iframe>';
             document.getElementById('viewerModal').style.display = 'flex';
         }
-
         function viewCSV() {
-            const container = document.getElementById('viewerContainer');
-            container.innerHTML = '<iframe src="/download/csv?t=' + new Date().getTime() + '"></iframe>';
+            document.getElementById('viewerContainer').innerHTML = '<iframe src="/download/csv?t=' + Date.now() + '"></iframe>';
             document.getElementById('viewerModal').style.display = 'flex';
         }
-
         function closeViewer() {
             document.getElementById('viewerModal').style.display = 'none';
             document.getElementById('viewerContainer').innerHTML = '';
         }
 
-        // ✅ Download Functions — FIXED URLs
         function downloadPlot() {
-            if (!plotReady) { alert('Plot ready nahi hai! "create bar chart" command do.'); return; }
-            const link = document.createElement('a');
-            link.href = '/plot.png?t=' + new Date().getTime();
-            link.download = 'plot_' + new Date().getTime() + '.png';
-            document.body.appendChild(link);
-            link.click();
-            document.body.removeChild(link);
+            if (!plotReady) { alert('Plot ready nahi! "bar chart" command do.'); return; }
+            const a = document.createElement('a'); a.href = '/plot.png?t=' + Date.now(); a.download = 'plot_' + Date.now() + '.png'; document.body.appendChild(a); a.click(); document.body.removeChild(a);
         }
-
         function downloadDashboard() {
-            if (!dashboardReady) { alert('Dashboard ready nahi hai! "show dashboard" command do.'); return; }
-            const link = document.createElement('a');
-            link.href = '/dashboard.png?t=' + new Date().getTime();
-            link.download = 'dashboard_' + new Date().getTime() + '.png';
-            document.body.appendChild(link);
-            link.click();
-            document.body.removeChild(link);
+            if (!dashboardReady) { alert('Dashboard ready nahi! "dashboard" command do.'); return; }
+            const a = document.createElement('a'); a.href = '/dashboard.png?t=' + Date.now(); a.download = 'dashboard_' + Date.now() + '.png'; document.body.appendChild(a); a.click(); document.body.removeChild(a);
         }
-
         function downloadExcel() {
-            if (!excelReady) { alert('Excel ready nahi hai! "export excel" command do.'); return; }
-            const link = document.createElement('a');
-            // ✅ FIXED: /download/excel (memory se — Render pe kaam karega!)
-            link.href = '/download/excel?t=' + new Date().getTime();
-            link.download = 'analysis_report_' + new Date().getTime() + '.xlsx';
-            document.body.appendChild(link);
-            link.click();
-            document.body.removeChild(link);
+            if (!excelReady) { alert('Excel ready nahi! "export excel" command do.'); return; }
+            const a = document.createElement('a'); a.href = '/download/excel?t=' + Date.now(); a.download = 'report_' + Date.now() + '.xlsx'; document.body.appendChild(a); a.click(); document.body.removeChild(a);
         }
-
         function downloadHTML() {
-            if (!htmlReady) { alert('HTML ready nahi hai! "export html" command do.'); return; }
-            const link = document.createElement('a');
-            // ✅ FIXED: /download/html (memory se — Render pe kaam karega!)
-            link.href = '/download/html?t=' + new Date().getTime();
-            link.download = 'report_' + new Date().getTime() + '.html';
-            document.body.appendChild(link);
-            link.click();
-            document.body.removeChild(link);
+            if (!htmlReady) { alert('HTML ready nahi! "export html" command do.'); return; }
+            const a = document.createElement('a'); a.href = '/download/html?t=' + Date.now(); a.download = 'report_' + Date.now() + '.html'; document.body.appendChild(a); a.click(); document.body.removeChild(a);
+        }
+        function downloadCSV() {
+            if (!csvReady) { alert('CSV ready nahi! "export csv" command do.'); return; }
+            const a = document.createElement('a'); a.href = '/download/csv?t=' + Date.now(); a.download = 'data_' + Date.now() + '.csv'; document.body.appendChild(a); a.click(); document.body.removeChild(a);
         }
 
-        function downloadCSV() {
-            if (!csvReady) { alert('CSV ready nahi hai! "export csv" command do.'); return; }
-            const link = document.createElement('a');
-            // ✅ FIXED: /download/csv (memory se — Render pe kaam karega!)
-            link.href = '/download/csv?t=' + new Date().getTime();
-            link.download = 'data_' + new Date().getTime() + '.csv';
-            document.body.appendChild(link);
-            link.click();
-            document.body.removeChild(link);
-        }
-        
         function openEmailModal() { document.getElementById('emailModal').style.display = 'flex'; }
         function closeEmailModal() { document.getElementById('emailModal').style.display = 'none'; }
-        
         function sendReport() {
             const email = document.getElementById('clientEmail').value;
             if(!email) { alert('Email enter karo'); return; }
-            fetch('/send_report', {
-                method: 'POST',
-                headers: {'Content-Type': 'application/json'},
-                body: JSON.stringify({email: email})
-            })
-            .then(res => res.json())
-            .then(data => {
-                alert(data.message || data.error);
-                if(data.message) closeEmailModal();
-            })
-            .catch(err => alert('Error'));
+            fetch('/send_report', { method: 'POST', headers: {'Content-Type': 'application/json'}, body: JSON.stringify({email}) })
+            .then(res => res.json()).then(data => { alert(data.message || data.error); if(data.message) closeEmailModal(); }).catch(() => alert('Error'));
         }
-        
+
         document.getElementById('userInput').addEventListener('keypress', function(e) {
             if (e.key === 'Enter' && !this.disabled) sendMessage();
         });
-        
         document.getElementById('viewerModal').addEventListener('click', function(e) {
             if (e.target === this) closeViewer();
         });
