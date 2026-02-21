@@ -96,8 +96,9 @@ class DataScienceAgent:
             report.append(f"   ✅ `Group by {first_cat}`")
         report.append(f"   ✅ `Create bar chart`")
         report.append(f"   ✅ `Show dashboard`")
-        report.append(f"   ✅ `Export HTML`")
-        report.append(f"   ✅ `Export CSV`\n")
+        report.append(f"   ✅ `Export Excel`")
+        report.append(f"   ✅ `Export CSV`")
+        report.append(f"   ✅ `Export HTML`\n")
         report.append("💻 **WORKING Python Code:**")
         if self.numeric_columns:
             first_num = self.numeric_columns[0]
@@ -255,7 +256,37 @@ class DataScienceAgent:
         kpis.append(f"⚠️ **Missing Values:** {missing} ({missing/len(self.df)*100:.1f}%)")
         return "\n".join(kpis)
     
-    # ✅ HTML EXPORT (Browser-friendly)
+    # ✅ EXCEL EXPORT (Microsoft 365 Compatible)
+    def export_to_excel(self, filename="analysis_report.xlsx"):
+        if self.df is None:
+            return "⚠️ Load data first"
+        try:
+            os.makedirs('static', exist_ok=True)
+            filepath = f"static/{filename}"
+            with pd.ExcelWriter(filepath, engine='openpyxl') as writer:
+                self.df.to_excel(writer, sheet_name='Raw Data', index=False)
+                summary = self.df.describe()
+                summary.to_excel(writer, sheet_name='Summary Stats')
+                missing = self.df.isnull().sum()
+                missing_df = pd.DataFrame({'Column': missing.index, 'Missing Count': missing.values})
+                missing_df.to_excel(writer, sheet_name='Missing Values', index=False)
+            return f"✅ Excel report saved: {filepath}\n\n📱 **Opens in Microsoft 365 App!**"
+        except Exception as e:
+            return f"❌ Export error: {str(e)}"
+    
+    # ✅ CSV EXPORT (Excel/Google Sheets Compatible)
+    def export_to_csv(self, filename="analysis_report.csv"):
+        if self.df is None:
+            return "⚠️ Load data first"
+        try:
+            os.makedirs('static', exist_ok=True)
+            filepath = f"static/{filename}"
+            self.df.to_csv(filepath, index=False, encoding='utf-8-sig')
+            return f"✅ CSV report saved: {filepath}\n\n📱 **Opens in Excel/Google Sheets!**"
+        except Exception as e:
+            return f"❌ Export error: {str(e)}"
+    
+    # ✅ HTML EXPORT (Browser Friendly)
     def export_to_html(self, filename="analysis_report.html"):
         if self.df is None:
             return "⚠️ Load data first"
@@ -294,36 +325,6 @@ class DataScienceAgent:
         except Exception as e:
             return f"❌ Export error: {str(e)}"
     
-    # ✅ CSV EXPORT (Browser-friendly)
-    def export_to_csv(self, filename="analysis_report.csv"):
-        if self.df is None:
-            return "⚠️ Load data first"
-        try:
-            os.makedirs('static', exist_ok=True)
-            filepath = f"static/{filename}"
-            self.df.to_csv(filepath, index=False)
-            return f"✅ CSV report saved: {filepath}\n\n📱 **Opens in browser!**"
-        except Exception as e:
-            return f"❌ Export error: {str(e)}"
-    
-    # ✅ EXCEL EXPORT (Original)
-    def export_to_excel(self, filename="analysis_report.xlsx"):
-        if self.df is None:
-            return "⚠️ Load data first"
-        try:
-            os.makedirs('static', exist_ok=True)
-            filepath = f"static/{filename}"
-            with pd.ExcelWriter(filepath, engine='openpyxl') as writer:
-                self.df.to_excel(writer, sheet_name='Raw Data', index=False)
-                summary = self.df.describe()
-                summary.to_excel(writer, sheet_name='Summary Stats')
-                missing = self.df.isnull().sum()
-                missing_df = pd.DataFrame({'Column': missing.index, 'Missing Count': missing.values})
-                missing_df.to_excel(writer, sheet_name='Missing Values', index=False)
-            return f"✅ Excel report saved: {filepath}"
-        except Exception as e:
-            return f"❌ Export error: {str(e)}"
-    
     def query(self, q, user_id=None):
         q_original = q
         q = q.lower().strip()
@@ -339,8 +340,9 @@ class DataScienceAgent:
                    "• 'group by region'\n"
                    "• 'create bar chart'\n"
                    "• 'show dashboard'\n"
-                   "• 'export html'\n"
-                   "• 'export csv'\n\n"
+                   "• 'export excel'\n"
+                   "• 'export csv'\n"
+                   "• 'export html'\n\n"
                    "💻 **Python Code:**\n"
                    "• `df.head()`\n"
                    "• `df['column'].mean()`\n"
@@ -350,12 +352,12 @@ class DataScienceAgent:
             return self.generate_dashboard()
         if 'kpi' in q or 'metrics' in q or 'summary cards' in q:
             return self.get_kpi_cards()
-        if 'export' in q or 'html' in q:
-            return self.export_to_html()
-        if 'csv' in q or 'download data' in q:
-            return self.export_to_csv()
         if 'excel' in q:
             return self.export_to_excel()
+        if 'csv' in q:
+            return self.export_to_csv()
+        if 'html' in q or 'export' in q:
+            return self.export_to_html()
         if 'recommend' in q or 'suggest chart' in q or 'best chart' in q:
             return self.recommend_chart(q_original)
         if 'line chart' in q or 'time series' in q:
@@ -462,8 +464,9 @@ class DataScienceAgent:
                "• 'total'\n"
                "• 'dashboard'\n"
                "• 'bar chart'\n"
-               "• 'export html'\n"
-               "• 'export csv'\n\n"
+               "• 'export excel'\n"
+               "• 'export csv'\n"
+               "• 'export html'\n\n"
                + self.get_column_suggestions(q))
     
     def execute_python_code(self, code, user_id=None):
