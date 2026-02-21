@@ -33,7 +33,7 @@
         .input-area button { background:#667eea; color:white; border:none; padding:12px 28px; border-radius:30px; cursor:pointer; font-weight: bold; }
         .input-area button:disabled { background: #ccc; cursor: not-allowed; }
         
-        /* ✅ Download Section - FIXED */
+        /* ✅ FIXED: Download Section */
         #downloadSection { padding: 15px; margin: 15px; background: #fff; border-radius: 12px; border: 1px solid #eee; display: none; }
         #downloadSection h4 { margin-bottom:15px; color:#555; font-size:14px; text-align: left; }
         
@@ -43,9 +43,9 @@
         .download-card:hover { transform: translateY(-2px); box-shadow: 0 5px 15px rgba(0,0,0,0.1); }
         .download-card .icon { font-size: 30px; margin-bottom: 10px; }
         .download-card h5 { font-size: 13px; color: #333; margin-bottom: 10px; }
-        .download-card a { text-decoration: none; }
         .download-card button { width: 100%; padding: 10px; background: #667eea; color: white; border: none; border-radius: 8px; cursor: pointer; font-weight: bold; font-size: 12px; }
         .download-card button:hover { background: #5568d3; }
+        .download-card button:disabled { background: #ccc; cursor: not-allowed; }
         
         .email-btn { width:100%; padding:12px; background:linear-gradient(135deg, #11998e, #38ef7d); color:white; border:none; border-radius:8px; cursor:pointer; font-weight: bold; transition: 0.3s; margin-top: 15px; }
         .email-btn:hover { opacity: 0.9; }
@@ -79,12 +79,16 @@
         .quick-commands h4 { font-size: 12px; color: #666; margin-bottom: 8px; }
         .quick-commands button { background: white; border: 1px solid #667eea; color: #667eea; padding: 5px 12px; border-radius: 15px; margin: 3px; cursor: pointer; font-size: 11px; transition: 0.3s; }
         .quick-commands button:hover { background: #667eea; color: white; }
+        
+        /* ✅ Download Info Box */
+        .download-info { background: #e8f4f8; border-left: 4px solid #667eea; padding: 12px; margin: 15px; border-radius: 8px; font-size: 13px; }
+        .download-info strong { color: #667eea; }
     </style>
 </head>
 <body>
     <div class="container">
         <div class="header">
-            <div class="status-dot"><span class="dot"></span> Agent Live (v1.6 Headmaster)</div>
+            <div class="status-dot"><span class="dot"></span> Agent Live (v1.7 Headmaster)</div>
             <h1>🤖 Data Scientist Agent</h1>
             <p>Headmaster Edition - Tableau/Power BI Level</p>
         </div>
@@ -98,7 +102,12 @@
             <div class="message bot">👋 Headmaster Mode Active! Upload data for Tableau-level insights. Your queries are being securely logged.</div>
         </div>
         
-        <!-- ✅ FIXED: Unified Download Section -->
+        <!-- ✅ FIXED: Download Info -->
+        <div class="download-info">
+            <strong>📥 Download Location:</strong> Files save honge aapke phone/computer ke <strong>"Downloads"</strong> folder mein. Gallery mein PNG files dikh jayengi!
+        </div>
+        
+        <!-- ✅ FIXED: Download Section -->
         <div id="downloadSection">
             <h4>📥 Download Your Analysis Files:</h4>
             <div class="download-grid">
@@ -106,27 +115,21 @@
                 <div class="download-card">
                     <div class="icon">📊</div>
                     <h5>Latest Plot (PNG)</h5>
-                    <a href="/plot.png" download="analysis_plot.png" id="plotDownloadLink">
-                        <button>💾 Download Plot</button>
-                    </a>
+                    <button id="plotBtn" onclick="downloadPlot()" disabled>⏳ Wait for plot...</button>
                 </div>
                 
                 <!-- Dashboard Download -->
                 <div class="download-card">
                     <div class="icon">📈</div>
                     <h5>Dashboard (PNG)</h5>
-                    <a href="/dashboard.png" download="analytics_dashboard.png" id="dashboardDownloadLink">
-                        <button>💾 Download Dashboard</button>
-                    </a>
+                    <button id="dashboardBtn" onclick="downloadDashboard()" disabled>⏳ Wait for dashboard...</button>
                 </div>
                 
                 <!-- Excel Export -->
                 <div class="download-card">
                     <div class="icon">📄</div>
                     <h5>Excel Report</h5>
-                    <a href="/static/analysis_report.xlsx" download="analysis_report.xlsx" id="excelDownloadLink">
-                        <button>💾 Download Excel</button>
-                    </a>
+                    <button id="excelBtn" onclick="downloadExcel()" disabled>⏳ Wait for excel...</button>
                 </div>
                 
                 <!-- Text Reports -->
@@ -178,6 +181,9 @@
         let isFileReady = false;
         let isProcessing = false;
         let chatHistory = [];
+        let plotReady = false;
+        let dashboardReady = false;
+        let excelReady = false;
 
         function addMessage(text, sender) {
             const chatBox = document.getElementById('chatBox');
@@ -331,29 +337,36 @@
                     addMessage("⚠️ Session reset! Please re-upload your file.", "bot");
                 }
                 
-                // ✅ Show Download Section
+                // ✅ FIXED: Enable buttons only when files are ready
                 const plotTriggers = ['plot', 'chart', 'graph', 'visualize', 'bar', 'hist'];
                 const dashboardTriggers = ['dashboard', 'multiple plots', 'all charts'];
                 const excelTriggers = ['export', 'excel', 'download data'];
                 
                 if(plotTriggers.some(t => msg.toLowerCase().includes(t)) || data.response.toLowerCase().includes("plot saved")) {
                     setTimeout(() => {
-                        refreshPlot();
+                        plotReady = true;
+                        document.getElementById('plotBtn').innerText = '💾 Download Plot';
+                        document.getElementById('plotBtn').disabled = false;
                         showDownloadSection();
-                    }, 1000);
+                    }, 1500);
                 }
                 
                 if(dashboardTriggers.some(t => msg.toLowerCase().includes(t)) || data.response.toLowerCase().includes('dashboard saved')) {
                     setTimeout(() => {
-                        refreshDashboard();
+                        dashboardReady = true;
+                        document.getElementById('dashboardBtn').innerText = '💾 Download Dashboard';
+                        document.getElementById('dashboardBtn').disabled = false;
                         showDownloadSection();
-                    }, 2000);
+                    }, 2500);
                 }
                 
                 if(excelTriggers.some(t => msg.toLowerCase().includes(t)) || data.response.toLowerCase().includes('excel')) {
                     setTimeout(() => {
+                        excelReady = true;
+                        document.getElementById('excelBtn').innerText = '💾 Download Excel';
+                        document.getElementById('excelBtn').disabled = false;
                         showDownloadSection();
-                    }, 1000);
+                    }, 1500);
                 }
                 
                 isProcessing = false;
@@ -372,18 +385,44 @@
             document.getElementById('chatBox').scrollTop = document.getElementById('chatBox').scrollHeight;
         }
 
-        function refreshPlot() {
-            const link = document.getElementById('plotDownloadLink');
-            const newSrc = "/plot.png?t=" + new Date().getTime();
-            link.href = newSrc;
-            link.download = `analysis_plot_${new Date().getTime()}.png`;
+        // ✅ FIXED: Actual Download Functions
+        function downloadPlot() {
+            if (!plotReady) {
+                alert('Plot abhi ready nahi hai! Pehle "create bar chart" command do.');
+                return;
+            }
+            const link = document.createElement('a');
+            link.href = '/plot.png?t=' + new Date().getTime();
+            link.download = 'analysis_plot_' + new Date().getTime() + '.png';
+            document.body.appendChild(link);
+            link.click();
+            document.body.removeChild(link);
         }
 
-        function refreshDashboard() {
-            const link = document.getElementById('dashboardDownloadLink');
-            const newSrc = "/dashboard.png?t=" + new Date().getTime();
-            link.href = newSrc;
-            link.download = `analytics_dashboard_${new Date().getTime()}.png`;
+        function downloadDashboard() {
+            if (!dashboardReady) {
+                alert('Dashboard abhi ready nahi hai! Pehle "show dashboard" command do.');
+                return;
+            }
+            const link = document.createElement('a');
+            link.href = '/dashboard.png?t=' + new Date().getTime();
+            link.download = 'analytics_dashboard_' + new Date().getTime() + '.png';
+            document.body.appendChild(link);
+            link.click();
+            document.body.removeChild(link);
+        }
+
+        function downloadExcel() {
+            if (!excelReady) {
+                alert('Excel abhi ready nahi hai! Pehle "export excel" command do.');
+                return;
+            }
+            const link = document.createElement('a');
+            link.href = '/static/analysis_report.xlsx?t=' + new Date().getTime();
+            link.download = 'analysis_report_' + new Date().getTime() + '.xlsx';
+            document.body.appendChild(link);
+            link.click();
+            document.body.removeChild(link);
         }
         
         function openEmailModal() { document.getElementById('emailModal').style.display = 'flex'; }
