@@ -12,7 +12,6 @@ from core.agent import DataScienceAgent
 from utils.email import send_report_email
 from utils.pdf_generator import generate_pdf_report
 
-# Setup Logger
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
 
@@ -21,11 +20,6 @@ app.secret_key = os.getenv("SECRET_KEY", "super-secret-key-123")
 app.config['UPLOAD_FOLDER'] = '.'
 app.config['MAX_CONTENT_LENGTH'] = 10 * 1024 * 1024
 
-# ✅ FIX: Global variable to store uploaded file path
-uploaded_file_path = None
-uploaded_filename = None
-
-# Login Manager
 login_manager = LoginManager()
 login_manager.init_app(app)
 login_manager.login_view = 'login'
@@ -37,57 +31,40 @@ def load_user(user_id):
         user = db.query(User).filter(User.id == int(user_id)).first()
         return user
     except Exception as e:
-        logger.error(f"Error loading user (DB connection): {str(e)[:50]}")
+        logger.error(f"Error loading user: {e}")
         return None
     finally:
-        try:
-            db.close()
-        except:
-            pass
+        db.close()
 
-# Database Init
 try:
-    logger.info("🔄 Initializing database tables...")
+    logger.info("🔄 Initializing database...")
     Base.metadata.create_all(bind=engine)
-    logger.info("✅ Database tables initialized successfully.")
+    logger.info("✅ Database initialized.")
     create_default_admin()
 except Exception as e:
-    logger.error(f"❌ Database initialization failed: {e}")
+    logger.error(f"❌ Database init failed: {e}")
 
 agent = DataScienceAgent()
 
-# ✅ NEW: Register Route
 @app.route('/register', methods=['GET', 'POST'])
 def register():
     if request.method == 'POST':
         username = request.form.get('username')
         password = request.form.get('password')
-        
-        # Validate input
         if not username or not password:
             return render_template('register.html', error="Username and password required")
-        
         if len(username) < 3:
             return render_template('register.html', error="Username must be at least 3 characters")
-        
         if len(password) < 6:
             return render_template('register.html', error="Password must be at least 6 characters")
-        
         db = SessionLocal()
         try:
-            # Check if user exists
             existing_user = db.query(User).filter(User.username == username).first()
             if existing_user:
                 return render_template('register.html', error="Username already exists")
-            
-            # Create new user
-            new_user = User(
-                username=username,
-                password_hash=generate_password_hash(password)
-            )
+            new_user = User(username=username, password_hash=generate_password_hash(password))
             db.add(new_user)
             db.commit()
-            
             logger.info(f"✅ New user registered: {username}")
             return redirect(url_for('login'))
         except Exception as e:
@@ -96,16 +73,13 @@ def register():
             return render_template('register.html', error="System error. Try again.")
         finally:
             db.close()
-    
     return render_template('register.html')
 
-# Auth Routes
 @app.route('/login', methods=['GET', 'POST'])
 def login():
     if request.method == 'POST':
         username = request.form.get('username')
         password = request.form.get('password')
-        
         db = SessionLocal()
         try:
             user = db.query(User).filter(User.username == username).first()
@@ -114,11 +88,11 @@ def login():
                 logger.info(f"✅ User logged in: {username}")
                 return redirect(url_for('home'))
             else:
-                logger.warning(f"⚠️ Failed login attempt for: {username}")
+                logger.warning(f"⚠️ Failed login: {username}")
                 return render_template('login.html', error="Invalid username or password")
         except Exception as e:
             logger.error(f"Login error: {e}")
-            return render_template('login.html', error="System error. Try again.")
+            return render_template('login.html', error="System error.")
         finally:
             db.close()
     return render_template('login.html')
@@ -142,7 +116,6 @@ def home():
 @app.route('/upload', methods=['POST'])
 @login_required
 def upload():
-    global uploaded_file_path, uploaded_filename  # ✅ FIX: Add global
     if 'file' not in request.files:
         return jsonify({"error": "No file part"}), 400
     file = request.files['file']
@@ -151,8 +124,6 @@ def upload():
         filepath = os.path.join(app.config['UPLOAD_FOLDER'], filename)
         try:
             file.save(filepath)
-            uploaded_file_path = filepath  # ✅ FIX: Save path globally
-            uploaded_filename = filename   # ✅ FIX: Save filename globally
             result = agent.load_data(filename)
             logger.info(f"📁 File uploaded: {filename}")
             return jsonify({"message": f"✅ Uploaded: {filename}\n{result}"}), 200
@@ -164,81 +135,74 @@ def upload():
 @app.route('/chat', methods=['POST'])
 @login_required
 def chat():
-    global uploaded_file_path, uploaded_filename  # ✅ FIX: Add global
     data = request.get_json()
     user_message = data.get('message', '').strip()
     logger.info(f"💬 User Query: {user_message}")
-    
-    # ✅ FIX: Reload data if agent.df is None but file was uploaded
-    if agent.df is None and uploaded_file_path:
-        try:
-            agent.load_data(uploaded_filename)
-            logger.info("🔄 Data reloaded from saved file")
-        except Exception as e:
-            logger.error(f"Reload error: {e}")
-            return jsonify({"response": "⚠️ Data load failed. Please re-upload."}), 500
-    
     try:
-        # ✅ Pass user_id for proper logging
         response = agent.query(user_message, user_id=current_user.id)
         return jsonify({"response": response})
     except Exception as e:
         logger.error(f"Chat error: {e}")
         return jsonify({"response": "⚠️ Error processing query."}), 500
 
-# ✅ PHASE 1: Send Report Route (Email + PDF)
 @app.route('/send_report', methods=['POST'])
 @login_required
 def send_report():
     try:
         data = request.get_json()
         client_email = data.get('email')
-        
         if not client_email:
             return jsonify({"error": "Email required"}), 400
-        
-        # Generate unique PDF filename
         pdf_filename = f"static/report_{current_user.username}_{int(datetime.now().timestamp())}.pdf"
-        
-        # Get last query insight from database
         db = SessionLocal()
         last_query = db.query(UserQuery).filter_by(user_id=current_user.id).order_by(UserQuery.timestamp.desc()).first()
         insights = last_query.response_text if last_query else "No analysis data available"
         db.close()
-        
-        # Generate PDF
         success = generate_pdf_report(pdf_filename, client_email, insights, 'static/plot.png')
-        
         if success:
-            # Send Email
             email_sent = send_report_email(
                 to_email=client_email,
                 subject="📊 Your Data Analysis Report",
                 body=f"Hi,\n\nPlease find attached your data analysis report.\n\nRegards,\nData Scientist Agent",
                 attachment_path=pdf_filename
             )
-            
             if email_sent:
                 logger.info(f"✅ Report sent to {client_email}")
                 return jsonify({"message": "✅ Report sent successfully!"}), 200
             else:
                 logger.error("❌ Email failed")
-                return jsonify({"error": "PDF created but email failed. Check Gmail credentials."}), 500
+                return jsonify({"error": "PDF created but email failed."}), 500
         else:
             logger.error("❌ PDF generation failed")
             return jsonify({"error": "PDF generation failed"}), 500
-            
     except Exception as e:
         logger.error(f"Report error: {e}")
         return jsonify({"error": "Server error"}), 500
 
 @app.route('/health')
 def health():
-    return jsonify({"status": "healthy", "version": "1.4.0"}), 200
+    return jsonify({"status": "healthy", "version": "1.8.0"}), 200
 
+# ✅ FIXED: Download Routes
 @app.route('/plot.png')
 def plot_png():
     return send_from_directory('static', 'plot.png')
+
+@app.route('/dashboard.png')
+def dashboard_png():
+    return send_from_directory('static', 'dashboard.png')
+
+@app.route('/static/analysis_report.html')
+def serve_html():
+    return send_from_directory('static', 'analysis_report.html')
+
+@app.route('/static/analysis_report.csv')
+def serve_csv():
+    return send_from_directory('static', 'analysis_report.csv')
+
+@app.route('/static/analysis_report.xlsx')
+def serve_excel():
+    return send_from_directory('static', 'analysis_report.xlsx')
 
 @app.route('/static/<path:filename>')
 def serve_static(filename):
