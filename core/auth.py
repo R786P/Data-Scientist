@@ -11,7 +11,8 @@ class User(Base, UserMixin):
     id            = Column(Integer, primary_key=True, index=True)
     username      = Column(String, unique=True, index=True)
     password_hash = Column(String)
-    is_admin      = Column(Boolean, default=False)
+    # ✅ is_admin temporarily removed (database mein column nahi hai)
+    # is_admin      = Column(Boolean, default=False)
 
 def create_default_admin():
     db = SessionLocal()
@@ -20,8 +21,8 @@ def create_default_admin():
         if not existing:
             admin = User(
                 username="admin",
-                password_hash=generate_password_hash(os.getenv("ADMIN_PASSWORD", "admin123")),
-                is_admin=True
+                password_hash=generate_password_hash(os.getenv("ADMIN_PASSWORD", "admin123"))
+                # ✅ is_admin=True removed temporarily
             )
             db.add(admin)
             db.commit()
