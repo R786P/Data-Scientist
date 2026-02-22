@@ -337,6 +337,37 @@ def admin_users():
     finally:
         db.close()
 
+@app.route('/admin/query_stats')
+@login_required
+@admin_required
+def admin_query_stats():
+    """Returns total queries per user + today's queries."""
+    from core.database import Subscription
+    db = SessionLocal()
+    try:
+        today = datetime.utcnow().strftime('%Y-%m-%d')
+        all_counts = db.query(QueryCount).all()
+        user_totals = {}
+        for qc in all_counts:
+            user_totals[qc.user_id] = user_totals.get(qc.user_id, 0) + qc.count
+        today_counts = db.query(QueryCount).filter_by(date=today).all()
+        today_map = {qc.user_id: qc.count for qc in today_counts}
+        users = db.query(User).all()
+        name_map = {u.id: u.username for u in users}
+        totals = sorted([
+            {"user_id": uid, "username": name_map.get(uid, f"user_{uid}"), "count": cnt}
+            for uid, cnt in user_totals.items()
+        ], key=lambda x: x['count'], reverse=True)
+        today_data = sorted([
+            {"user_id": uid, "username": name_map.get(uid, f"user_{uid}"), "count": cnt}
+            for uid, cnt in today_map.items()
+        ], key=lambda x: x['count'], reverse=True)
+        return jsonify({"totals": totals, "today": today_data})
+    except Exception as e:
+        return jsonify({"error": str(e), "totals": [], "today": []}), 500
+    finally:
+        db.close()
+
 @app.route('/admin/set_plan', methods=['POST'])
 @login_required
 @admin_required
