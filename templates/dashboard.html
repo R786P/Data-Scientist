@@ -3,52 +3,393 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Dashboard - DS Agent</title>
+    <title>📊 Analytics — DS Agent</title>
+    <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@300;400;500;600;700&family=Sora:wght@700;800&display=swap" rel="stylesheet">
     <style>
-        * { margin:0; padding:0; box-sizing:border-box }
-        body { font-family: Arial, sans-serif; background: #f5f7fa; padding: 15px; }
-        .container { max-width: 1000px; margin: 0 auto; background: white; border-radius: 15px; box-shadow: 0 5px 25px rgba(0,0,0,0.1); overflow: hidden; }
-        .header { background: linear-gradient(135deg, #667eea, #764ba2); color: white; padding: 20px; text-align: center; }
-        .dashboard-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 20px; padding: 20px; }
-        .plot-card { background: #f8f9fa; border-radius: 12px; padding: 15px; text-align: center; }
-        .plot-card img { max-width: 100%; border-radius: 8px; }
-        .plot-card h3 { margin: 15px 0 10px; color: #333; }
-        .nav-links { padding: 15px; border-top: 1px solid #eee; text-align: center; }
-        .nav-links a { color: #667eea; text-decoration: none; margin: 0 10px; }
-        .btn { background: #667eea; color: white; padding: 10px 20px; border-radius: 8px; text-decoration: none; display: inline-block; margin: 5px; }
+        :root {
+            --p:#5b5ef4; --p2:#8b5cf6; --acc:#06d6a0;
+            --warn:#f59e0b; --danger:#ef4444;
+            --bg:#f6f7fb; --surface:#ffffff;
+            --text:#1a1a2e; --muted:#8890a4; --border:#e8eaf0;
+        }
+        *{margin:0;padding:0;box-sizing:border-box}
+        body{font-family:'DM Sans',sans-serif;background:var(--bg);min-height:100vh}
+
+        /* TOP NAV */
+        .topnav{display:flex;align-items:center;justify-content:space-between;padding:13px 20px;background:var(--surface);box-shadow:0 2px 12px rgba(91,94,244,0.1);position:sticky;top:0;z-index:100}
+        .logo{font-family:'Sora',sans-serif;font-size:18px;font-weight:800;background:linear-gradient(135deg,var(--p),var(--p2));-webkit-background-clip:text;-webkit-text-fill-color:transparent}
+        .nav-right{display:flex;gap:8px;align-items:center}
+        .nav-right a{color:var(--p);text-decoration:none;font-size:12px;font-weight:700;background:#eef0ff;padding:6px 14px;border-radius:20px;transition:0.2s}
+        .nav-right a:hover{background:#e0e2ff}
+        .nav-right a.danger{background:#fef2f2;color:var(--danger)}
+
+        .main{max-width:900px;margin:0 auto;padding:20px 15px 40px}
+
+        /* PAGE TITLE */
+        .page-title{margin-bottom:20px}
+        .page-title h1{font-family:'Sora',sans-serif;font-size:22px;font-weight:800;color:var(--text)}
+        .page-title p{font-size:13px;color:var(--muted);margin-top:3px}
+
+        /* STAT CARDS */
+        .stats-grid{display:grid;grid-template-columns:repeat(2,1fr);gap:12px;margin-bottom:20px}
+        .stat-card{background:var(--surface);border-radius:16px;padding:18px 16px;box-shadow:0 2px 12px rgba(0,0,0,0.05);border:1px solid var(--border);position:relative;overflow:hidden}
+        .stat-card::before{content:'';position:absolute;top:0;left:0;right:0;height:3px}
+        .stat-card.blue::before{background:linear-gradient(90deg,var(--p),var(--p2))}
+        .stat-card.green::before{background:linear-gradient(90deg,var(--acc),#34d399)}
+        .stat-card.orange::before{background:linear-gradient(90deg,var(--warn),#fbbf24)}
+        .stat-card.red::before{background:linear-gradient(90deg,var(--danger),#f87171)}
+        .stat-icon{font-size:26px;margin-bottom:8px}
+        .stat-val{font-family:'Sora',sans-serif;font-size:28px;font-weight:800;color:var(--text);line-height:1}
+        .stat-label{font-size:12px;color:var(--muted);font-weight:600;margin-top:4px}
+        .stat-sub{font-size:11px;margin-top:6px;font-weight:700}
+        .stat-sub.up{color:var(--acc)}
+        .stat-sub.down{color:var(--danger)}
+
+        /* SECTION */
+        .section{background:var(--surface);border-radius:16px;padding:18px;margin-bottom:16px;box-shadow:0 2px 12px rgba(0,0,0,0.05);border:1px solid var(--border)}
+        .section-header{display:flex;align-items:center;justify-content:space-between;margin-bottom:14px}
+        .section-title{font-family:'Sora',sans-serif;font-size:15px;font-weight:700;color:var(--text)}
+        .section-badge{font-size:11px;font-weight:700;padding:3px 10px;border-radius:20px;background:#eef0ff;color:var(--p)}
+
+        /* USER TABLE */
+        .user-table{width:100%;border-collapse:collapse}
+        .user-table th{font-size:11px;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:0.8px;padding:8px 10px;text-align:left;border-bottom:2px solid var(--border)}
+        .user-table td{font-size:13px;padding:10px 10px;border-bottom:1px solid var(--border);color:var(--text);font-weight:500}
+        .user-table tr:last-child td{border-bottom:none}
+        .user-table tr:hover td{background:#f8f9ff}
+        .plan-tag{display:inline-block;padding:2px 9px;border-radius:20px;font-size:10px;font-weight:800}
+        .plan-tag.pro{background:linear-gradient(135deg,var(--p),var(--p2));color:white}
+        .plan-tag.free{background:#f0f0f0;color:#888}
+        .admin-tag{display:inline-block;padding:2px 7px;border-radius:20px;font-size:10px;font-weight:800;background:#fff3cd;color:#856404;margin-left:4px}
+
+        /* QUERY BAR CHART */
+        .bar-row{display:flex;align-items:center;gap:10px;margin-bottom:8px}
+        .bar-label{font-size:12px;font-weight:600;color:var(--text);width:80px;flex-shrink:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+        .bar-track{flex:1;height:10px;background:#f0f0f8;border-radius:6px;overflow:hidden}
+        .bar-fill{height:100%;border-radius:6px;background:linear-gradient(90deg,var(--p),var(--p2));transition:width 0.8s ease}
+        .bar-count{font-size:12px;font-weight:700;color:var(--p);width:32px;text-align:right;flex-shrink:0}
+
+        /* PLAN PIE */
+        .plan-visual{display:flex;align-items:center;gap:20px;padding:8px 0}
+        .plan-donut{position:relative;width:90px;height:90px;flex-shrink:0}
+        .plan-donut svg{transform:rotate(-90deg)}
+        .plan-donut .center-text{position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center}
+        .plan-donut .center-num{font-family:'Sora',sans-serif;font-size:18px;font-weight:800;color:var(--text)}
+        .plan-donut .center-sub{font-size:9px;color:var(--muted);font-weight:600}
+        .plan-legend{flex:1}
+        .legend-item{display:flex;align-items:center;gap:8px;margin-bottom:8px}
+        .legend-dot{width:10px;height:10px;border-radius:50%;flex-shrink:0}
+        .legend-info{flex:1}
+        .legend-name{font-size:12px;font-weight:700;color:var(--text)}
+        .legend-count{font-size:11px;color:var(--muted)}
+
+        /* AFFILIATE TABLE */
+        .aff-item{display:flex;align-items:center;justify-content:space-between;padding:10px 0;border-bottom:1px solid var(--border)}
+        .aff-item:last-child{border-bottom:none}
+        .aff-name{font-size:13px;font-weight:700;color:var(--text)}
+        .aff-url{font-size:11px;color:var(--muted);margin-top:2px}
+        .aff-remove{background:none;border:1px solid #fca5a5;color:var(--danger);padding:4px 10px;border-radius:8px;cursor:pointer;font-size:11px;font-weight:700;font-family:'DM Sans',sans-serif;transition:0.15s}
+        .aff-remove:hover{background:#fef2f2}
+        .no-data{text-align:center;padding:20px;color:var(--muted);font-size:13px}
+
+        /* TODAY HIGHLIGHT */
+        .today-row{background:linear-gradient(135deg,#f0f0ff,#f5f0ff);border-radius:12px;padding:12px 14px;display:flex;align-items:center;justify-content:space-between;margin-bottom:10px}
+        .today-label{font-size:12px;font-weight:700;color:var(--p)}
+        .today-val{font-family:'Sora',sans-serif;font-size:20px;font-weight:800;color:var(--p)}
+
+        /* REFRESH BTN */
+        .refresh-btn{background:none;border:1px solid var(--border);border-radius:8px;padding:5px 12px;cursor:pointer;font-size:12px;font-weight:700;color:var(--muted);font-family:'DM Sans',sans-serif;transition:0.15s}
+        .refresh-btn:hover{background:#eef0ff;color:var(--p);border-color:var(--p)}
+
+        .loader-wrap{display:flex;justify-content:center;padding:30px}
+        .spin{border:3px solid #eee;border-top:3px solid var(--p);border-radius:50%;width:28px;height:28px;animation:sp .8s linear infinite}
+        @keyframes sp{to{transform:rotate(360deg)}}
+
+        .empty-state{text-align:center;padding:24px;color:var(--muted)}
+        .empty-state .es-icon{font-size:36px;margin-bottom:8px}
+        .empty-state p{font-size:13px}
     </style>
 </head>
 <body>
-    <div class="container">
-        <div class="header">
-            <h1>📊 Analytics Dashboard</h1>
-            <p>Multi-Plot Visualization Suite</p>
+
+<div class="topnav">
+    <div class="logo">📊 Analytics</div>
+    <div class="nav-right">
+        <a href="/">🏠 Home</a>
+        <a href="/admin">🛡️ Admin</a>
+        <a href="/logout" class="danger">🚪 Logout</a>
+    </div>
+</div>
+
+<div class="main">
+    <div class="page-title">
+        <h1>Analytics Dashboard</h1>
+        <p id="lastUpdated">Loading data...</p>
+    </div>
+
+    <!-- STAT CARDS -->
+    <div class="stats-grid">
+        <div class="stat-card blue">
+            <div class="stat-icon">👥</div>
+            <div class="stat-val" id="totalUsers">—</div>
+            <div class="stat-label">Total Users</div>
+            <div class="stat-sub up" id="proCount">— Pro users</div>
         </div>
-        
-        <div class="dashboard-grid">
-            <div class="plot-card">
-                <h3>📊 Category Distribution</h3>
-                <img src="/static/plot_bar.png" alt="Bar Chart" onerror="this.style.display='none'">
-                <p style="color:#999;font-size:12px;margin-top:10px">Top categories by frequency</p>
-            </div>
-            
-            <div class="plot-card">
-                <h3>📈 Data Distribution</h3>
-                <img src="/static/plot_dist.png" alt="Distribution" onerror="this.style.display='none'">
-                <p style="color:#999;font-size:12px;margin-top:10px">Histogram of numeric values</p>
-            </div>
-            
-            <div class="plot-card">
-                <h3>🔥 Correlation Heatmap</h3>
-                <img src="/static/plot_heatmap.png" alt="Heatmap" onerror="this.style.display='none'">
-                <p style="color:#999;font-size:12px;margin-top:10px">Feature relationships</p>
-            </div>
+        <div class="stat-card green">
+            <div class="stat-icon">💬</div>
+            <div class="stat-val" id="totalQueries">—</div>
+            <div class="stat-label">Total Queries</div>
+            <div class="stat-sub up" id="todayQueries">— today</div>
         </div>
-        
-        <div class="nav-links">
-            <a href="/" class="btn">💬 Chat Interface</a>
-            <a href="/logout" class="btn">🚪 Logout</a>
+        <div class="stat-card orange">
+            <div class="stat-icon">⭐</div>
+            <div class="stat-val" id="proPercent">—</div>
+            <div class="stat-label">Pro Conversion</div>
+            <div class="stat-sub" id="freeCount" style="color:var(--warn)">— free users</div>
+        </div>
+        <div class="stat-card red">
+            <div class="stat-icon">🔗</div>
+            <div class="stat-val" id="affCount">—</div>
+            <div class="stat-label">Affiliate Links</div>
+            <div class="stat-sub up" id="affActive">— active</div>
         </div>
     </div>
+
+    <!-- TODAY QUERIES -->
+    <div class="section">
+        <div class="section-header">
+            <span class="section-title">📅 Today's Activity</span>
+            <button class="refresh-btn" onclick="loadAll()">🔄 Refresh</button>
+        </div>
+        <div class="today-row">
+            <span class="today-label">Aaj ki total queries</span>
+            <span class="today-val" id="todayTotal">—</span>
+        </div>
+        <div id="todayUsers"></div>
+    </div>
+
+    <!-- USER QUERY CHART -->
+    <div class="section">
+        <div class="section-header">
+            <span class="section-title">🏆 Top Users by Queries</span>
+            <span class="section-badge" id="userCountBadge">Loading...</span>
+        </div>
+        <div id="queryChart">
+            <div class="loader-wrap"><div class="spin"></div></div>
+        </div>
+    </div>
+
+    <!-- PLAN BREAKDOWN -->
+    <div class="section">
+        <div class="section-header">
+            <span class="section-title">💰 Plan Distribution</span>
+        </div>
+        <div class="plan-visual">
+            <div class="plan-donut">
+                <svg width="90" height="90" viewBox="0 0 90 90">
+                    <circle cx="45" cy="45" r="35" fill="none" stroke="#f0f0f8" stroke-width="14"/>
+                    <circle cx="45" cy="45" r="35" fill="none" stroke="url(#pg)" stroke-width="14"
+                        stroke-dasharray="0 220" id="proArc" stroke-linecap="round"/>
+                    <defs>
+                        <linearGradient id="pg" x1="0%" y1="0%" x2="100%" y2="0%">
+                            <stop offset="0%" style="stop-color:#5b5ef4"/>
+                            <stop offset="100%" style="stop-color:#8b5cf6"/>
+                        </linearGradient>
+                    </defs>
+                </svg>
+                <div class="center-text">
+                    <div class="center-num" id="donutPct">0%</div>
+                    <div class="center-sub">PRO</div>
+                </div>
+            </div>
+            <div class="plan-legend">
+                <div class="legend-item">
+                    <div class="legend-dot" style="background:linear-gradient(135deg,#5b5ef4,#8b5cf6)"></div>
+                    <div class="legend-info">
+                        <div class="legend-name">⭐ Pro Users</div>
+                        <div class="legend-count" id="legPro">— users</div>
+                    </div>
+                </div>
+                <div class="legend-item">
+                    <div class="legend-dot" style="background:#e0e0e0"></div>
+                    <div class="legend-info">
+                        <div class="legend-name">🆓 Free Users</div>
+                        <div class="legend-count" id="legFree">— users</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- ALL USERS TABLE -->
+    <div class="section">
+        <div class="section-header">
+            <span class="section-title">👥 All Users</span>
+            <span class="section-badge" id="allUsersBadge">—</span>
+        </div>
+        <div id="usersTableWrap">
+            <div class="loader-wrap"><div class="spin"></div></div>
+        </div>
+    </div>
+
+    <!-- AFFILIATE LINKS -->
+    <div class="section">
+        <div class="section-header">
+            <span class="section-title">🔗 Affiliate Links</span>
+            <span class="section-badge" id="affBadge">—</span>
+        </div>
+        <div id="affList">
+            <div class="loader-wrap"><div class="spin"></div></div>
+        </div>
+    </div>
+
+</div>
+
+<script>
+async function loadAll() {
+    document.getElementById('lastUpdated').textContent = 'Refreshing...';
+    await Promise.all([loadStats(), loadUsers(), loadAffiliate()]);
+    document.getElementById('lastUpdated').textContent = 'Last updated: ' + new Date().toLocaleTimeString();
+}
+
+// ── STATS ──────────────────────────────────────────────────────
+async function loadStats() {
+    try {
+        const [usersR, affR] = await Promise.all([
+            fetch('/admin/users'),
+            fetch('/affiliate_links')
+        ]);
+        const users = await usersR.json();
+        const affs  = await affR.json();
+
+        const total = users.length;
+        const pro   = users.filter(u => u.plan === 'pro').length;
+        const free  = total - pro;
+        const pct   = total > 0 ? Math.round(pro/total*100) : 0;
+
+        document.getElementById('totalUsers').textContent  = total;
+        document.getElementById('proCount').textContent    = pro + ' Pro users';
+        document.getElementById('proPercent').textContent  = pct + '%';
+        document.getElementById('freeCount').textContent   = free + ' free users';
+        document.getElementById('affCount').textContent    = affs.length;
+        document.getElementById('affActive').textContent   = affs.length + ' active';
+
+        // Plan donut
+        const circ = 2 * Math.PI * 35;
+        const arc  = (pct / 100) * circ;
+        document.getElementById('proArc').setAttribute('stroke-dasharray', arc + ' ' + (circ - arc));
+        document.getElementById('donutPct').textContent = pct + '%';
+        document.getElementById('legPro').textContent   = pro + ' users';
+        document.getElementById('legFree').textContent  = free + ' users';
+
+    } catch(e) { console.error('Stats error', e); }
+}
+
+// ── USERS + QUERY CHART ────────────────────────────────────────
+async function loadUsers() {
+    try {
+        const [usersR, queriesR] = await Promise.all([
+            fetch('/admin/users'),
+            fetch('/admin/query_stats')
+        ]);
+        const users   = await usersR.json();
+        const qstats  = queriesR.ok ? await queriesR.json() : { today: [], totals: [] };
+
+        document.getElementById('allUsersBadge').textContent = users.length + ' users';
+        document.getElementById('userCountBadge').textContent = users.length + ' users';
+
+        // ── Users Table ──
+        const tbody = users.map(u => `
+            <tr>
+                <td>
+                    <strong>${u.username}</strong>
+                    ${u.is_admin ? '<span class="admin-tag">👑 Admin</span>' : ''}
+                </td>
+                <td><span class="plan-tag ${u.plan}">${u.plan==='pro'?'⭐ Pro':'Free'}</span></td>
+                <td style="color:var(--muted);font-size:12px">${u.id}</td>
+            </tr>`).join('');
+
+        document.getElementById('usersTableWrap').innerHTML = `
+            <table class="user-table">
+                <thead><tr><th>Username</th><th>Plan</th><th>ID</th></tr></thead>
+                <tbody>${tbody}</tbody>
+            </table>`;
+
+        // ── Query Chart ──
+        const totals = qstats.totals || [];
+        if (!totals.length) {
+            document.getElementById('queryChart').innerHTML = '<div class="empty-state"><div class="es-icon">📭</div><p>Abhi koi queries nahi hui</p></div>';
+        } else {
+            const maxQ = Math.max(...totals.map(t => t.count), 1);
+            document.getElementById('queryChart').innerHTML = totals.slice(0,10).map(t => `
+                <div class="bar-row">
+                    <span class="bar-label" title="${t.username}">${t.username}</span>
+                    <div class="bar-track"><div class="bar-fill" style="width:${Math.round(t.count/maxQ*100)}%"></div></div>
+                    <span class="bar-count">${t.count}</span>
+                </div>`).join('');
+        }
+
+        // ── Today ──
+        document.getElementById('totalQueries').textContent = totals.reduce((s,t)=>s+t.count, 0);
+        const today = qstats.today || [];
+        const todaySum = today.reduce((s,t)=>s+t.count, 0);
+        document.getElementById('todayQueries').textContent = todaySum + ' today';
+        document.getElementById('todayTotal').textContent = todaySum;
+
+        if (today.length) {
+            document.getElementById('todayUsers').innerHTML = today.map(t => `
+                <div class="bar-row">
+                    <span class="bar-label">${t.username}</span>
+                    <div class="bar-track"><div class="bar-fill" style="width:${Math.round(t.count/Math.max(...today.map(x=>x.count),1)*100)}%"></div></div>
+                    <span class="bar-count">${t.count}</span>
+                </div>`).join('');
+        } else {
+            document.getElementById('todayUsers').innerHTML = '<p style="color:var(--muted);font-size:12px;text-align:center;padding:8px">Aaj abhi koi activity nahi</p>';
+        }
+
+    } catch(e) {
+        document.getElementById('usersTableWrap').innerHTML = '<div class="empty-state"><div class="es-icon">⚠️</div><p>Data load nahi hua</p></div>';
+        console.error('Users error', e);
+    }
+}
+
+// ── AFFILIATES ─────────────────────────────────────────────────
+async function loadAffiliate() {
+    try {
+        const r = await fetch('/affiliate_links');
+        const affs = await r.json();
+        document.getElementById('affBadge').textContent = affs.length + ' links';
+        if (!affs.length) {
+            document.getElementById('affList').innerHTML = '<div class="empty-state"><div class="es-icon">🔗</div><p>Koi affiliate link nahi — Admin Panel se add karo</p></div>';
+            return;
+        }
+        document.getElementById('affList').innerHTML = affs.map(a => `
+            <div class="aff-item">
+                <div>
+                    <div class="aff-name">🔗 ${a.title}</div>
+                    <div class="aff-url">${a.url}</div>
+                    ${a.description ? `<div style="font-size:11px;color:var(--muted);margin-top:2px">${a.description}</div>` : ''}
+                </div>
+                <button class="aff-remove" onclick="removeAff(${a.id})">🗑 Remove</button>
+            </div>`).join('');
+    } catch(e) {
+        document.getElementById('affList').innerHTML = '<div class="empty-state"><p>Load nahi hua</p></div>';
+    }
+}
+
+async function removeAff(id) {
+    if (!confirm('Remove this affiliate link?')) return;
+    const r = await fetch('/admin/affiliate/' + id, {method:'DELETE'});
+    const d = await r.json();
+    alert(d.message || d.error);
+    loadAffiliate();
+    loadStats();
+}
+
+// Load on start
+loadAll();
+// Auto refresh every 60 seconds
+setInterval(loadAll, 60000);
+</script>
 </body>
 </html>
