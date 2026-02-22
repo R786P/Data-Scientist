@@ -1,0 +1,179 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>⭐ Pricing — DS Agent</title>
+    <link href="https://fonts.googleapis.com/css2?family=Nunito:wght@400;600;700;800;900&family=Baloo+2:wght@800&display=swap" rel="stylesheet">
+    <script src="https://checkout.razorpay.com/v1/checkout.js"></script>
+    <style>
+        *{margin:0;padding:0;box-sizing:border-box}
+        body{font-family:'Nunito',sans-serif;background:#f0f2f8;min-height:100vh}
+        .topnav{display:flex;align-items:center;justify-content:space-between;padding:12px 20px;background:white;box-shadow:0 2px 12px rgba(102,126,234,0.12)}
+        .logo{font-family:'Baloo 2',cursive;font-size:20px;font-weight:800;background:linear-gradient(135deg,#667eea,#764ba2);-webkit-background-clip:text;-webkit-text-fill-color:transparent}
+        .topnav a{color:#667eea;text-decoration:none;font-size:13px;font-weight:700;background:#f0f2ff;padding:5px 12px;border-radius:20px}
+        .main{max-width:700px;margin:0 auto;padding:30px 15px}
+        .title{text-align:center;margin-bottom:30px}
+        .title h1{font-family:'Baloo 2',cursive;font-size:28px;font-weight:800;background:linear-gradient(135deg,#667eea,#764ba2);-webkit-background-clip:text;-webkit-text-fill-color:transparent}
+        .title p{color:#718096;font-weight:600;margin-top:6px}
+        .plans{display:grid;grid-template-columns:1fr 1fr;gap:16px}
+        .plan-card{background:white;border-radius:20px;padding:24px;box-shadow:0 4px 20px rgba(102,126,234,0.1);border:2px solid #f0f0f0;position:relative;transition:0.3s}
+        .plan-card.pro{border-color:#667eea;box-shadow:0 8px 30px rgba(102,126,234,0.2)}
+        .plan-card .badge-popular{position:absolute;top:-12px;left:50%;transform:translateX(-50%);background:linear-gradient(135deg,#667eea,#764ba2);color:white;padding:4px 16px;border-radius:20px;font-size:11px;font-weight:800;white-space:nowrap}
+        .plan-name{font-size:18px;font-weight:900;color:#2d3748;margin-bottom:6px}
+        .plan-price{font-size:32px;font-weight:900;color:#667eea;margin:10px 0 4px}
+        .plan-price span{font-size:14px;color:#718096;font-weight:600}
+        .plan-features{list-style:none;margin:16px 0;padding:0}
+        .plan-features li{font-size:13px;font-weight:600;color:#4a5568;padding:5px 0;display:flex;align-items:center;gap:8px}
+        .plan-features li.locked{color:#aaa}
+        .plan-btn{width:100%;padding:12px;border:none;border-radius:12px;cursor:pointer;font-weight:800;font-family:'Nunito',sans-serif;font-size:14px;transition:0.2s;margin-top:10px}
+        .plan-btn.free-btn{background:#f0f0f0;color:#555}
+        .plan-btn.pro-btn{background:linear-gradient(135deg,#667eea,#764ba2);color:white;box-shadow:0 4px 15px rgba(102,126,234,0.3)}
+        .plan-btn.pro-btn:hover{opacity:0.9;transform:translateY(-2px)}
+        .plan-btn.current-btn{background:#e8f5e9;color:#2e7d32;cursor:default}
+        .current-plan-label{text-align:center;margin-top:20px;font-size:13px;color:#718096;font-weight:700}
+        .current-plan-label strong{color:#667eea}
+        .msg{padding:12px 16px;border-radius:10px;font-size:13px;font-weight:700;text-align:center;margin-top:15px;display:none}
+        .msg.success{background:#d4edda;color:#155724;display:block}
+        .msg.error{background:#f8d7da;color:#721c24;display:block}
+        @media(max-width:500px){.plans{grid-template-columns:1fr}}
+    </style>
+</head>
+<body>
+<div class="topnav">
+    <div class="logo">🤖 DS Agent</div>
+    <a href="/">← Back</a>
+</div>
+
+<div class="main">
+    <div class="title">
+        <h1>⭐ Choose Your Plan</h1>
+        <p>Upgrade karo aur full power unlock karo!</p>
+    </div>
+
+    <div class="plans">
+        <!-- FREE -->
+        <div class="plan-card">
+            <div class="plan-name">🆓 Free</div>
+            <div class="plan-price">₹0 <span>/ forever</span></div>
+            <ul class="plan-features">
+                <li>✅ CSV Upload</li>
+                <li>✅ Basic Queries</li>
+                <li>✅ Bar Chart</li>
+                <li>✅ CSV Export</li>
+                <li>✅ HTML Report</li>
+                <li>✅ {{ {{ freee_limit }} }} Queries/day</li>
+                <li class="locked">❌ AI Chat Mode</li>
+                <li class="locked">❌ Excel Export</li>
+                <li class="locked">❌ Dashboard</li>
+                <li class="locked">❌ Unlimited Queries</li>
+            </ul>
+            <button class="plan-btn {% if plan == 'free' %}current-btn{% else %}free-btn{% endif %}" {% if plan == 'free' %}disabled{% endif %}>
+                {% if plan == 'free' %}✅ Current Plan{% else %}Downgrade{% endif %}
+            </button>
+        </div>
+
+        <!-- PRO -->
+        <div class="plan-card pro">
+            <div class="badge-popular">🔥 Most Popular</div>
+            <div class="plan-name">⭐ Pro</div>
+            <div class="plan-price">₹499 <span>/ month</span></div>
+            <ul class="plan-features">
+                <li>✅ Sab Free features</li>
+                <li>✅ 🤖 AI Chat Mode</li>
+                <li>✅ 📄 Excel Export</li>
+                <li>✅ 📊 Full Dashboard</li>
+                <li>✅ Unlimited Queries</li>
+                <li>✅ Priority Support</li>
+                <li>✅ All Future Features</li>
+            </ul>
+            <button class="plan-btn {% if plan == 'pro' %}current-btn{% else %}pro-btn{% endif %}"
+                    id="upgradeBtn"
+                    {% if plan == 'pro' %}disabled{% endif %}
+                    onclick="startPayment()">
+                {% if plan == 'pro' %}✅ Current Plan{% else %}🚀 Upgrade to Pro — ₹499/mo{% endif %}
+            </button>
+        </div>
+    </div>
+
+    <div class="current-plan-label">
+        Aapka current plan: <strong>{{ plan|upper }}</strong>
+    </div>
+
+    <div id="payMsg" class="msg"></div>
+</div>
+
+<script>
+    const RAZORPAY_KEY = "{{ razorpay_key }}";
+
+    async function startPayment() {
+        if (!RAZORPAY_KEY) {
+            document.getElementById('payMsg').textContent = '⚠️ Payment gateway abhi configure nahi hua. Admin se contact karo.';
+            document.getElementById('payMsg').className = 'msg error';
+            return;
+        }
+        const btn = document.getElementById('upgradeBtn');
+        btn.textContent = 'Creating order...';
+        btn.disabled = true;
+
+        try {
+            const r = await fetch('/create_order', {
+                method: 'POST',
+                headers: {'Content-Type': 'application/json'},
+                body: JSON.stringify({plan: 'pro'})
+            });
+            const order = await r.json();
+            if (order.error) {
+                document.getElementById('payMsg').textContent = '❌ ' + order.error;
+                document.getElementById('payMsg').className = 'msg error';
+                btn.textContent = '🚀 Upgrade to Pro — ₹499/mo';
+                btn.disabled = false;
+                return;
+            }
+
+            const options = {
+                key: order.key,
+                amount: order.amount,
+                currency: order.currency,
+                name: 'DS Agent Pro',
+                description: 'Pro Plan — 30 Days',
+                order_id: order.order_id,
+                handler: async function(response) {
+                    // Verify payment
+                    const vr = await fetch('/verify_payment', {
+                        method: 'POST',
+                        headers: {'Content-Type': 'application/json'},
+                        body: JSON.stringify(response)
+                    });
+                    const vd = await vr.json();
+                    if (vd.message) {
+                        document.getElementById('payMsg').textContent = '🎉 ' + vd.message;
+                        document.getElementById('payMsg').className = 'msg success';
+                        setTimeout(() => window.location.href = '/', 2000);
+                    } else {
+                        document.getElementById('payMsg').textContent = '❌ ' + (vd.error || 'Verification failed');
+                        document.getElementById('payMsg').className = 'msg error';
+                    }
+                },
+                prefill: { name: '', email: '', contact: '' },
+                theme: { color: '#667eea' },
+                modal: {
+                    ondismiss: function() {
+                        btn.textContent = '🚀 Upgrade to Pro — ₹499/mo';
+                        btn.disabled = false;
+                    }
+                }
+            };
+
+            const rzp = new Razorpay(options);
+            rzp.open();
+        } catch(e) {
+            document.getElementById('payMsg').textContent = '❌ Error: ' + e.message;
+            document.getElementById('payMsg').className = 'msg error';
+            btn.textContent = '🚀 Upgrade to Pro — ₹499/mo';
+            btn.disabled = false;
+        }
+    }
+</script>
+</body>
+</html>
