@@ -2,7 +2,7 @@ import os
 import secrets
 from flask_login import UserMixin
 from sqlalchemy import Column, Integer, String, Boolean
-from werkzeug.security import generate_password_hash, check_password_hash
+from werkzeug.security import generate_password_hash
 from core.database import Base, SessionLocal, ActiveSession, Subscription
 from datetime import datetime
 
@@ -11,39 +11,27 @@ class User(Base, UserMixin):
     id            = Column(Integer, primary_key=True, index=True)
     username      = Column(String, unique=True, index=True)
     password_hash = Column(String)
-    # ✅ is_admin temporarily commented out to fix "column does not exist" error
-    # is_admin      = Column(Boolean, default=False)
+    is_admin      = Column(Boolean, default=False)
 
 def create_default_admin():
     db = SessionLocal()
     try:
         existing = db.query(User).filter(User.username == "admin").first()
         if not existing:
-            admin_password = os.getenv("ADMIN_PASSWORD", "admin123")
             admin = User(
                 username="admin",
-                password_hash=generate_password_hash(admin_password)
-                # ✅ is_admin=True removed temporarily
+                password_hash=generate_password_hash(os.getenv("ADMIN_PASSWORD", "admin123")),
+                is_admin=True
             )
             db.add(admin)
             db.commit()
-            
             # Give admin pro plan
             sub = Subscription(user_id=admin.id, plan="pro", is_active=True)
             db.add(sub)
             db.commit()
-            
-            print(f"✅ Admin user created: admin / {admin_password}")
-        else:
-            print("✅ Admin user already exists")
-            
-        # Verify admin can login
-        admin = db.query(User).filter(User.username == "admin").first()
-        if admin:
-            print(f"✅ Admin verified in DB: {admin.username}")
-            
+            print("✅ Admin user created")
     except Exception as e:
-        print(f"⚠️ Admin creation error: {e}")
+        print(f"⚠️ Admin creation: {e}")
         db.rollback()
     finally:
         db.close()
@@ -68,10 +56,9 @@ def create_session_token(user_id: int) -> str:
         )
         db.add(new_session)
         db.commit()
-        print(f"✅ Session token created for user {user_id}")
     except Exception as e:
         db.rollback()
-        print(f"⚠️ Session create error: {e}")
+        print(f"Session create error: {e}")
     finally:
         db.close()
     return token
@@ -88,10 +75,8 @@ def validate_session_token(user_id: int, token: str) -> bool:
             session.last_seen = datetime.utcnow()
             db.commit()
             return True
-        print(f"⚠️ Session validation failed for user {user_id}")
         return False
-    except Exception as e:
-        print(f"⚠️ Session validate error: {e}")
+    except:
         return False
     finally:
         db.close()
@@ -102,10 +87,8 @@ def invalidate_session(user_id: int):
     try:
         db.query(ActiveSession).filter(ActiveSession.user_id == user_id).delete()
         db.commit()
-        print(f"✅ Session invalidated for user {user_id}")
-    except Exception as e:
+    except:
         db.rollback()
-        print(f"⚠️ Session invalidate error: {e}")
     finally:
         db.close()
 
@@ -124,14 +107,10 @@ def get_user_plan(user_id: int) -> str:
             if sub.expires_at and sub.expires_at < datetime.utcnow():
                 sub.is_active = False
                 db.commit()
-                print(f"⚠️ Subscription expired for user {user_id}")
                 return "free"
-            print(f"✅ User {user_id} plan: {sub.plan}")
             return sub.plan
-        print(f"⚠️ No subscription found for user {user_id}, defaulting to free")
         return "free"
-    except Exception as e:
-        print(f"⚠️ Get plan error: {e}")
+    except:
         return "free"
     finally:
         db.close()
@@ -157,9 +136,8 @@ def set_user_plan(user_id: int, plan: str, razorpay_id: str = None,
             )
             db.add(sub)
         db.commit()
-        print(f"✅ Plan set to {plan} for user {user_id}")
     except Exception as e:
         db.rollback()
-        print(f"⚠️ Set plan error: {e}")
+        print(f"Set plan error: {e}")
     finally:
         db.close()
