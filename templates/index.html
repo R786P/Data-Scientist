@@ -3,489 +3,762 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>🤖 DS Agent Headmaster</title>
+    <title>🤖 DS Agent</title>
+    <link href="https://fonts.googleapis.com/css2?family=Nunito:wght@400;600;700;800;900&family=Baloo+2:wght@400;600;700;800&display=swap" rel="stylesheet">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/lottie-web/5.12.2/lottie.min.js"></script>
     <style>
+        :root {
+            --primary: #667eea;
+            --secondary: #764ba2;
+            --accent: #f093fb;
+            --success: #11998e;
+            --bg: #f0f2f8;
+            --card: #ffffff;
+            --text: #2d3748;
+            --muted: #718096;
+            --radius: 20px;
+        }
         * { margin:0; padding:0; box-sizing:border-box }
-        body { font-family: 'Segoe UI', Arial, sans-serif; background:#f0f2f5; padding:15px }
-        .container { max-width:850px; margin:0 auto; background:white; border-radius:20px; box-shadow:0 10px 30px rgba(0,0,0,0.15); overflow:hidden; min-height: 90vh; display: flex; flex-direction: column; }
-        .header { background:linear-gradient(135deg,#667eea,#764ba2); color:white; padding:25px; text-align:center; position: relative; }
-        .status-dot { position: absolute; top: 15px; right: 20px; font-size: 12px; display: flex; align-items: center; gap: 5px; }
-        .dot { height: 8px; width: 8px; background-color: #2ecc71; border-radius: 50%; display: inline-block; animation: pulse 2s infinite; }
-        @keyframes pulse { 0% { opacity: 1; } 50% { opacity: 0.4; } 100% { opacity: 1; } }
-        .upload-box { border:2px dashed #667eea; border-radius:15px; padding:25px; text-align:center; margin:15px; cursor:pointer; background: #f8faff; transition: 0.3s; }
-        .upload-box:hover { background: #edf2ff; border-style: solid; }
-        .chat-box { flex-grow: 1; height:450px; overflow-y:auto; padding:20px; margin:0 15px; background:#ffffff; border: 1px solid #eee; border-radius: 12px; }
-        .message { margin-bottom:15px; padding:12px 18px; border-radius:15px; max-width:85%; line-height: 1.5; font-size: 14px; white-space: pre-wrap; word-wrap: break-word; position: relative; }
-        .user { background:#667eea; color:white; margin-left:auto; border-bottom-right-radius: 2px; }
-        .bot { background:#f1f3f4; color:#333; border-bottom-left-radius: 2px; border: 1px solid #e0e0e0; }
-        .bot.ai-mode { background: linear-gradient(135deg, #f0f4ff, #e8f0fe); border: 1px solid #667eea; }
-        .msg-download { position: absolute; top: 5px; right: 5px; background: rgba(102,126,234,0.2); border: none; border-radius: 5px; padding: 3px 8px; cursor: pointer; font-size: 11px; color: #667eea; opacity: 0; transition: 0.3s; }
-        .message:hover .msg-download { opacity: 1; }
-        .msg-download:hover { background: #667eea; color: white; }
-        .input-area { display:flex; gap:10px; padding:20px; background: white; }
-        .input-area input { flex:1; padding:14px 20px; border:1px solid #dfe1e5; border-radius:30px; outline: none; transition: 0.3s; }
-        .input-area input:disabled { background: #f5f5f5; cursor: not-allowed; }
-        .input-area button { background:#667eea; color:white; border:none; padding:12px 28px; border-radius:30px; cursor:pointer; font-weight: bold; }
-        .input-area button:disabled { background: #ccc; cursor: not-allowed; }
+        body { font-family:'Nunito',sans-serif; background:var(--bg); min-height:100vh; }
 
-        /* ✅ AI MODE TOGGLE */
-        .ai-toggle-bar { display: flex; align-items: center; justify-content: center; gap: 12px; padding: 10px 20px; background: #f8f9ff; border-top: 1px solid #eee; border-bottom: 1px solid #eee; }
-        .ai-toggle-bar span { font-size: 13px; color: #555; font-weight: 500; }
-        .toggle-switch { position: relative; width: 52px; height: 26px; }
-        .toggle-switch input { opacity: 0; width: 0; height: 0; }
-        .toggle-slider { position: absolute; cursor: pointer; top: 0; left: 0; right: 0; bottom: 0; background-color: #ccc; border-radius: 26px; transition: 0.3s; }
-        .toggle-slider:before { position: absolute; content: ""; height: 20px; width: 20px; left: 3px; bottom: 3px; background-color: white; border-radius: 50%; transition: 0.3s; }
-        input:checked + .toggle-slider { background: linear-gradient(135deg, #667eea, #764ba2); }
-        input:checked + .toggle-slider:before { transform: translateX(26px); }
-        .ai-mode-badge { background: linear-gradient(135deg, #667eea, #764ba2); color: white; padding: 3px 10px; border-radius: 12px; font-size: 11px; font-weight: bold; display: none; }
-        .ai-mode-badge.visible { display: inline-block; }
-        .ai-mode-hint { font-size: 11px; color: #888; text-align: center; padding: 5px 15px; display: none; }
-        .ai-mode-hint.visible { display: block; }
+        /* ── TOP NAV ── */
+        .topnav { display:flex; align-items:center; justify-content:space-between; padding:12px 20px; background:white; box-shadow:0 2px 12px rgba(102,126,234,0.12); position:sticky; top:0; z-index:200; }
+        .logo { font-family:'Baloo 2',cursive; font-size:20px; font-weight:800; background:linear-gradient(135deg,var(--primary),var(--secondary)); -webkit-background-clip:text; -webkit-text-fill-color:transparent; }
+        .user-info { display:flex; align-items:center; gap:10px; }
+        .avatar { width:38px; height:38px; border-radius:50%; background:linear-gradient(135deg,var(--primary),var(--secondary)); display:flex; align-items:center; justify-content:center; color:white; font-weight:900; font-size:15px; box-shadow:0 3px 10px rgba(102,126,234,0.4); }
+        .username { font-size:13px; color:var(--text); font-weight:700; }
+        .topnav a { color:var(--primary); text-decoration:none; font-size:12px; font-weight:700; background:#f0f2ff; padding:5px 12px; border-radius:20px; }
 
-        #downloadSection { padding: 15px; margin: 15px; background: #fff; border-radius: 12px; border: 1px solid #eee; display: none; }
-        #downloadSection h4 { margin-bottom:15px; color:#555; font-size:14px; text-align: left; }
-        .download-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 10px; }
-        .download-card { background: #f8f9fa; border: 1px solid #e0e0e0; border-radius: 10px; padding: 15px; text-align: center; transition: 0.3s; }
-        .download-card:hover { transform: translateY(-2px); box-shadow: 0 5px 15px rgba(0,0,0,0.1); }
-        .download-card .icon { font-size: 30px; margin-bottom: 10px; }
-        .download-card h5 { font-size: 13px; color: #333; margin-bottom: 10px; }
-        .download-card .btn-group { display: flex; flex-direction: column; gap: 5px; }
-        .download-card button { width: 100%; padding: 8px; background: #667eea; color: white; border: none; border-radius: 6px; cursor: pointer; font-weight: bold; font-size: 11px; }
-        .download-card button:hover { background: #5568d3; }
-        .download-card button:disabled { background: #ccc; cursor: not-allowed; }
-        .download-card .view-btn { background: #11998e; }
-        .download-card .view-btn:hover { background: #0e8c7f; }
-        .download-card p { font-size:10px; color:#888; margin-top:5px; }
-        .email-btn { width:100%; padding:12px; background:linear-gradient(135deg, #11998e, #38ef7d); color:white; border:none; border-radius:8px; cursor:pointer; font-weight: bold; transition: 0.3s; margin-top: 15px; }
-        .email-btn:hover { opacity: 0.9; }
-        .modal { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.5); justify-content: center; align-items: center; z-index: 1000; }
-        .modal-content { background: white; padding: 30px; border-radius: 15px; width: 90%; max-width: 400px; }
-        .modal-content h3 { margin-bottom: 15px; color: #667eea; }
-        .modal-content input { width: 100%; padding: 10px; margin: 10px 0; border: 1px solid #ddd; border-radius: 8px; }
-        .modal-buttons { display: flex; gap: 10px; margin-top: 15px; }
-        .modal-buttons button { flex: 1; padding: 10px; border: none; border-radius: 8px; cursor: pointer; }
-        .btn-send { background: #667eea; color: white; }
-        .btn-cancel { background: #eee; color: #333; }
-        .viewer-modal { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.8); justify-content: center; align-items: center; z-index: 2000; }
-        .viewer-content { background: white; padding: 20px; border-radius: 15px; width: 95%; max-width: 800px; max-height: 80vh; overflow: auto; position: relative; }
-        .viewer-content iframe { width: 100%; height: 500px; border: none; }
-        .viewer-content img { max-width: 100%; border-radius: 8px; }
-        .viewer-content .close-btn { position: absolute; top: 10px; right: 15px; font-size: 30px; cursor: pointer; color: #667eea; }
-        .typing-indicator { display: inline-block; padding: 10px 15px; background: #f1f3f4; border-radius: 15px; }
-        .typing-indicator span { height: 8px; width: 8px; background: #667eea; border-radius: 50%; display: inline-block; margin: 0 2px; animation: typing 1.4s infinite; }
-        .typing-indicator span:nth-child(2) { animation-delay: 0.2s; }
-        .typing-indicator span:nth-child(3) { animation-delay: 0.4s; }
-        @keyframes typing { 0%, 60%, 100% { transform: translateY(0); } 30% { transform: translateY(-5px); } }
-        .loader { border: 3px solid #f3f3f3; border-top: 3px solid #667eea; border-radius: 50%; width: 20px; height: 20px; animation: spin 1s linear infinite; display: inline-block; vertical-align: middle; margin-right: 10px; }
-        @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
-        .nav-links { padding: 10px 15px; border-top: 1px solid #eee; text-align: center; }
-        .nav-links a { color: #667eea; text-decoration: none; margin: 0 10px; font-weight: bold; }
-        .quick-commands { padding: 10px 15px; background: #f8f9fa; border-top: 1px solid #eee; }
-        .quick-commands h4 { font-size: 12px; color: #666; margin-bottom: 8px; }
-        .quick-commands button { background: white; border: 1px solid #667eea; color: #667eea; padding: 5px 12px; border-radius: 15px; margin: 3px; cursor: pointer; font-size: 11px; transition: 0.3s; }
-        .quick-commands button:hover { background: #667eea; color: white; }
-        .app-recommendations { background: #fff3cd; border-left: 4px solid #ffc107; padding: 12px; margin: 15px; border-radius: 8px; font-size: 13px; }
-        .app-recommendations strong { color: #856404; }
-        .app-recommendations a { color: #667eea; text-decoration: none; font-weight: bold; }
-        .download-info { background: #e8f4f8; border-left: 4px solid #667eea; padding: 12px; margin: 15px; border-radius: 8px; font-size: 13px; }
-        .download-info strong { color: #667eea; }
+        /* ── MAIN ── */
+        .main { max-width:720px; margin:0 auto; padding:20px 15px 40px; }
+
+        /* ── WELCOME ── */
+        .welcome { text-align:center; padding:25px 10px 15px; }
+        .welcome .greeting { font-size:18px; color:var(--muted); font-weight:600; }
+        .welcome .name { font-family:'Baloo 2',cursive; font-size:34px; font-weight:800; background:linear-gradient(135deg,var(--primary),var(--secondary),var(--accent)); -webkit-background-clip:text; -webkit-text-fill-color:transparent; margin:4px 0; }
+        .welcome .subtitle { font-size:15px; color:var(--muted); font-weight:600; }
+
+        /* ── MASCOT ── */
+        .mascot-wrapper { display:flex; justify-content:center; margin:10px 0; }
+        .mascot-container { width:120px; height:120px; position:relative; cursor:pointer; }
+        #lottie-mascot { width:100%; height:100%; }
+        .mascot-bubble { position:absolute; top:-15px; left:105%; min-width:130px; max-width:190px; background:white; border-radius:14px; padding:8px 12px; font-size:12px; font-weight:700; color:var(--text); box-shadow:0 4px 15px rgba(0,0,0,0.12); opacity:0; transform:scale(0.8) translateX(-10px); transition:all 0.3s cubic-bezier(0.34,1.56,0.64,1); pointer-events:none; white-space:nowrap; z-index:10; }
+        .mascot-bubble::before { content:''; position:absolute; left:-8px; top:50%; transform:translateY(-50%); border:8px solid transparent; border-right-color:white; }
+        .mascot-bubble.show { opacity:1; transform:scale(1) translateX(0); }
+        .mascot-bubble.happy { border-left:3px solid #38ef7d; }
+        .mascot-bubble.thinking { border-left:3px solid #667eea; }
+        .mascot-bubble.excited { border-left:3px solid #f093fb; }
+        .mascot-bubble.error { border-left:3px solid #f5576c; }
+        .mascot-bubble.celebrating { border-left:3px solid #ffd700; }
+
+        /* ── UPLOAD ── */
+        .upload-card { border:2px dashed var(--primary); border-radius:var(--radius); padding:18px 20px; text-align:center; cursor:pointer; background:linear-gradient(135deg,#f8faff,#f0f4ff); transition:0.3s; margin:12px 0; }
+        .upload-card:hover { background:linear-gradient(135deg,#edf2ff,#e8ecff); border-style:solid; transform:translateY(-2px); }
+        .upload-card p { color:var(--primary); font-weight:800; font-size:14px; }
+        .upload-card small { color:var(--muted); font-size:11px; }
+
+        /* ── ACTION CARDS ── */
+        .quick-section { margin:18px 0; }
+        .quick-section h4 { font-size:11px; color:var(--muted); margin-bottom:10px; text-transform:uppercase; letter-spacing:1.5px; font-weight:800; }
+        .cards-grid { display:grid; grid-template-columns:repeat(2,1fr); gap:10px; }
+        .action-card { background:white; border:2px solid #f0f0f0; border-radius:16px; padding:14px; cursor:pointer; transition:0.25s; text-align:left; }
+        .action-card:hover { border-color:var(--primary); transform:translateY(-3px); box-shadow:0 8px 20px rgba(102,126,234,0.2); }
+        .action-card .card-icon { font-size:22px; margin-bottom:6px; }
+        .action-card .card-title { font-size:13px; font-weight:800; color:var(--text); }
+        .action-card .card-desc { font-size:10px; color:var(--muted); margin-top:2px; font-weight:600; }
+
+        /* ── CHAT ── */
+        .chat-section { background:white; border-radius:var(--radius); margin:15px 0; overflow:hidden; box-shadow:0 4px 20px rgba(102,126,234,0.1); display:none; }
+        .chat-section.visible { display:block; }
+        .chat-header { padding:12px 18px; background:linear-gradient(135deg,var(--primary),var(--secondary)); color:white; font-size:13px; font-weight:800; display:flex; justify-content:space-between; align-items:center; }
+        .chat-box { height:380px; overflow-y:auto; padding:15px; scroll-behavior:smooth; }
+
+        /* ── MESSAGE ROWS WITH REACTION CHARACTERS ── */
+        .msg-row { display:flex; align-items:flex-end; gap:8px; margin-bottom:16px; }
+        .msg-row.user-row { flex-direction:row-reverse; }
+
+        /* Reaction character next to bot message */
+        .reaction-char {
+            width:48px; height:48px; flex-shrink:0;
+            display:flex; flex-direction:column; align-items:center;
+            position:relative;
+        }
+        .reaction-emoji {
+            font-size:32px;
+            animation:char-bounce 0.6s cubic-bezier(0.34,1.56,0.64,1);
+            display:block;
+            line-height:1;
+        }
+        .reaction-label {
+            font-size:8px; color:var(--muted); font-weight:700;
+            text-align:center; margin-top:2px; white-space:nowrap;
+        }
+        @keyframes char-bounce {
+            0%{transform:scale(0) rotate(-20deg);opacity:0}
+            60%{transform:scale(1.2) rotate(5deg);opacity:1}
+            100%{transform:scale(1) rotate(0deg);opacity:1}
+        }
+        @keyframes char-celebrate {
+            0%,100%{transform:translateY(0) rotate(0)}
+            25%{transform:translateY(-8px) rotate(-10deg)}
+            75%{transform:translateY(-8px) rotate(10deg)}
+        }
+        @keyframes char-think {
+            0%,100%{transform:rotate(0)}
+            50%{transform:rotate(-15deg)}
+        }
+        @keyframes char-shake {
+            0%,100%{transform:translateX(0)}
+            25%{transform:translateX(-4px)}
+            75%{transform:translateX(4px)}
+        }
+        .reaction-emoji.celebrate { animation:char-celebrate 0.8s ease infinite; }
+        .reaction-emoji.thinking { animation:char-think 1.2s ease infinite; }
+        .reaction-emoji.shake { animation:char-shake 0.4s ease 3; }
+
+        .message {
+            padding:10px 15px; border-radius:16px; max-width:80%;
+            line-height:1.6; font-size:13px; white-space:pre-wrap;
+            word-wrap:break-word; position:relative; font-weight:600;
+        }
+        .user-row .message { background:linear-gradient(135deg,var(--primary),var(--secondary)); color:white; border-bottom-right-radius:4px; }
+        .bot-row .message { background:#f7f8fc; color:var(--text); border-bottom-left-radius:4px; border:1px solid #eef0f8; }
+        .bot-row .message.ai-mode { background:linear-gradient(135deg,#f0f4ff,#e8ecff); border:1px solid #d0d8ff; }
+        .msg-actions { position:absolute; top:4px; right:6px; display:flex; gap:3px; opacity:0; transition:0.2s; }
+        .message:hover .msg-actions { opacity:1; }
+        .msg-action-btn { background:rgba(0,0,0,0.08); border:none; border-radius:4px; padding:2px 5px; cursor:pointer; font-size:10px; }
+
+        /* ── VOICE SETTINGS BAR ── */
+        .voice-settings {
+            background:white; border-radius:14px; padding:12px 16px;
+            margin:10px 0; box-shadow:0 2px 10px rgba(102,126,234,0.08);
+            display:flex; align-items:center; gap:12px; flex-wrap:wrap;
+        }
+        .voice-settings label { font-size:12px; font-weight:800; color:var(--text); }
+        .voice-gender-btns { display:flex; gap:6px; }
+        .gender-btn {
+            padding:5px 14px; border-radius:20px; border:2px solid #eee;
+            cursor:pointer; font-size:12px; font-weight:700; background:white;
+            transition:0.2s; font-family:'Nunito',sans-serif;
+        }
+        .gender-btn.active { border-color:var(--primary); background:linear-gradient(135deg,var(--primary),var(--secondary)); color:white; }
+        .gender-btn:hover:not(.active) { border-color:var(--primary); }
+        .voice-speed-wrap { display:flex; align-items:center; gap:6px; }
+        .voice-speed-wrap label { font-size:11px; color:var(--muted); font-weight:700; }
+        .voice-speed-wrap input { width:80px; accent-color:var(--primary); }
+
+        /* ── AI TOGGLE ── */
+        .ai-toggle-bar { display:flex; align-items:center; justify-content:center; gap:10px; padding:10px 18px; background:#f8f9ff; border-top:1px solid #eef0f8; }
+        .ai-toggle-bar span { font-size:12px; color:var(--muted); font-weight:700; }
+        .toggle-switch { position:relative; width:48px; height:24px; }
+        .toggle-switch input { opacity:0; width:0; height:0; }
+        .toggle-slider { position:absolute; cursor:pointer; inset:0; background:#ddd; border-radius:24px; transition:0.3s; }
+        .toggle-slider:before { position:absolute; content:""; height:18px; width:18px; left:3px; bottom:3px; background:white; border-radius:50%; transition:0.3s; box-shadow:0 2px 4px rgba(0,0,0,0.2); }
+        input:checked + .toggle-slider { background:linear-gradient(135deg,var(--primary),var(--secondary)); }
+        input:checked + .toggle-slider:before { transform:translateX(24px); }
+        .ai-badge { background:linear-gradient(135deg,var(--primary),var(--secondary)); color:white; padding:2px 8px; border-radius:10px; font-size:10px; font-weight:800; display:none; }
+        .ai-badge.on { display:inline-block; }
+        .ai-hint { font-size:11px; color:var(--muted); text-align:center; padding:5px 15px; display:none; font-weight:600; }
+        .ai-hint.on { display:block; }
+
+        /* ── INPUT ── */
+        .input-section { background:white; border-radius:var(--radius); padding:12px; margin:15px 0; box-shadow:0 4px 20px rgba(102,126,234,0.1); }
+        .input-row { display:flex; gap:8px; align-items:center; }
+        .input-row input { flex:1; padding:12px 18px; border:2px solid #eef0f8; border-radius:30px; outline:none; font-size:13px; font-family:'Nunito',sans-serif; font-weight:600; transition:0.3s; background:#f8f9fc; }
+        .input-row input:focus { border-color:var(--primary); background:white; }
+        .input-row input:disabled { opacity:0.5; cursor:not-allowed; }
+        .send-btn { background:linear-gradient(135deg,var(--primary),var(--secondary)); color:white; border:none; width:44px; height:44px; border-radius:50%; cursor:pointer; font-size:16px; display:flex; align-items:center; justify-content:center; transition:0.2s; flex-shrink:0; }
+        .send-btn:disabled { background:#ddd; cursor:not-allowed; }
+        .send-btn:hover:not(:disabled) { transform:scale(1.1); box-shadow:0 4px 12px rgba(102,126,234,0.4); }
+        .voice-btn { width:44px; height:44px; border-radius:50%; border:none; cursor:pointer; display:flex; align-items:center; justify-content:center; font-size:18px; background:#f0f2ff; transition:0.2s; flex-shrink:0; }
+        .voice-btn:hover { background:#e0e4ff; }
+        .voice-btn.listening { background:linear-gradient(135deg,#f5576c,#f093fb); animation:pulse-mic 1s infinite; }
+        @keyframes pulse-mic { 0%,100%{box-shadow:0 0 0 0 rgba(245,87,108,0.4)} 50%{box-shadow:0 0 0 8px rgba(245,87,108,0)} }
+        .voice-status { font-size:11px; color:var(--primary); text-align:center; font-weight:700; height:16px; margin-top:5px; }
+
+        /* Speaking indicator */
+        .speaking-indicator { display:none; gap:2px; align-items:center; justify-content:center; padding:4px 0; }
+        .speaking-indicator.active { display:flex; }
+        .speaking-bar { width:3px; height:12px; background:var(--primary); border-radius:2px; }
+        .speaking-bar:nth-child(1){animation:sw 0.6s ease infinite 0s}
+        .speaking-bar:nth-child(2){animation:sw 0.6s ease infinite 0.1s}
+        .speaking-bar:nth-child(3){animation:sw 0.6s ease infinite 0.2s}
+        .speaking-bar:nth-child(4){animation:sw 0.6s ease infinite 0.3s}
+        .speaking-bar:nth-child(5){animation:sw 0.6s ease infinite 0.4s}
+        @keyframes sw{0%,100%{transform:scaleY(1)}50%{transform:scaleY(1.6)}}
+
+        /* ── DOWNLOADS ── */
+        #downloadSection { background:white; border-radius:var(--radius); padding:18px; margin:15px 0; display:none; box-shadow:0 4px 20px rgba(102,126,234,0.1); }
+        #downloadSection h4 { font-size:13px; color:var(--text); margin-bottom:12px; font-weight:800; }
+        .download-grid { display:grid; grid-template-columns:repeat(auto-fit,minmax(140px,1fr)); gap:8px; }
+        .dl-card { background:#f8f9fc; border:2px solid #f0f0f0; border-radius:14px; padding:12px; text-align:center; transition:0.2s; }
+        .dl-card:hover { border-color:var(--primary); }
+        .dl-card .icon { font-size:22px; margin-bottom:6px; }
+        .dl-card h5 { font-size:11px; color:var(--text); margin-bottom:8px; font-weight:800; }
+        .dl-card .btn-group { display:flex; flex-direction:column; gap:4px; }
+        .dl-card button { padding:6px; background:var(--primary); color:white; border:none; border-radius:8px; cursor:pointer; font-size:10px; font-weight:800; font-family:'Nunito',sans-serif; transition:0.2s; }
+        .dl-card button:hover:not(:disabled) { opacity:0.85; }
+        .dl-card button:disabled { background:#ddd; cursor:not-allowed; }
+        .dl-card .view-btn { background:var(--success); }
+        .dl-card p { font-size:9px; color:var(--muted); margin-top:4px; font-weight:600; }
+        .email-btn { width:100%; padding:12px; background:linear-gradient(135deg,var(--success),#38ef7d); color:white; border:none; border-radius:12px; cursor:pointer; font-weight:800; margin-top:12px; font-size:13px; font-family:'Nunito',sans-serif; }
+
+        /* ── MODALS ── */
+        .modal { display:none; position:fixed; inset:0; background:rgba(0,0,0,0.5); justify-content:center; align-items:center; z-index:1000; backdrop-filter:blur(4px); }
+        .modal-content { background:white; padding:25px; border-radius:var(--radius); width:90%; max-width:380px; }
+        .modal-content h3 { color:var(--primary); margin-bottom:12px; font-family:'Baloo 2',cursive; }
+        .modal-content input { width:100%; padding:10px 14px; margin:8px 0; border:2px solid #eee; border-radius:10px; font-size:14px; font-family:'Nunito',sans-serif; }
+        .modal-buttons { display:flex; gap:10px; margin-top:12px; }
+        .modal-buttons button { flex:1; padding:10px; border:none; border-radius:10px; cursor:pointer; font-weight:800; font-family:'Nunito',sans-serif; }
+        .btn-send { background:linear-gradient(135deg,var(--primary),var(--secondary)); color:white; }
+        .btn-cancel { background:#f0f0f0; color:var(--text); }
+        .viewer-modal { display:none; position:fixed; inset:0; background:rgba(0,0,0,0.85); justify-content:center; align-items:center; z-index:2000; }
+        .viewer-content { background:white; padding:20px; border-radius:var(--radius); width:95%; max-width:750px; max-height:85vh; overflow:auto; position:relative; }
+        .viewer-content iframe { width:100%; height:480px; border:none; }
+        .viewer-content img { max-width:100%; border-radius:10px; }
+        .close-btn { position:absolute; top:10px; right:15px; font-size:28px; cursor:pointer; color:var(--primary); font-weight:900; }
+
+        .info-bar { background:linear-gradient(135deg,#e8f4f8,#f0f4ff); border-left:3px solid var(--primary); padding:10px 14px; border-radius:10px; font-size:11px; color:var(--muted); margin:10px 0; font-weight:600; }
+        .nav-footer { text-align:center; padding:10px; }
+        .nav-footer a { color:var(--primary); text-decoration:none; font-size:13px; font-weight:700; }
+
+        /* Typing */
+        .typing-dots span { height:7px; width:7px; background:var(--primary); border-radius:50%; display:inline-block; margin:0 2px; animation:bounce 1.4s infinite; }
+        .typing-dots span:nth-child(2){animation-delay:0.2s}
+        .typing-dots span:nth-child(3){animation-delay:0.4s}
+        @keyframes bounce{0%,60%,100%{transform:translateY(0)}30%{transform:translateY(-6px)}}
+        .loader { border:3px solid #f0f0f0; border-top:3px solid var(--primary); border-radius:50%; width:18px; height:18px; animation:spin 0.8s linear infinite; display:inline-block; vertical-align:middle; margin-right:8px; }
+        @keyframes spin{to{transform:rotate(360deg)}}
+        @keyframes bounce-emoji{0%,100%{transform:translateY(0)}50%{transform:translateY(-15px)}}
     </style>
 </head>
 <body>
-    <div class="container">
-        <div class="header">
-            <div class="status-dot"><span class="dot"></span> Agent Live (v1.9 Headmaster)</div>
-            <h1>🤖 Data Scientist Agent</h1>
-            <p>Headmaster Edition - Excel + CSV + HTML</p>
-        </div>
 
-        <div class="upload-box" id="dropZone" onclick="document.getElementById('fileInput').click()">
-            <p id="uploadText">📁 Click to upload CSV/Excel to Database</p>
-            <input type="file" id="fileInput" accept=".csv,.xlsx" style="display:none" onchange="uploadFile(this)">
-        </div>
+<!-- TOP NAV -->
+<div class="topnav">
+    <div class="logo">🤖 DS Agent</div>
+    <div class="user-info">
+        <div class="avatar" id="avatarInitial">?</div>
+        <span class="username" id="displayUsername">...</span>
+        <a href="/logout">Logout</a>
+    </div>
+</div>
 
-        <div class="chat-box" id="chatBox">
-            <div class="message bot">👋 Headmaster Mode Active! Upload data for Tableau-level insights.</div>
-        </div>
+<div class="main">
 
-        <!-- ✅ AI MODE TOGGLE BAR -->
+    <!-- WELCOME -->
+    <div class="welcome">
+        <div class="greeting">नमस्ते,</div>
+        <div class="name" id="welcomeName">...</div>
+        <div class="subtitle">कहाँ से शुरुआत करें? 🚀</div>
+    </div>
+
+    <!-- MASCOT -->
+    <div class="mascot-wrapper">
+        <div class="mascot-container" onclick="mascotTalk()" title="Click me!">
+            <div id="lottie-mascot"></div>
+            <div class="mascot-bubble" id="mascotBubble">Hi! Mujhe click karo 👋</div>
+        </div>
+    </div>
+    <div class="speaking-indicator" id="speakingIndicator">
+        <div class="speaking-bar"></div><div class="speaking-bar"></div>
+        <div class="speaking-bar"></div><div class="speaking-bar"></div>
+        <div class="speaking-bar"></div>
+    </div>
+
+    <!-- UPLOAD -->
+    <div class="upload-card" onclick="document.getElementById('fileInput').click()">
+        <p id="uploadText">📁 CSV / Excel Upload करें</p>
+        <small>Database mein sync hoga automatically</small>
+        <input type="file" id="fileInput" accept=".csv,.xlsx" style="display:none" onchange="uploadFile(this)">
+    </div>
+
+    <!-- VOICE SETTINGS -->
+    <div class="voice-settings">
+        <label>🔊 Voice:</label>
+        <div class="voice-gender-btns">
+            <button class="gender-btn active" id="btnFemale" onclick="setVoiceGender('female')">👩 Female</button>
+            <button class="gender-btn" id="btnMale" onclick="setVoiceGender('male')">👨 Male</button>
+        </div>
+        <div class="voice-speed-wrap">
+            <label>Speed:</label>
+            <input type="range" id="voiceSpeed" min="0.5" max="1.8" step="0.1" value="0.95">
+            <span id="speedVal" style="font-size:11px;font-weight:700;color:var(--primary)">0.95x</span>
+        </div>
+    </div>
+
+    <!-- QUICK CARDS -->
+    <div class="quick-section">
+        <h4>⚡ Quick Actions</h4>
+        <div class="cards-grid">
+            <div class="action-card" onclick="sendCmd('dashboard')"><div class="card-icon">📊</div><div class="card-title">Dashboard</div><div class="card-desc">4-in-1 visual overview</div></div>
+            <div class="action-card" onclick="sendCmd('kpi')"><div class="card-icon">📈</div><div class="card-title">KPI Cards</div><div class="card-desc">Key metrics summary</div></div>
+            <div class="action-card" onclick="sendCmd('top 5')"><div class="card-icon">🏆</div><div class="card-title">Top 5</div><div class="card-desc">Best performing items</div></div>
+            <div class="action-card" onclick="sendCmd('bar chart')"><div class="card-icon">📉</div><div class="card-title">Bar Chart</div><div class="card-desc">Visual comparison</div></div>
+            <div class="action-card" onclick="sendCmd('export excel')"><div class="card-icon">📄</div><div class="card-title">Export Excel</div><div class="card-desc">Microsoft 365 format</div></div>
+            <div class="action-card" onclick="sendCmd('export csv')"><div class="card-icon">📋</div><div class="card-title">Export CSV</div><div class="card-desc">Google Sheets format</div></div>
+            <div class="action-card" onclick="sendCmd('average')"><div class="card-icon">🔢</div><div class="card-title">Average</div><div class="card-desc">Mean of numeric cols</div></div>
+            <div class="action-card" onclick="sendCmd('export html')"><div class="card-icon">🌐</div><div class="card-title">HTML Report</div><div class="card-desc">Browser-friendly report</div></div>
+        </div>
+    </div>
+
+    <!-- CHAT SECTION -->
+    <div class="chat-section" id="chatSection">
+        <div class="chat-header">
+            <span>💬 Chat</span>
+            <span id="chatModeLabel">⚡ Command Mode</span>
+        </div>
+        <div class="chat-box" id="chatBox"></div>
+        <!-- AI TOGGLE (Optional) -->
         <div class="ai-toggle-bar">
-            <span>⚡ Command Mode</span>
+            <span>⚡ Command</span>
             <label class="toggle-switch">
                 <input type="checkbox" id="aiModeToggle" onchange="toggleAIMode(this)">
                 <span class="toggle-slider"></span>
             </label>
-            <span>🤖 AI Chat Mode</span>
-            <span class="ai-mode-badge" id="aiModeBadge">AI ON</span>
+            <span>🤖 AI Chat</span>
+            <span class="ai-badge" id="aiModeBadge">AI ON</span>
         </div>
-        <div class="ai-mode-hint" id="aiModeHint">
-            🤖 AI Chat Mode ON — Ab seedha Hinglish mein baat karo! (e.g. "Bhai yeh data mujhe samjha")
-        </div>
-
-        <div class="app-recommendations">
-            <strong>📱 Recommended Apps (Free):</strong><br>
-            • Android: <a href="https://play.google.com/store/apps/details?id=com.google.android.apps.nbu.files" target="_blank">Google Files</a><br>
-            • iOS: <a href="https://apps.apple.com/app/documents-file-manager/id364901807" target="_blank">Documents by Readdle</a><br>
-            • Both: <a href="https://play.google.com/store/apps/details?id=com.google.android.apps.docs" target="_blank">Google Drive</a><br>
-            • Excel: <strong>Microsoft 365 (Already on your phone!)</strong>
-        </div>
-
-        <div class="download-info">
-            <strong>📥 Download Location:</strong> Files save honge aapke <strong>"Downloads"</strong> folder mein. PNG files Gallery mein bhi dikhengi!
-        </div>
-
-        <div id="downloadSection">
-            <h4>📥 Download Your Analysis Files:</h4>
-            <div class="download-grid">
-                <div class="download-card">
-                    <div class="icon">📊</div>
-                    <h5>Latest Plot (PNG)</h5>
-                    <div class="btn-group">
-                        <button class="view-btn" id="viewPlotBtn" onclick="viewPlot()" disabled>👁️ View</button>
-                        <button id="plotBtn" onclick="downloadPlot()" disabled>💾 Download</button>
-                    </div>
-                    <p>Opens in Gallery</p>
-                </div>
-                <div class="download-card">
-                    <div class="icon">📈</div>
-                    <h5>Dashboard (PNG)</h5>
-                    <div class="btn-group">
-                        <button class="view-btn" id="viewDashboardBtn" onclick="viewDashboard()" disabled>👁️ View</button>
-                        <button id="dashboardBtn" onclick="downloadDashboard()" disabled>💾 Download</button>
-                    </div>
-                    <p>Opens in Gallery</p>
-                </div>
-                <div class="download-card">
-                    <div class="icon">📄</div>
-                    <h5>Excel Report (.xlsx)</h5>
-                    <div class="btn-group">
-                        <button class="view-btn" id="viewExcelBtn" onclick="viewExcel()" disabled>👁️ View Info</button>
-                        <button id="excelBtn" onclick="downloadExcel()" disabled>💾 Download Excel</button>
-                    </div>
-                    <p>Opens in Microsoft 365</p>
-                </div>
-                <div class="download-card">
-                    <div class="icon">📄</div>
-                    <h5>CSV Data</h5>
-                    <div class="btn-group">
-                        <button class="view-btn" id="viewCSVBtn" onclick="viewCSV()" disabled>👁️ View</button>
-                        <button id="csvBtn" onclick="downloadCSV()" disabled>💾 Download CSV</button>
-                    </div>
-                    <p>Opens in Excel/Sheets</p>
-                </div>
-                <div class="download-card">
-                    <div class="icon">🌐</div>
-                    <h5>HTML Report</h5>
-                    <div class="btn-group">
-                        <button class="view-btn" id="viewHTMLBtn" onclick="viewHTML()" disabled>👁️ View</button>
-                        <button id="htmlBtn" onclick="downloadHTML()" disabled>💾 Download HTML</button>
-                    </div>
-                    <p>Opens in Browser</p>
-                </div>
-                <div class="download-card">
-                    <div class="icon">📝</div>
-                    <h5>All Text Reports</h5>
-                    <button onclick="downloadAllReports()">💾 Download All</button>
-                    <p>Opens in Any App</p>
-                </div>
-            </div>
-            <button onclick="openEmailModal()" class="email-btn">📧 Send All Reports via Email</button>
-        </div>
-
-        <div class="input-area">
-            <input type="text" id="userInput" placeholder="Ask: 'export excel', 'dashboard', ya AI mode mein kuch bhi..." disabled>
-            <button onclick="sendMessage()" id="sendBtn" disabled>Send</button>
-        </div>
-
-        <div class="quick-commands">
-            <h4>⚡ Quick Commands:</h4>
-            <button onclick="quickCommand('dashboard')">📊 Dashboard</button>
-            <button onclick="quickCommand('kpi')">📈 KPI</button>
-            <button onclick="quickCommand('top 5')">🏆 Top 5</button>
-            <button onclick="quickCommand('average')">📊 Average</button>
-            <button onclick="quickCommand('bar chart')">📊 Bar Chart</button>
-            <button onclick="quickCommand('export excel')">📄 Export Excel</button>
-            <button onclick="quickCommand('export csv')">📄 Export CSV</button>
-            <button onclick="quickCommand('export html')">🌐 Export HTML</button>
-        </div>
-
-        <div class="nav-links">
-            <a href="/dashboard">📊 Dashboard</a> | <a href="/logout">🚪 Logout</a>
-        </div>
+        <div class="ai-hint" id="aiModeHint">🤖 AI Mode ON — Seedha Hinglish mein baat karo!</div>
     </div>
 
-    <div id="viewerModal" class="viewer-modal">
-        <div class="viewer-content">
-            <span class="close-btn" onclick="closeViewer()">&times;</span>
-            <div id="viewerContainer"></div>
+    <!-- INPUT -->
+    <div class="input-section">
+        <div class="input-row">
+            <button class="voice-btn" id="voiceBtn" onclick="toggleVoice()" title="Voice Input">🎤</button>
+            <input type="text" id="userInput" placeholder="Pehle file upload karo..." disabled>
+            <button class="send-btn" onclick="sendMessage()" id="sendBtn" disabled>➤</button>
         </div>
+        <div class="voice-status" id="voiceStatus"></div>
     </div>
 
-    <div id="emailModal" class="modal">
-        <div class="modal-content">
-            <h3>📧 Send Report</h3>
-            <input type="email" id="clientEmail" placeholder="Client Email">
-            <div class="modal-buttons">
-                <button onclick="sendReport()" class="btn-send">Send</button>
-                <button onclick="closeEmailModal()" class="btn-cancel">Cancel</button>
-            </div>
+    <!-- DOWNLOADS -->
+    <div id="downloadSection">
+        <h4>📥 Download Your Files:</h4>
+        <div class="download-grid">
+            <div class="dl-card"><div class="icon">📊</div><h5>Latest Plot</h5><div class="btn-group"><button class="view-btn" id="viewPlotBtn" onclick="viewPlot()" disabled>👁 View</button><button id="plotBtn" onclick="downloadPlot()" disabled>💾 Download</button></div><p>Gallery</p></div>
+            <div class="dl-card"><div class="icon">📈</div><h5>Dashboard</h5><div class="btn-group"><button class="view-btn" id="viewDashboardBtn" onclick="viewDashboard()" disabled>👁 View</button><button id="dashboardBtn" onclick="downloadDashboard()" disabled>💾 Download</button></div><p>Gallery</p></div>
+            <div class="dl-card"><div class="icon">📄</div><h5>Excel</h5><div class="btn-group"><button class="view-btn" id="viewExcelBtn" onclick="viewExcel()" disabled>👁 Info</button><button id="excelBtn" onclick="downloadExcel()" disabled>💾 Download</button></div><p>Microsoft 365</p></div>
+            <div class="dl-card"><div class="icon">📋</div><h5>CSV Data</h5><div class="btn-group"><button class="view-btn" id="viewCSVBtn" onclick="viewCSV()" disabled>👁 View</button><button id="csvBtn" onclick="downloadCSV()" disabled>💾 Download</button></div><p>Excel/Sheets</p></div>
+            <div class="dl-card"><div class="icon">🌐</div><h5>HTML Report</h5><div class="btn-group"><button class="view-btn" id="viewHTMLBtn" onclick="viewHTML()" disabled>👁 View</button><button id="htmlBtn" onclick="downloadHTML()" disabled>💾 Download</button></div><p>Any Browser</p></div>
+            <div class="dl-card"><div class="icon">📝</div><h5>Text Reports</h5><div class="btn-group"><button onclick="downloadAllReports()">💾 All Reports</button></div><p>Chat history</p></div>
         </div>
+        <button onclick="openEmailModal()" class="email-btn">📧 Email Reports</button>
     </div>
 
-    <script>
-        let isFileReady = false;
-        let isProcessing = false;
-        let chatHistory = [];
-        let plotReady = false;
-        let dashboardReady = false;
-        let htmlReady = false;
-        let csvReady = false;
-        let excelReady = false;
-        let aiModeEnabled = false; // ✅ AI Mode state
+    <div class="info-bar">📥 Downloads → <strong>Downloads folder</strong> | PNG → Gallery mein bhi!</div>
+    <div class="nav-footer"><a href="/dashboard">📊 Dashboard</a></div>
+</div>
 
-        // ✅ AI MODE TOGGLE
-        function toggleAIMode(checkbox) {
-            aiModeEnabled = checkbox.checked;
-            const badge = document.getElementById('aiModeBadge');
-            const hint = document.getElementById('aiModeHint');
-            const input = document.getElementById('userInput');
-            if (aiModeEnabled) {
-                badge.classList.add('visible');
-                hint.classList.add('visible');
-                input.placeholder = "Bhai seedha puch lo kuch bhi... 🤖";
-                addMessage("🤖 AI Chat Mode ON! Ab natural Hinglish mein baat karo. Dataset ke baare mein kuch bhi puch sakte ho!", 'bot ai-mode');
-            } else {
-                badge.classList.remove('visible');
-                hint.classList.remove('visible');
-                input.placeholder = "Ask: 'export excel', 'dashboard', 'top 5'...";
-                addMessage("⚡ Command Mode ON! Normal commands use karo.", 'bot');
-            }
-        }
+<!-- MODALS -->
+<div id="viewerModal" class="viewer-modal">
+    <div class="viewer-content">
+        <span class="close-btn" onclick="closeViewer()">&times;</span>
+        <div id="viewerContainer"></div>
+    </div>
+</div>
+<div id="emailModal" class="modal">
+    <div class="modal-content">
+        <h3>📧 Send Report</h3>
+        <input type="email" id="clientEmail" placeholder="Client ka email">
+        <div class="modal-buttons">
+            <button onclick="sendReport()" class="btn-send">Send</button>
+            <button onclick="closeEmailModal()" class="btn-cancel">Cancel</button>
+        </div>
+    </div>
+</div>
 
-        function addMessage(text, sender) {
-            const chatBox = document.getElementById('chatBox');
-            const msgDiv = document.createElement('div');
-            msgDiv.className = 'message ' + sender;
-            msgDiv.innerText = text;
-            if (sender.includes('bot')) {
-                const downloadBtn = document.createElement('button');
-                downloadBtn.className = 'msg-download';
-                downloadBtn.innerText = '💾';
-                downloadBtn.onclick = function() { downloadSingleMessage(text); };
-                msgDiv.appendChild(downloadBtn);
-                chatHistory.push({ type: 'bot', text: text, timestamp: new Date().toLocaleString() });
-            } else {
-                chatHistory.push({ type: 'user', text: text, timestamp: new Date().toLocaleString() });
-            }
-            chatBox.appendChild(msgDiv);
-            chatBox.scrollTop = chatBox.scrollHeight;
-        }
+<script>
+// ══════════════════════════════════════════
+// STATE
+// ══════════════════════════════════════════
+let isFileReady=false, isProcessing=false, aiModeEnabled=false;
+let chatHistory=[], plotReady=false, dashboardReady=false;
+let htmlReady=false, csvReady=false, excelReady=false;
+let recognition=null, isListening=false;
+let voiceGender='female';
+let mascotAnim=null, bubbleTimer=null;
 
-        function downloadSingleMessage(text) {
-            const blob = new Blob([text], { type: 'text/plain' });
-            const url = URL.createObjectURL(blob);
-            const a = document.createElement('a');
-            a.href = url;
-            a.download = 'response_' + new Date().getTime() + '.txt';
-            document.body.appendChild(a);
-            a.click();
-            document.body.removeChild(a);
-            URL.revokeObjectURL(url);
-        }
+// ══════════════════════════════════════════
+// REACTION CHARACTERS — different emojis per mood
+// ══════════════════════════════════════════
+const REACTIONS = {
+    success:    { emoji:'🎉', label:'Celebrating!', anim:'celebrate' },
+    happy:      { emoji:'😊', label:'Happy!',       anim:'' },
+    excited:    { emoji:'🤩', label:'Wow!',         anim:'celebrate' },
+    thinking:   { emoji:'🤔', label:'Hmm...',       anim:'thinking' },
+    data:       { emoji:'📊', label:'Data!',        anim:'' },
+    error:      { emoji:'😅', label:'Oops!',        anim:'shake' },
+    chart:      { emoji:'📈', label:'Chart!',       anim:'celebrate' },
+    export:     { emoji:'💾', label:'Saving!',      anim:'' },
+    welcome:    { emoji:'👋', label:'Hello!',       anim:'' },
+    code:       { emoji:'💻', label:'Code!',        anim:'' },
+    tip:        { emoji:'💡', label:'Tip!',         anim:'' },
+    ai:         { emoji:'🧠', label:'AI Mode!',     anim:'' },
+};
 
-        function downloadAllReports() {
-            if (chatHistory.length === 0) { alert('No chat history!'); return; }
-            let content = "🤖 Data Scientist Agent - Full Report\n";
-            content += "=".repeat(50) + "\n";
-            content += "Generated: " + new Date().toLocaleString() + "\n\n";
-            chatHistory.forEach((msg) => {
-                content += "[" + msg.timestamp + "] " + (msg.type === 'user' ? '👤 You' : '🤖 Bot') + ":\n";
-                content += msg.text + "\n\n" + "-".repeat(50) + "\n\n";
-            });
-            const blob = new Blob([content], { type: 'text/plain' });
-            const url = URL.createObjectURL(blob);
-            const a = document.createElement('a');
-            a.href = url;
-            a.download = 'full_report_' + new Date().getTime() + '.txt';
-            document.body.appendChild(a);
-            a.click();
-            document.body.removeChild(a);
-            URL.revokeObjectURL(url);
-        }
+function getReaction(text) {
+    const t = text.toLowerCase();
+    if (t.includes('✅') || t.includes('saved') || t.includes('success') || t.includes('report saved')) return REACTIONS.success;
+    if (t.includes('dashboard')) return REACTIONS.chart;
+    if (t.includes('❌') || t.includes('error') || t.includes('⚠️')) return REACTIONS.error;
+    if (t.includes('chart') || t.includes('plot') || t.includes('graph')) return REACTIONS.chart;
+    if (t.includes('excel') || t.includes('csv') || t.includes('html') || t.includes('export')) return REACTIONS.export;
+    if (t.includes('📊') || t.includes('total') || t.includes('average') || t.includes('max') || t.includes('min')) return REACTIONS.data;
+    if (t.includes('code') || t.includes('python') || t.includes('df.')) return REACTIONS.code;
+    if (t.includes('💡') || t.includes('tip') || t.includes('suggest')) return REACTIONS.tip;
+    if (t.includes('thinking') || t.includes('soch')) return REACTIONS.thinking;
+    if (t.includes('hello') || t.includes('namaste') || t.includes('hi')) return REACTIONS.welcome;
+    return REACTIONS.happy;
+}
 
-        function showTypingIndicator() {
-            const chatBox = document.getElementById('chatBox');
-            const typingDiv = document.createElement('div');
-            typingDiv.className = 'message bot';
-            typingDiv.id = 'typingIndicator';
-            typingDiv.innerHTML = '<div class="typing-indicator"><span></span><span></span><span></span></div>';
-            chatBox.appendChild(typingDiv);
-            chatBox.scrollTop = chatBox.scrollHeight;
-        }
+// ══════════════════════════════════════════
+// LOTTIE MASCOT
+// ══════════════════════════════════════════
+function initMascot() {
+    mascotAnim = lottie.loadAnimation({
+        container: document.getElementById('lottie-mascot'),
+        renderer: 'svg', loop: true, autoplay: true,
+        path: 'https://assets9.lottiefiles.com/packages/lf20_qp1q7mct.json'
+    });
+    mascotAnim.addEventListener('data_failed', () => {
+        document.getElementById('lottie-mascot').innerHTML =
+            '<div style="font-size:68px;text-align:center;line-height:120px;animation:bounce-emoji 1.2s ease-in-out infinite;">🤖</div>';
+    });
+    setTimeout(() => showBubble('Data upload karo! 🚀','happy'), 1500);
+}
 
-        function removeTypingIndicator() {
-            const el = document.getElementById('typingIndicator');
-            if (el) el.remove();
-        }
+function showBubble(text, mood='happy') {
+    const b = document.getElementById('mascotBubble');
+    b.textContent = text;
+    b.className = 'mascot-bubble ' + mood + ' show';
+    clearTimeout(bubbleTimer);
+    bubbleTimer = setTimeout(() => b.classList.remove('show'), 3500);
+}
 
-        function setInputState(enabled) {
-            document.getElementById('userInput').disabled = !enabled;
-            document.getElementById('sendBtn').disabled = !enabled;
-        }
+function mascotTalk() {
+    const msgs = [
+        ['Kya analysis karni hai? 🤔','thinking'],
+        ['Data ready hai? Upload karo! 💪','excited'],
+        ['Dashboard try karo! 📊','happy'],
+        ['Main hoon na bhai! 😄','happy'],
+        ['AI Mode try karo! 🧠','excited'],
+    ];
+    const [m,mood] = msgs[Math.floor(Math.random()*msgs.length)];
+    showBubble(m, mood);
+}
 
-        function quickCommand(cmd) {
-            document.getElementById('userInput').value = cmd;
-            sendMessage();
-        }
+// ══════════════════════════════════════════
+// VOICE GENDER SELECT
+// ══════════════════════════════════════════
+function setVoiceGender(g) {
+    voiceGender = g;
+    document.getElementById('btnFemale').className = 'gender-btn' + (g==='female'?' active':'');
+    document.getElementById('btnMale').className   = 'gender-btn' + (g==='male'?' active':'');
+    // Preview voice
+    speakText(g==='female' ? 'Main hun aapki female assistant!' : 'Main hun aapka male assistant!');
+}
 
-        function uploadFile(input) {
-            if(!input.files[0]) return;
-            const formData = new FormData();
-            formData.append('file', input.files[0]);
-            document.getElementById('uploadText').innerHTML = '<div class="loader"></div> Syncing...';
-            setInputState(false);
-            fetch('/upload', { method: 'POST', body: formData })
-            .then(res => res.json())
-            .then(data => {
-                addMessage("✅ " + data.message, 'bot');
-                document.getElementById('uploadText').innerText = "📁 File Synced: " + input.files[0].name;
-                isFileReady = true;
-                setInputState(true);
-            })
-            .catch(err => {
-                addMessage("❌ Connection Error", 'bot');
-                document.getElementById('uploadText').innerText = "📁 Try Again";
-                setInputState(true);
-            });
-        }
+document.getElementById('voiceSpeed').addEventListener('input', function() {
+    document.getElementById('speedVal').textContent = this.value + 'x';
+});
 
-        function sendMessage() {
-            const input = document.getElementById('userInput');
-            const msg = input.value.trim();
-            if(!msg || isProcessing) return;
-            if(!isFileReady) {
-                addMessage("⚠️ Pehle file upload karo!", "bot");
-                return;
-            }
-            addMessage(msg, 'user');
-            input.value = '';
-            isProcessing = true;
-            setInputState(false);
-            showTypingIndicator();
+// ══════════════════════════════════════════
+// VOICE OUTPUT (Text to Speech)
+// ══════════════════════════════════════════
+function speakText(text) {
+    if (!window.speechSynthesis) return;
+    window.speechSynthesis.cancel();
+    const clean = text.replace(/[^\x00-\x7F\u0900-\u097F\s]/g,'').replace(/\*\*/g,'').trim().substring(0,300);
+    if (!clean) return;
 
-            fetch('/chat', {
-                method: 'POST',
-                headers: {'Content-Type': 'application/json'},
-                body: JSON.stringify({
-                    message: msg,
-                    ai_mode: aiModeEnabled  // ✅ AI mode flag backend ko bhejo
-                })
-            })
-            .then(res => res.json())
-            .then(data => {
-                removeTypingIndicator();
-                // ✅ AI mode mein alag style
-                const msgClass = aiModeEnabled ? 'bot ai-mode' : 'bot';
-                addMessage(data.response, msgClass);
+    const utt = new SpeechSynthesisUtterance(clean);
+    utt.lang = 'hi-IN';
+    utt.rate = parseFloat(document.getElementById('voiceSpeed').value);
+    utt.pitch = voiceGender === 'female' ? 1.4 : 0.7;
+    utt.volume = 1;
 
-                // Normal mode triggers (same as before)
-                if (!aiModeEnabled) {
-                    const plotTriggers = ['plot', 'chart', 'graph', 'visualize', 'bar', 'hist'];
-                    const dashboardTriggers = ['dashboard', 'multiple plots'];
-                    const excelTriggers = ['excel', 'xlsx'];
-                    const csvTriggers = ['csv'];
-                    const htmlTriggers = ['html'];
-                    if(plotTriggers.some(t => msg.toLowerCase().includes(t)) || data.response.toLowerCase().includes("plot saved")) {
-                        setTimeout(() => { plotReady = true; document.getElementById('plotBtn').disabled = false; document.getElementById('viewPlotBtn').disabled = false; showDownloadSection(); }, 1500);
-                    }
-                    if(dashboardTriggers.some(t => msg.toLowerCase().includes(t)) || data.response.toLowerCase().includes('dashboard saved')) {
-                        setTimeout(() => { dashboardReady = true; document.getElementById('dashboardBtn').disabled = false; document.getElementById('viewDashboardBtn').disabled = false; showDownloadSection(); }, 2500);
-                    }
-                    if(excelTriggers.some(t => msg.toLowerCase().includes(t)) || data.response.toLowerCase().includes('excel')) {
-                        setTimeout(() => { excelReady = true; document.getElementById('excelBtn').disabled = false; document.getElementById('viewExcelBtn').disabled = false; showDownloadSection(); }, 1500);
-                    }
-                    if(csvTriggers.some(t => msg.toLowerCase().includes(t)) || data.response.toLowerCase().includes('csv')) {
-                        setTimeout(() => { csvReady = true; document.getElementById('csvBtn').disabled = false; document.getElementById('viewCSVBtn').disabled = false; showDownloadSection(); }, 1500);
-                    }
-                    if(htmlTriggers.some(t => msg.toLowerCase().includes(t)) || data.response.toLowerCase().includes('html')) {
-                        setTimeout(() => { htmlReady = true; document.getElementById('htmlBtn').disabled = false; document.getElementById('viewHTMLBtn').disabled = false; showDownloadSection(); }, 1500);
-                    }
-                }
-                isProcessing = false;
-                setInputState(true);
-            })
-            .catch(err => {
-                removeTypingIndicator();
-                addMessage("⚠️ Server slow hai.", 'bot');
-                isProcessing = false;
-                setInputState(true);
-            });
+    // Try to find matching voice
+    const voices = window.speechSynthesis.getVoices();
+    const hindiVoices = voices.filter(v => v.lang.includes('hi') || v.lang.includes('IN'));
+    if (hindiVoices.length > 0) {
+        if (voiceGender === 'female') {
+            utt.voice = hindiVoices.find(v => v.name.toLowerCase().includes('female') || v.name.toLowerCase().includes('woman')) || hindiVoices[0];
+        } else {
+            utt.voice = hindiVoices.find(v => v.name.toLowerCase().includes('male') || v.name.toLowerCase().includes('man')) || hindiVoices[hindiVoices.length-1];
         }
+    }
 
-        function showDownloadSection() {
-            document.getElementById('downloadSection').style.display = 'block';
-        }
+    utt.onstart = () => { document.getElementById('speakingIndicator').classList.add('active'); };
+    utt.onend   = () => { document.getElementById('speakingIndicator').classList.remove('active'); };
+    window.speechSynthesis.speak(utt);
+}
 
-        function viewPlot() {
-            document.getElementById('viewerContainer').innerHTML = '<img src="/plot.png?t=' + Date.now() + '" alt="Plot">';
-            document.getElementById('viewerModal').style.display = 'flex';
-        }
-        function viewDashboard() {
-            document.getElementById('viewerContainer').innerHTML = '<img src="/dashboard.png?t=' + Date.now() + '" alt="Dashboard">';
-            document.getElementById('viewerModal').style.display = 'flex';
-        }
-        function viewExcel() {
-            alert('📄 Excel file Microsoft 365 mein open hogi!\nDownload karo phir Microsoft 365 se kholo.');
-        }
-        function viewHTML() {
-            document.getElementById('viewerContainer').innerHTML = '<iframe src="/download/html?t=' + Date.now() + '"></iframe>';
-            document.getElementById('viewerModal').style.display = 'flex';
-        }
-        function viewCSV() {
-            document.getElementById('viewerContainer').innerHTML = '<iframe src="/download/csv?t=' + Date.now() + '"></iframe>';
-            document.getElementById('viewerModal').style.display = 'flex';
-        }
-        function closeViewer() {
-            document.getElementById('viewerModal').style.display = 'none';
-            document.getElementById('viewerContainer').innerHTML = '';
-        }
+// Load voices async
+if (window.speechSynthesis) {
+    window.speechSynthesis.onvoiceschanged = () => window.speechSynthesis.getVoices();
+}
 
-        function downloadPlot() {
-            if (!plotReady) { alert('Plot ready nahi! "bar chart" command do.'); return; }
-            const a = document.createElement('a'); a.href = '/plot.png?t=' + Date.now(); a.download = 'plot_' + Date.now() + '.png'; document.body.appendChild(a); a.click(); document.body.removeChild(a);
-        }
-        function downloadDashboard() {
-            if (!dashboardReady) { alert('Dashboard ready nahi! "dashboard" command do.'); return; }
-            const a = document.createElement('a'); a.href = '/dashboard.png?t=' + Date.now(); a.download = 'dashboard_' + Date.now() + '.png'; document.body.appendChild(a); a.click(); document.body.removeChild(a);
-        }
-        function downloadExcel() {
-            if (!excelReady) { alert('Excel ready nahi! "export excel" command do.'); return; }
-            const a = document.createElement('a'); a.href = '/download/excel?t=' + Date.now(); a.download = 'report_' + Date.now() + '.xlsx'; document.body.appendChild(a); a.click(); document.body.removeChild(a);
-        }
-        function downloadHTML() {
-            if (!htmlReady) { alert('HTML ready nahi! "export html" command do.'); return; }
-            const a = document.createElement('a'); a.href = '/download/html?t=' + Date.now(); a.download = 'report_' + Date.now() + '.html'; document.body.appendChild(a); a.click(); document.body.removeChild(a);
-        }
-        function downloadCSV() {
-            if (!csvReady) { alert('CSV ready nahi! "export csv" command do.'); return; }
-            const a = document.createElement('a'); a.href = '/download/csv?t=' + Date.now(); a.download = 'data_' + Date.now() + '.csv'; document.body.appendChild(a); a.click(); document.body.removeChild(a);
-        }
+// ══════════════════════════════════════════
+// VOICE INPUT
+// ══════════════════════════════════════════
+function initVoice() {
+    const SR = window.SpeechRecognition || window.webkitSpeechRecognition;
+    if (!SR) { document.getElementById('voiceBtn').style.opacity='0.4'; return; }
+    recognition = new SR();
+    recognition.lang = 'hi-IN';
+    recognition.continuous = false;
+    recognition.interimResults = true;
+    recognition.onstart = () => {
+        isListening=true;
+        document.getElementById('voiceBtn').classList.add('listening');
+        document.getElementById('voiceStatus').textContent='🎤 Sun raha hoon... bolo!';
+        showBubble('Bol do! Sun raha hoon 👂','thinking');
+    };
+    recognition.onresult = (e) => {
+        let t='';
+        for(let i=e.resultIndex;i<e.results.length;i++) t+=e.results[i][0].transcript;
+        document.getElementById('userInput').value=t;
+        document.getElementById('voiceStatus').textContent='📝 '+t;
+    };
+    recognition.onend = () => {
+        isListening=false;
+        document.getElementById('voiceBtn').classList.remove('listening');
+        document.getElementById('voiceStatus').textContent='';
+        const v=document.getElementById('userInput').value.trim();
+        if(v&&isFileReady) setTimeout(()=>sendMessage(),500);
+    };
+    recognition.onerror = () => {
+        isListening=false;
+        document.getElementById('voiceBtn').classList.remove('listening');
+        document.getElementById('voiceStatus').textContent='⚠️ Dobara try karo';
+        setTimeout(()=>document.getElementById('voiceStatus').textContent='',2000);
+    };
+}
 
-        function openEmailModal() { document.getElementById('emailModal').style.display = 'flex'; }
-        function closeEmailModal() { document.getElementById('emailModal').style.display = 'none'; }
-        function sendReport() {
-            const email = document.getElementById('clientEmail').value;
-            if(!email) { alert('Email enter karo'); return; }
-            fetch('/send_report', { method: 'POST', headers: {'Content-Type': 'application/json'}, body: JSON.stringify({email}) })
-            .then(res => res.json()).then(data => { alert(data.message || data.error); if(data.message) closeEmailModal(); }).catch(() => alert('Error'));
-        }
+function toggleVoice() {
+    if(!recognition){alert('Chrome browser mein try karo!');return;}
+    if(isListening) recognition.stop();
+    else { recognition.lang='hi-IN'; recognition.start(); }
+}
 
-        document.getElementById('userInput').addEventListener('keypress', function(e) {
-            if (e.key === 'Enter' && !this.disabled) sendMessage();
+// ══════════════════════════════════════════
+// INIT
+// ══════════════════════════════════════════
+window.addEventListener('DOMContentLoaded', () => {
+    initMascot();
+    initVoice();
+    fetch('/get_username')
+        .then(r=>r.json())
+        .then(d=>{
+            const name=d.username||'User';
+            document.getElementById('welcomeName').textContent=name.toUpperCase()+'! 👋';
+            document.getElementById('displayUsername').textContent=name;
+            document.getElementById('avatarInitial').textContent=name.charAt(0).toUpperCase();
+            setTimeout(()=>showBubble('Namaste '+name+'! 😄','happy'),2000);
+        })
+        .catch(()=>{
+            document.getElementById('welcomeName').textContent='USER! 👋';
+            document.getElementById('displayUsername').textContent='User';
+            document.getElementById('avatarInitial').textContent='U';
         });
-        document.getElementById('viewerModal').addEventListener('click', function(e) {
-            if (e.target === this) closeViewer();
+});
+
+// ══════════════════════════════════════════
+// AI TOGGLE
+// ══════════════════════════════════════════
+function toggleAIMode(cb) {
+    aiModeEnabled=cb.checked;
+    document.getElementById('aiModeBadge').className='ai-badge'+(aiModeEnabled?' on':'');
+    document.getElementById('aiModeHint').className='ai-hint'+(aiModeEnabled?' on':'');
+    document.getElementById('chatModeLabel').textContent=aiModeEnabled?'🤖 AI Chat Mode':'⚡ Command Mode';
+    document.getElementById('userInput').placeholder=aiModeEnabled?'Seedha Hinglish mein puch lo...':"Ask: 'dashboard', 'export csv', 'top 5'...";
+    showChat();
+    addMessage(aiModeEnabled?'🤖 AI Chat Mode ON! Kuch bhi puch sakte ho!':'⚡ Command Mode ON!', aiModeEnabled?'bot ai-mode':'bot');
+    showBubble(aiModeEnabled?'AI Mode ON! 🧠':'Command Mode ⚡', aiModeEnabled?'excited':'happy');
+}
+
+// ══════════════════════════════════════════
+// CHAT
+// ══════════════════════════════════════════
+function showChat(){document.getElementById('chatSection').classList.add('visible');}
+
+function addMessage(text, sender) {
+    showChat();
+    const chatBox=document.getElementById('chatBox');
+    const row=document.createElement('div');
+    row.className='msg-row '+(sender.includes('bot')?'bot-row':'user-row');
+
+    if(sender.includes('bot')) {
+        // ✅ Reaction character with different emoji per response
+        const reaction=getReaction(text);
+        const charDiv=document.createElement('div');
+        charDiv.className='reaction-char';
+        const emojiSpan=document.createElement('span');
+        emojiSpan.className='reaction-emoji'+(reaction.anim?' '+reaction.anim:'');
+        emojiSpan.textContent=reaction.emoji;
+        const labelSpan=document.createElement('span');
+        labelSpan.className='reaction-label';
+        labelSpan.textContent=reaction.label;
+        charDiv.appendChild(emojiSpan);
+        charDiv.appendChild(labelSpan);
+        row.appendChild(charDiv);
+        // Mascot bubble reaction
+        setTimeout(()=>showBubble(reaction.emoji+' '+reaction.label, 'happy'),200);
+    }
+
+    const d=document.createElement('div');
+    d.className='message '+sender;
+    d.innerText=text;
+
+    if(sender.includes('bot')) {
+        // Action buttons: download + speak
+        const actions=document.createElement('div');
+        actions.className='msg-actions';
+        const dlBtn=document.createElement('button');
+        dlBtn.className='msg-action-btn'; dlBtn.textContent='💾';
+        dlBtn.onclick=()=>downloadSingleMessage(text);
+        const spkBtn=document.createElement('button');
+        spkBtn.className='msg-action-btn'; spkBtn.textContent='🔊';
+        spkBtn.onclick=()=>speakText(text);
+        actions.appendChild(dlBtn);
+        actions.appendChild(spkBtn);
+        d.appendChild(actions);
+        chatHistory.push({type:'bot',text,timestamp:new Date().toLocaleString()});
+        // Auto speak in AI mode for short replies
+        if(aiModeEnabled && text.length<200) setTimeout(()=>speakText(text),400);
+    } else {
+        chatHistory.push({type:'user',text,timestamp:new Date().toLocaleString()});
+    }
+
+    row.appendChild(d);
+    chatBox.appendChild(row);
+    chatBox.scrollTop=chatBox.scrollHeight;
+}
+
+function downloadSingleMessage(text) {
+    const blob=new Blob([text],{type:'text/plain'});
+    const url=URL.createObjectURL(blob);
+    const a=document.createElement('a');
+    a.href=url; a.download='response_'+Date.now()+'.txt';
+    document.body.appendChild(a); a.click(); document.body.removeChild(a);
+    URL.revokeObjectURL(url);
+}
+
+function downloadAllReports() {
+    if(!chatHistory.length){alert('No history!');return;}
+    let c="🤖 DS Agent Report\n"+"=".repeat(50)+"\n"+new Date().toLocaleString()+"\n\n";
+    chatHistory.forEach(m=>{c+=`[${m.timestamp}] ${m.type==='user'?'👤 You':'🤖 Bot'}:\n${m.text}\n\n`+"-".repeat(50)+"\n\n";});
+    const blob=new Blob([c],{type:'text/plain'});
+    const url=URL.createObjectURL(blob);
+    const a=document.createElement('a');
+    a.href=url; a.download='report_'+Date.now()+'.txt';
+    document.body.appendChild(a); a.click(); document.body.removeChild(a);
+    URL.revokeObjectURL(url);
+}
+
+function showTyping() {
+    showChat();
+    const chatBox=document.getElementById('chatBox');
+    const row=document.createElement('div');
+    row.className='msg-row bot-row'; row.id='typingRow';
+    const charDiv=document.createElement('div');
+    charDiv.className='reaction-char';
+    charDiv.innerHTML='<span class="reaction-emoji thinking">🤔</span><span class="reaction-label">Thinking...</span>';
+    const d=document.createElement('div');
+    d.className='message bot';
+    d.innerHTML='<div class="typing-dots"><span></span><span></span><span></span></div>';
+    row.appendChild(charDiv); row.appendChild(d);
+    chatBox.appendChild(row);
+    chatBox.scrollTop=chatBox.scrollHeight;
+    showBubble('Soch raha hoon... 🤔','thinking');
+}
+
+function removeTyping(){const el=document.getElementById('typingRow');if(el)el.remove();}
+function setInput(e){document.getElementById('userInput').disabled=!e;document.getElementById('sendBtn').disabled=!e;}
+function sendCmd(cmd){document.getElementById('userInput').value=cmd;sendMessage();}
+
+function uploadFile(input) {
+    if(!input.files[0])return;
+    const fd=new FormData(); fd.append('file',input.files[0]);
+    document.getElementById('uploadText').innerHTML='<div class="loader"></div> Syncing...';
+    setInput(false);
+    showBubble('Upload ho rahi hai... ⏳','thinking');
+    fetch('/upload',{method:'POST',body:fd})
+        .then(r=>r.json())
+        .then(d=>{
+            addMessage("✅ "+d.message,'bot');
+            document.getElementById('uploadText').innerText="✅ Synced: "+input.files[0].name;
+            isFileReady=true; setInput(true);
+            document.getElementById('userInput').placeholder="Kuch bhi puch lo...";
+            showBubble('File ready! 🎉','excited');
+        })
+        .catch(()=>{
+            addMessage("❌ Upload failed!",'bot');
+            document.getElementById('uploadText').innerText="📁 Try Again";
+            setInput(true);
+            showBubble('Upload fail 😅','error');
         });
-    </script>
+}
+
+function sendMessage() {
+    const input=document.getElementById('userInput');
+    const msg=input.value.trim();
+    if(!msg||isProcessing)return;
+    if(!isFileReady){addMessage("⚠️ Pehle file upload karo!","bot");return;}
+    addMessage(msg,'user'); input.value='';
+    isProcessing=true; setInput(false); showTyping();
+    fetch('/chat',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({message:msg,ai_mode:aiModeEnabled})})
+    .then(r=>r.json())
+    .then(d=>{
+        removeTyping();
+        addMessage(d.response,aiModeEnabled?'bot ai-mode':'bot');
+        if(!aiModeEnabled){
+            const ml=msg.toLowerCase();
+            if(['plot','chart','graph','bar','hist'].some(t=>ml.includes(t))||d.response.toLowerCase().includes('plot saved'))
+                setTimeout(()=>{plotReady=true;document.getElementById('plotBtn').disabled=false;document.getElementById('viewPlotBtn').disabled=false;showDownloads();},1500);
+            if(ml.includes('dashboard')||d.response.toLowerCase().includes('dashboard saved'))
+                setTimeout(()=>{dashboardReady=true;document.getElementById('dashboardBtn').disabled=false;document.getElementById('viewDashboardBtn').disabled=false;showDownloads();},2500);
+            if(['excel','xlsx'].some(t=>ml.includes(t)))
+                setTimeout(()=>{excelReady=true;document.getElementById('excelBtn').disabled=false;document.getElementById('viewExcelBtn').disabled=false;showDownloads();},1500);
+            if(ml.includes('csv'))
+                setTimeout(()=>{csvReady=true;document.getElementById('csvBtn').disabled=false;document.getElementById('viewCSVBtn').disabled=false;showDownloads();},1500);
+            if(ml.includes('html'))
+                setTimeout(()=>{htmlReady=true;document.getElementById('htmlBtn').disabled=false;document.getElementById('viewHTMLBtn').disabled=false;showDownloads();},1500);
+        }
+        isProcessing=false; setInput(true);
+    })
+    .catch(()=>{
+        removeTyping();
+        addMessage("⚠️ Server slow hai, dobara try karo.",'bot');
+        showBubble('Connection issue 😅','error');
+        isProcessing=false; setInput(true);
+    });
+}
+
+function showDownloads(){document.getElementById('downloadSection').style.display='block';}
+function viewPlot(){document.getElementById('viewerContainer').innerHTML='<img src="/plot.png?t='+Date.now()+'" alt="Plot">';document.getElementById('viewerModal').style.display='flex';}
+function viewDashboard(){document.getElementById('viewerContainer').innerHTML='<img src="/dashboard.png?t='+Date.now()+'" alt="Dashboard">';document.getElementById('viewerModal').style.display='flex';}
+function viewExcel(){alert('Download karo → Microsoft 365 se kholo!');}
+function viewHTML(){document.getElementById('viewerContainer').innerHTML='<iframe src="/download/html?t='+Date.now()+'"></iframe>';document.getElementById('viewerModal').style.display='flex';}
+function viewCSV(){document.getElementById('viewerContainer').innerHTML='<iframe src="/download/csv?t='+Date.now()+'"></iframe>';document.getElementById('viewerModal').style.display='flex';}
+function closeViewer(){document.getElementById('viewerModal').style.display='none';document.getElementById('viewerContainer').innerHTML='';}
+function dl(href,name){const a=document.createElement('a');a.href=href;a.download=name;document.body.appendChild(a);a.click();document.body.removeChild(a);}
+function downloadPlot(){if(!plotReady){alert('Pehle chart banao!');return;}dl('/plot.png?t='+Date.now(),'plot_'+Date.now()+'.png');}
+function downloadDashboard(){if(!dashboardReady){alert('Pehle dashboard banao!');return;}dl('/dashboard.png?t='+Date.now(),'dashboard_'+Date.now()+'.png');}
+function downloadExcel(){if(!excelReady){alert('"export excel" command do!');return;}dl('/download/excel?t='+Date.now(),'report_'+Date.now()+'.xlsx');}
+function downloadHTML(){if(!htmlReady){alert('"export html" command do!');return;}dl('/download/html?t='+Date.now(),'report_'+Date.now()+'.html');}
+function downloadCSV(){if(!csvReady){alert('"export csv" command do!');return;}dl('/download/csv?t='+Date.now(),'data_'+Date.now()+'.csv');}
+function openEmailModal(){document.getElementById('emailModal').style.display='flex';}
+function closeEmailModal(){document.getElementById('emailModal').style.display='none';}
+function sendReport(){
+    const email=document.getElementById('clientEmail').value;
+    if(!email){alert('Email enter karo');return;}
+    fetch('/send_report',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({email})})
+        .then(r=>r.json()).then(d=>{alert(d.message||d.error);if(d.message)closeEmailModal();}).catch(()=>alert('Error'));
+}
+document.getElementById('userInput').addEventListener('keypress',e=>{if(e.key==='Enter'&&!e.target.disabled)sendMessage();});
+document.getElementById('viewerModal').addEventListener('click',e=>{if(e.target===document.getElementById('viewerModal'))closeViewer();});
+</script>
 </body>
 </html>
