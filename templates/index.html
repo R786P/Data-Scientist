@@ -7,179 +7,75 @@
     <link href="https://fonts.googleapis.com/css2?family=Nunito:wght@400;600;700;800;900&family=Baloo+2:wght@400;600;700;800&display=swap" rel="stylesheet">
     <script src="https://cdnjs.cloudflare.com/ajax/libs/lottie-web/5.12.2/lottie.min.js"></script>
     <style>
-        :root {
-            --primary: #667eea;
-            --secondary: #764ba2;
-            --accent: #f093fb;
-            --success: #11998e;
-            --bg: #f0f2f8;
-            --card: #ffffff;
-            --text: #2d3748;
-            --muted: #718096;
-            --radius: 20px;
+        :root{--primary:#667eea;--secondary:#764ba2;--accent:#f093fb;--success:#11998e;--bg:#f0f2f8;--text:#2d3748;--muted:#718096;--radius:20px}
+        *{margin:0;padding:0;box-sizing:border-box}
+        body{font-family:'Nunito',sans-serif;background:var(--bg);min-height:100vh}
+
+        .topnav{display:flex;align-items:center;justify-content:space-between;padding:10px 16px;background:white;box-shadow:0 2px 12px rgba(102,126,234,0.12);position:sticky;top:0;z-index:200}
+        .logo{font-family:'Baloo 2',cursive;font-size:20px;font-weight:800;background:linear-gradient(135deg,var(--primary),var(--secondary));-webkit-background-clip:text;-webkit-text-fill-color:transparent}
+        .user-info{display:flex;align-items:center;gap:8px}
+        .avatar{width:36px;height:36px;border-radius:50%;background:linear-gradient(135deg,var(--primary),var(--secondary));display:flex;align-items:center;justify-content:center;color:white;font-weight:900;font-size:14px}
+        .username{font-size:13px;color:var(--text);font-weight:700}
+        .plan-badge{padding:3px 10px;border-radius:20px;font-size:10px;font-weight:800}
+        .plan-badge.free{background:#f0f0f0;color:#888}
+        .plan-badge.pro{background:linear-gradient(135deg,var(--primary),var(--secondary));color:white}
+        .nav-links{display:flex;gap:6px}
+        .nav-links a{color:var(--primary);text-decoration:none;font-size:12px;font-weight:700;background:#f0f2ff;padding:5px 10px;border-radius:20px}
+        .nav-links a.admin-link{background:#fff3cd;color:#856404}
+
+        /* ── BOTTOM NAV BAR (mobile app style) ── */
+        .bottom-nav{
+            position:fixed;bottom:0;left:0;right:0;
+            background:white;
+            box-shadow:0 -4px 20px rgba(102,126,234,0.15);
+            display:flex;align-items:center;justify-content:space-around;
+            padding:8px 0 12px;z-index:300;
         }
-        * { margin:0; padding:0; box-sizing:border-box }
-        body { font-family:'Nunito',sans-serif; background:var(--bg); min-height:100vh; }
-
-        /* ── TOP NAV ── */
-        .topnav { display:flex; align-items:center; justify-content:space-between; padding:12px 20px; background:white; box-shadow:0 2px 12px rgba(102,126,234,0.12); position:sticky; top:0; z-index:200; }
-        .logo { font-family:'Baloo 2',cursive; font-size:20px; font-weight:800; background:linear-gradient(135deg,var(--primary),var(--secondary)); -webkit-background-clip:text; -webkit-text-fill-color:transparent; }
-        .user-info { display:flex; align-items:center; gap:10px; }
-        .avatar { width:38px; height:38px; border-radius:50%; background:linear-gradient(135deg,var(--primary),var(--secondary)); display:flex; align-items:center; justify-content:center; color:white; font-weight:900; font-size:15px; box-shadow:0 3px 10px rgba(102,126,234,0.4); }
-        .username { font-size:13px; color:var(--text); font-weight:700; }
-        .topnav a { color:var(--primary); text-decoration:none; font-size:12px; font-weight:700; background:#f0f2ff; padding:5px 12px; border-radius:20px; }
-
-        /* ── MAIN ── */
-        .main { max-width:720px; margin:0 auto; padding:20px 15px 40px; }
-
-        /* ── WELCOME ── */
-        .welcome { text-align:center; padding:25px 10px 15px; }
-        .welcome .greeting { font-size:18px; color:var(--muted); font-weight:600; }
-        .welcome .name { font-family:'Baloo 2',cursive; font-size:34px; font-weight:800; background:linear-gradient(135deg,var(--primary),var(--secondary),var(--accent)); -webkit-background-clip:text; -webkit-text-fill-color:transparent; margin:4px 0; }
-        .welcome .subtitle { font-size:15px; color:var(--muted); font-weight:600; }
-
-        /* ── MASCOT ── */
-        .mascot-wrapper { display:flex; justify-content:center; margin:10px 0; }
-        .mascot-container { width:120px; height:120px; position:relative; cursor:pointer; }
-        #lottie-mascot { width:100%; height:100%; }
-        .mascot-bubble { position:absolute; top:-15px; left:105%; min-width:130px; max-width:190px; background:white; border-radius:14px; padding:8px 12px; font-size:12px; font-weight:700; color:var(--text); box-shadow:0 4px 15px rgba(0,0,0,0.12); opacity:0; transform:scale(0.8) translateX(-10px); transition:all 0.3s cubic-bezier(0.34,1.56,0.64,1); pointer-events:none; white-space:nowrap; z-index:10; }
-        .mascot-bubble::before { content:''; position:absolute; left:-8px; top:50%; transform:translateY(-50%); border:8px solid transparent; border-right-color:white; }
-        .mascot-bubble.show { opacity:1; transform:scale(1) translateX(0); }
-        .mascot-bubble.happy { border-left:3px solid #38ef7d; }
-        .mascot-bubble.thinking { border-left:3px solid #667eea; }
-        .mascot-bubble.excited { border-left:3px solid #f093fb; }
-        .mascot-bubble.error { border-left:3px solid #f5576c; }
-        .mascot-bubble.celebrating { border-left:3px solid #ffd700; }
-
-        /* ── UPLOAD ── */
-        .upload-card { border:2px dashed var(--primary); border-radius:var(--radius); padding:18px 20px; text-align:center; cursor:pointer; background:linear-gradient(135deg,#f8faff,#f0f4ff); transition:0.3s; margin:12px 0; }
-        .upload-card:hover { background:linear-gradient(135deg,#edf2ff,#e8ecff); border-style:solid; transform:translateY(-2px); }
-        .upload-card p { color:var(--primary); font-weight:800; font-size:14px; }
-        .upload-card small { color:var(--muted); font-size:11px; }
-
-        /* ── ACTION CARDS ── */
-        .quick-section { margin:18px 0; }
-        .quick-section h4 { font-size:11px; color:var(--muted); margin-bottom:10px; text-transform:uppercase; letter-spacing:1.5px; font-weight:800; }
-        .cards-grid { display:grid; grid-template-columns:repeat(2,1fr); gap:10px; }
-        .action-card { background:white; border:2px solid #f0f0f0; border-radius:16px; padding:14px; cursor:pointer; transition:0.25s; text-align:left; }
-        .action-card:hover { border-color:var(--primary); transform:translateY(-3px); box-shadow:0 8px 20px rgba(102,126,234,0.2); }
-        .action-card .card-icon { font-size:22px; margin-bottom:6px; }
-        .action-card .card-title { font-size:13px; font-weight:800; color:var(--text); }
-        .action-card .card-desc { font-size:10px; color:var(--muted); margin-top:2px; font-weight:600; }
-
-        /* ── CHAT ── */
-        .chat-section { background:white; border-radius:var(--radius); margin:15px 0; overflow:hidden; box-shadow:0 4px 20px rgba(102,126,234,0.1); display:none; }
-        .chat-section.visible { display:block; }
-        .chat-header { padding:12px 18px; background:linear-gradient(135deg,var(--primary),var(--secondary)); color:white; font-size:13px; font-weight:800; display:flex; justify-content:space-between; align-items:center; }
-        .chat-box { height:380px; overflow-y:auto; padding:15px; scroll-behavior:smooth; }
-
-        /* ── MESSAGE ROWS WITH REACTION CHARACTERS ── */
-        .msg-row { display:flex; align-items:flex-end; gap:8px; margin-bottom:16px; }
-        .msg-row.user-row { flex-direction:row-reverse; }
-
-        /* Reaction character next to bot message */
-        .reaction-char {
-            width:48px; height:48px; flex-shrink:0;
-            display:flex; flex-direction:column; align-items:center;
-            position:relative;
+        .bottom-nav a{
+            display:flex;flex-direction:column;align-items:center;
+            text-decoration:none;gap:3px;flex:1;
+            transition:0.2s;
         }
-        .reaction-emoji {
-            font-size:32px;
-            animation:char-bounce 0.6s cubic-bezier(0.34,1.56,0.64,1);
-            display:block;
-            line-height:1;
-        }
-        .reaction-label {
-            font-size:8px; color:var(--muted); font-weight:700;
-            text-align:center; margin-top:2px; white-space:nowrap;
-        }
-        @keyframes char-bounce {
-            0%{transform:scale(0) rotate(-20deg);opacity:0}
-            60%{transform:scale(1.2) rotate(5deg);opacity:1}
-            100%{transform:scale(1) rotate(0deg);opacity:1}
-        }
-        @keyframes char-celebrate {
-            0%,100%{transform:translateY(0) rotate(0)}
-            25%{transform:translateY(-8px) rotate(-10deg)}
-            75%{transform:translateY(-8px) rotate(10deg)}
-        }
-        @keyframes char-think {
-            0%,100%{transform:rotate(0)}
-            50%{transform:rotate(-15deg)}
-        }
-        @keyframes char-shake {
-            0%,100%{transform:translateX(0)}
-            25%{transform:translateX(-4px)}
-            75%{transform:translateX(4px)}
-        }
-        .reaction-emoji.celebrate { animation:char-celebrate 0.8s ease infinite; }
-        .reaction-emoji.thinking { animation:char-think 1.2s ease infinite; }
-        .reaction-emoji.shake { animation:char-shake 0.4s ease 3; }
+        .bottom-nav a .bn-icon{font-size:22px;line-height:1}
+        .bottom-nav a .bn-label{font-size:10px;font-weight:800;color:var(--muted)}
+        .bottom-nav a.active .bn-label{color:var(--primary)}
+        .bottom-nav a:hover .bn-label{color:var(--primary)}
+        .bottom-nav .bn-upgrade{background:linear-gradient(135deg,var(--primary),var(--secondary));border-radius:14px;padding:6px 16px;margin:0 4px}
+        .bottom-nav .bn-upgrade .bn-label{color:white !important}
+        .bottom-nav .bn-admin{background:#fff8e1;border-radius:14px;padding:6px 12px}
+        .bottom-nav .bn-admin .bn-label{color:#856404 !important}
+        /* Push main content above bottom nav */
+        .main{padding-bottom:80px !important}
 
-        .message {
-            padding:10px 15px; border-radius:16px; max-width:80%;
-            line-height:1.6; font-size:13px; white-space:pre-wrap;
-            word-wrap:break-word; position:relative; font-weight:600;
-        }
-        .user-row .message { background:linear-gradient(135deg,var(--primary),var(--secondary)); color:white; border-bottom-right-radius:4px; }
-        .bot-row .message { background:#f7f8fc; color:var(--text); border-bottom-left-radius:4px; border:1px solid #eef0f8; }
-        .bot-row .message.ai-mode { background:linear-gradient(135deg,#f0f4ff,#e8ecff); border:1px solid #d0d8ff; }
-        .msg-actions { position:absolute; top:4px; right:6px; display:flex; gap:3px; opacity:0; transition:0.2s; }
-        .message:hover .msg-actions { opacity:1; }
-        .msg-action-btn { background:rgba(0,0,0,0.08); border:none; border-radius:4px; padding:2px 5px; cursor:pointer; font-size:10px; }
+        .main{max-width:720px;margin:0 auto;padding:20px 15px 40px}
+        .welcome{text-align:center;padding:20px 10px 10px}
+        .welcome .greeting{font-size:17px;color:var(--muted);font-weight:600}
+        .welcome .name{font-family:'Baloo 2',cursive;font-size:32px;font-weight:800;background:linear-gradient(135deg,var(--primary),var(--secondary),var(--accent));-webkit-background-clip:text;-webkit-text-fill-color:transparent;margin:4px 0}
+        .welcome .subtitle{font-size:14px;color:var(--muted);font-weight:600}
 
-        /* ── VOICE SETTINGS BAR ── */
-        .voice-settings {
-            background:white; border-radius:14px; padding:12px 16px;
-            margin:10px 0; box-shadow:0 2px 10px rgba(102,126,234,0.08);
-            display:flex; align-items:center; gap:12px; flex-wrap:wrap;
-        }
-        .voice-settings label { font-size:12px; font-weight:800; color:var(--text); }
-        .voice-gender-btns { display:flex; gap:6px; }
-        .gender-btn {
-            padding:5px 14px; border-radius:20px; border:2px solid #eee;
-            cursor:pointer; font-size:12px; font-weight:700; background:white;
-            transition:0.2s; font-family:'Nunito',sans-serif;
-        }
-        .gender-btn.active { border-color:var(--primary); background:linear-gradient(135deg,var(--primary),var(--secondary)); color:white; }
-        .gender-btn:hover:not(.active) { border-color:var(--primary); }
-        .voice-speed-wrap { display:flex; align-items:center; gap:6px; }
-        .voice-speed-wrap label { font-size:11px; color:var(--muted); font-weight:700; }
-        .voice-speed-wrap input { width:80px; accent-color:var(--primary); }
+        /* Query counter */
+        .query-bar{background:white;border-radius:12px;padding:10px 16px;margin:8px 0;display:flex;align-items:center;justify-content:space-between;box-shadow:0 2px 8px rgba(102,126,234,0.08)}
+        .query-bar span{font-size:12px;font-weight:700;color:var(--muted)}
+        .query-progress{flex:1;margin:0 12px;height:6px;background:#f0f0f0;border-radius:4px;overflow:hidden}
+        .query-progress-bar{height:100%;background:linear-gradient(135deg,var(--primary),var(--secondary));border-radius:4px;transition:0.5s}
+        .upgrade-link{font-size:11px;color:var(--primary);font-weight:800;text-decoration:none}
 
-        /* ── AI TOGGLE ── */
-        .ai-toggle-bar { display:flex; align-items:center; justify-content:center; gap:10px; padding:10px 18px; background:#f8f9ff; border-top:1px solid #eef0f8; }
-        .ai-toggle-bar span { font-size:12px; color:var(--muted); font-weight:700; }
-        .toggle-switch { position:relative; width:48px; height:24px; }
-        .toggle-switch input { opacity:0; width:0; height:0; }
-        .toggle-slider { position:absolute; cursor:pointer; inset:0; background:#ddd; border-radius:24px; transition:0.3s; }
-        .toggle-slider:before { position:absolute; content:""; height:18px; width:18px; left:3px; bottom:3px; background:white; border-radius:50%; transition:0.3s; box-shadow:0 2px 4px rgba(0,0,0,0.2); }
-        input:checked + .toggle-slider { background:linear-gradient(135deg,var(--primary),var(--secondary)); }
-        input:checked + .toggle-slider:before { transform:translateX(24px); }
-        .ai-badge { background:linear-gradient(135deg,var(--primary),var(--secondary)); color:white; padding:2px 8px; border-radius:10px; font-size:10px; font-weight:800; display:none; }
-        .ai-badge.on { display:inline-block; }
-        .ai-hint { font-size:11px; color:var(--muted); text-align:center; padding:5px 15px; display:none; font-weight:600; }
-        .ai-hint.on { display:block; }
+        /* Mascot */
+        .mascot-wrapper{display:flex;justify-content:center;margin:8px 0}
+        .mascot-container{width:110px;height:110px;position:relative;cursor:pointer}
+        #lottie-mascot{width:100%;height:100%}
+        .mascot-bubble{position:absolute;top:-12px;left:100%;min-width:120px;max-width:180px;background:white;border-radius:14px;padding:7px 11px;font-size:11px;font-weight:700;color:var(--text);box-shadow:0 4px 15px rgba(0,0,0,0.12);opacity:0;transform:scale(0.8) translateX(-10px);transition:all 0.3s cubic-bezier(0.34,1.56,0.64,1);pointer-events:none;white-space:nowrap;z-index:10}
+        .mascot-bubble::before{content:'';position:absolute;left:-8px;top:50%;transform:translateY(-50%);border:8px solid transparent;border-right-color:white}
+        .mascot-bubble.show{opacity:1;transform:scale(1) translateX(0)}
+        .mascot-bubble.happy{border-left:3px solid #38ef7d}
+        .mascot-bubble.thinking{border-left:3px solid #667eea}
+        .mascot-bubble.excited{border-left:3px solid #f093fb}
+        .mascot-bubble.error{border-left:3px solid #f5576c}
 
-        /* ── INPUT ── */
-        .input-section { background:white; border-radius:var(--radius); padding:12px; margin:15px 0; box-shadow:0 4px 20px rgba(102,126,234,0.1); }
-        .input-row { display:flex; gap:8px; align-items:center; }
-        .input-row input { flex:1; padding:12px 18px; border:2px solid #eef0f8; border-radius:30px; outline:none; font-size:13px; font-family:'Nunito',sans-serif; font-weight:600; transition:0.3s; background:#f8f9fc; }
-        .input-row input:focus { border-color:var(--primary); background:white; }
-        .input-row input:disabled { opacity:0.5; cursor:not-allowed; }
-        .send-btn { background:linear-gradient(135deg,var(--primary),var(--secondary)); color:white; border:none; width:44px; height:44px; border-radius:50%; cursor:pointer; font-size:16px; display:flex; align-items:center; justify-content:center; transition:0.2s; flex-shrink:0; }
-        .send-btn:disabled { background:#ddd; cursor:not-allowed; }
-        .send-btn:hover:not(:disabled) { transform:scale(1.1); box-shadow:0 4px 12px rgba(102,126,234,0.4); }
-        .voice-btn { width:44px; height:44px; border-radius:50%; border:none; cursor:pointer; display:flex; align-items:center; justify-content:center; font-size:18px; background:#f0f2ff; transition:0.2s; flex-shrink:0; }
-        .voice-btn:hover { background:#e0e4ff; }
-        .voice-btn.listening { background:linear-gradient(135deg,#f5576c,#f093fb); animation:pulse-mic 1s infinite; }
-        @keyframes pulse-mic { 0%,100%{box-shadow:0 0 0 0 rgba(245,87,108,0.4)} 50%{box-shadow:0 0 0 8px rgba(245,87,108,0)} }
-        .voice-status { font-size:11px; color:var(--primary); text-align:center; font-weight:700; height:16px; margin-top:5px; }
-
-        /* Speaking indicator */
-        .speaking-indicator { display:none; gap:2px; align-items:center; justify-content:center; padding:4px 0; }
-        .speaking-indicator.active { display:flex; }
-        .speaking-bar { width:3px; height:12px; background:var(--primary); border-radius:2px; }
+        /* Speaking */
+        .speaking-indicator{display:none;gap:2px;align-items:center;justify-content:center;padding:3px 0}
+        .speaking-indicator.active{display:flex}
+        .speaking-bar{width:3px;height:12px;background:var(--primary);border-radius:2px}
         .speaking-bar:nth-child(1){animation:sw 0.6s ease infinite 0s}
         .speaking-bar:nth-child(2){animation:sw 0.6s ease infinite 0.1s}
         .speaking-bar:nth-child(3){animation:sw 0.6s ease infinite 0.2s}
@@ -187,52 +83,172 @@
         .speaking-bar:nth-child(5){animation:sw 0.6s ease infinite 0.4s}
         @keyframes sw{0%,100%{transform:scaleY(1)}50%{transform:scaleY(1.6)}}
 
-        /* ── DOWNLOADS ── */
-        #downloadSection { background:white; border-radius:var(--radius); padding:18px; margin:15px 0; display:none; box-shadow:0 4px 20px rgba(102,126,234,0.1); }
-        #downloadSection h4 { font-size:13px; color:var(--text); margin-bottom:12px; font-weight:800; }
-        .download-grid { display:grid; grid-template-columns:repeat(auto-fit,minmax(140px,1fr)); gap:8px; }
-        .dl-card { background:#f8f9fc; border:2px solid #f0f0f0; border-radius:14px; padding:12px; text-align:center; transition:0.2s; }
-        .dl-card:hover { border-color:var(--primary); }
-        .dl-card .icon { font-size:22px; margin-bottom:6px; }
-        .dl-card h5 { font-size:11px; color:var(--text); margin-bottom:8px; font-weight:800; }
-        .dl-card .btn-group { display:flex; flex-direction:column; gap:4px; }
-        .dl-card button { padding:6px; background:var(--primary); color:white; border:none; border-radius:8px; cursor:pointer; font-size:10px; font-weight:800; font-family:'Nunito',sans-serif; transition:0.2s; }
-        .dl-card button:hover:not(:disabled) { opacity:0.85; }
-        .dl-card button:disabled { background:#ddd; cursor:not-allowed; }
-        .dl-card .view-btn { background:var(--success); }
-        .dl-card p { font-size:9px; color:var(--muted); margin-top:4px; font-weight:600; }
-        .email-btn { width:100%; padding:12px; background:linear-gradient(135deg,var(--success),#38ef7d); color:white; border:none; border-radius:12px; cursor:pointer; font-weight:800; margin-top:12px; font-size:13px; font-family:'Nunito',sans-serif; }
+        .upload-card{border:2px dashed var(--primary);border-radius:var(--radius);padding:16px 20px;text-align:center;cursor:pointer;background:linear-gradient(135deg,#f8faff,#f0f4ff);transition:0.3s;margin:10px 0}
+        .upload-card:hover{background:linear-gradient(135deg,#edf2ff,#e8ecff);border-style:solid;transform:translateY(-2px)}
+        .upload-card p{color:var(--primary);font-weight:800;font-size:14px}
+        .upload-card small{color:var(--muted);font-size:11px}
 
-        /* ── MODALS ── */
-        .modal { display:none; position:fixed; inset:0; background:rgba(0,0,0,0.5); justify-content:center; align-items:center; z-index:1000; backdrop-filter:blur(4px); }
-        .modal-content { background:white; padding:25px; border-radius:var(--radius); width:90%; max-width:380px; }
-        .modal-content h3 { color:var(--primary); margin-bottom:12px; font-family:'Baloo 2',cursive; }
-        .modal-content input { width:100%; padding:10px 14px; margin:8px 0; border:2px solid #eee; border-radius:10px; font-size:14px; font-family:'Nunito',sans-serif; }
-        .modal-buttons { display:flex; gap:10px; margin-top:12px; }
-        .modal-buttons button { flex:1; padding:10px; border:none; border-radius:10px; cursor:pointer; font-weight:800; font-family:'Nunito',sans-serif; }
-        .btn-send { background:linear-gradient(135deg,var(--primary),var(--secondary)); color:white; }
-        .btn-cancel { background:#f0f0f0; color:var(--text); }
-        .viewer-modal { display:none; position:fixed; inset:0; background:rgba(0,0,0,0.85); justify-content:center; align-items:center; z-index:2000; }
-        .viewer-content { background:white; padding:20px; border-radius:var(--radius); width:95%; max-width:750px; max-height:85vh; overflow:auto; position:relative; }
-        .viewer-content iframe { width:100%; height:480px; border:none; }
-        .viewer-content img { max-width:100%; border-radius:10px; }
-        .close-btn { position:absolute; top:10px; right:15px; font-size:28px; cursor:pointer; color:var(--primary); font-weight:900; }
+        /* Voice settings */
+        .voice-settings{background:white;border-radius:14px;padding:10px 16px;margin:8px 0;box-shadow:0 2px 10px rgba(102,126,234,0.08);display:flex;align-items:center;gap:10px;flex-wrap:wrap}
+        .voice-settings label{font-size:12px;font-weight:800;color:var(--text)}
+        .voice-gender-btns{display:flex;gap:5px}
+        .gender-btn{padding:4px 12px;border-radius:20px;border:2px solid #eee;cursor:pointer;font-size:12px;font-weight:700;background:white;transition:0.2s;font-family:'Nunito',sans-serif}
+        .gender-btn.active{border-color:var(--primary);background:linear-gradient(135deg,var(--primary),var(--secondary));color:white}
+        .voice-speed-wrap{display:flex;align-items:center;gap:5px}
+        .voice-speed-wrap label{font-size:11px;color:var(--muted);font-weight:700}
+        .voice-speed-wrap input{width:75px;accent-color:var(--primary)}
 
-        .info-bar { background:linear-gradient(135deg,#e8f4f8,#f0f4ff); border-left:3px solid var(--primary); padding:10px 14px; border-radius:10px; font-size:11px; color:var(--muted); margin:10px 0; font-weight:600; }
-        .nav-footer { text-align:center; padding:10px; }
-        .nav-footer a { color:var(--primary); text-decoration:none; font-size:13px; font-weight:700; }
+        /* Quick cards */
+        .quick-section{margin:14px 0}
+        .quick-section h4{font-size:11px;color:var(--muted);margin-bottom:8px;text-transform:uppercase;letter-spacing:1.5px;font-weight:800}
+        .cards-grid{display:grid;grid-template-columns:repeat(2,1fr);gap:8px}
+        .action-card{background:white;border:2px solid #f0f0f0;border-radius:14px;padding:12px;cursor:pointer;transition:0.25s;text-align:left;position:relative}
+        .action-card:hover{border-color:var(--primary);transform:translateY(-2px);box-shadow:0 6px 18px rgba(102,126,234,0.18)}
+        .action-card .card-icon{font-size:20px;margin-bottom:4px}
+        .action-card .card-title{font-size:12px;font-weight:800;color:var(--text)}
+        .action-card .card-desc{font-size:10px;color:var(--muted);font-weight:600}
+        .action-card .pro-lock{position:absolute;top:8px;right:8px;font-size:10px;background:#fff3cd;color:#856404;padding:2px 6px;border-radius:8px;font-weight:800}
 
-        /* Typing */
-        .typing-dots span { height:7px; width:7px; background:var(--primary); border-radius:50%; display:inline-block; margin:0 2px; animation:bounce 1.4s infinite; }
+        /* Chat */
+        .chat-section{background:white;border-radius:var(--radius);margin:12px 0;overflow:hidden;box-shadow:0 4px 20px rgba(102,126,234,0.1);display:none}
+        .chat-section.visible{display:block}
+        .chat-header{padding:10px 16px;background:linear-gradient(135deg,var(--primary),var(--secondary));color:white;font-size:13px;font-weight:800;display:flex;justify-content:space-between;align-items:center}
+        .chat-box{height:340px;overflow-y:auto;padding:14px;scroll-behavior:smooth}
+
+        .msg-row{display:flex;align-items:flex-end;gap:7px;margin-bottom:14px}
+        .msg-row.user-row{flex-direction:row-reverse}
+        .reaction-char{width:44px;height:44px;flex-shrink:0;display:flex;flex-direction:column;align-items:center}
+        .reaction-emoji{font-size:28px;animation:char-bounce 0.6s cubic-bezier(0.34,1.56,0.64,1);display:block;line-height:1}
+        .reaction-label{font-size:8px;color:var(--muted);font-weight:700;text-align:center;margin-top:1px;white-space:nowrap}
+        @keyframes char-bounce{0%{transform:scale(0) rotate(-20deg);opacity:0}60%{transform:scale(1.2) rotate(5deg);opacity:1}100%{transform:scale(1) rotate(0);opacity:1}}
+        @keyframes char-celebrate{0%,100%{transform:translateY(0) rotate(0)}25%{transform:translateY(-8px) rotate(-10deg)}75%{transform:translateY(-8px) rotate(10deg)}}
+        @keyframes char-think{0%,100%{transform:rotate(0)}50%{transform:rotate(-15deg)}}
+        @keyframes char-shake{0%,100%{transform:translateX(0)}25%{transform:translateX(-4px)}75%{transform:translateX(4px)}}
+        .reaction-emoji.celebrate{animation:char-celebrate 0.8s ease infinite}
+        .reaction-emoji.thinking{animation:char-think 1.2s ease infinite}
+        .reaction-emoji.shake{animation:char-shake 0.4s ease 3}
+
+        .message{padding:9px 14px;border-radius:14px;max-width:80%;line-height:1.6;font-size:13px;white-space:pre-wrap;word-wrap:break-word;position:relative;font-weight:600}
+        .user-row .message{background:linear-gradient(135deg,var(--primary),var(--secondary));color:white;border-bottom-right-radius:4px}
+        .bot-row .message{background:#f7f8fc;color:var(--text);border-bottom-left-radius:4px;border:1px solid #eef0f8}
+        .bot-row .message.ai-mode{background:linear-gradient(135deg,#f0f4ff,#e8ecff);border:1px solid #d0d8ff}
+        .msg-actions{position:absolute;top:4px;right:6px;display:flex;gap:3px;opacity:0;transition:0.2s}
+        .message:hover .msg-actions{opacity:1}
+        .msg-action-btn{background:rgba(0,0,0,0.08);border:none;border-radius:4px;padding:2px 5px;cursor:pointer;font-size:10px}
+
+        .ai-toggle-bar{display:flex;align-items:center;justify-content:center;gap:10px;padding:9px 16px;background:#f8f9ff;border-top:1px solid #eef0f8}
+        .ai-toggle-bar span{font-size:12px;color:var(--muted);font-weight:700}
+        .toggle-switch{position:relative;width:46px;height:23px}
+        .toggle-switch input{opacity:0;width:0;height:0}
+        .toggle-slider{position:absolute;cursor:pointer;inset:0;background:#ddd;border-radius:23px;transition:0.3s}
+        .toggle-slider:before{position:absolute;content:"";height:17px;width:17px;left:3px;bottom:3px;background:white;border-radius:50%;transition:0.3s;box-shadow:0 2px 4px rgba(0,0,0,0.2)}
+        input:checked+.toggle-slider{background:linear-gradient(135deg,var(--primary),var(--secondary))}
+        input:checked+.toggle-slider:before{transform:translateX(23px)}
+        .ai-badge{background:linear-gradient(135deg,var(--primary),var(--secondary));color:white;padding:2px 8px;border-radius:10px;font-size:10px;font-weight:800;display:none}
+        .ai-badge.on{display:inline-block}
+        .ai-hint{font-size:11px;color:var(--muted);text-align:center;padding:4px 15px;display:none;font-weight:600}
+        .ai-hint.on{display:block}
+
+        .input-section{background:white;border-radius:var(--radius);padding:11px;margin:12px 0;box-shadow:0 4px 20px rgba(102,126,234,0.1)}
+        .input-row{display:flex;gap:7px;align-items:center}
+        .input-row input{flex:1;padding:11px 16px;border:2px solid #eef0f8;border-radius:30px;outline:none;font-size:13px;font-family:'Nunito',sans-serif;font-weight:600;transition:0.3s;background:#f8f9fc}
+        .input-row input:focus{border-color:var(--primary);background:white}
+        .input-row input:disabled{opacity:0.5;cursor:not-allowed}
+        .send-btn{background:linear-gradient(135deg,var(--primary),var(--secondary));color:white;border:none;width:42px;height:42px;border-radius:50%;cursor:pointer;font-size:15px;display:flex;align-items:center;justify-content:center;transition:0.2s;flex-shrink:0}
+        .send-btn:disabled{background:#ddd;cursor:not-allowed}
+        .send-btn:hover:not(:disabled){transform:scale(1.1)}
+        .voice-btn{width:42px;height:42px;border-radius:50%;border:none;cursor:pointer;display:flex;align-items:center;justify-content:center;font-size:17px;background:#f0f2ff;transition:0.2s;flex-shrink:0}
+        .voice-btn.listening{background:linear-gradient(135deg,#f5576c,#f093fb);animation:pulse-mic 1s infinite}
+        @keyframes pulse-mic{0%,100%{box-shadow:0 0 0 0 rgba(245,87,108,0.4)}50%{box-shadow:0 0 0 8px rgba(245,87,108,0)}}
+        .voice-status{font-size:11px;color:var(--primary);text-align:center;font-weight:700;height:15px;margin-top:4px}
+
+        /* Downloads */
+        #downloadSection{background:white;border-radius:var(--radius);padding:16px;margin:12px 0;display:none;box-shadow:0 4px 20px rgba(102,126,234,0.1)}
+        #downloadSection h4{font-size:13px;color:var(--text);margin-bottom:10px;font-weight:800}
+        .download-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(130px,1fr));gap:7px}
+        .dl-card{background:#f8f9fc;border:2px solid #f0f0f0;border-radius:12px;padding:11px;text-align:center;transition:0.2s;position:relative}
+        .dl-card:hover{border-color:var(--primary)}
+        .dl-card .icon{font-size:20px;margin-bottom:5px}
+        .dl-card h5{font-size:11px;color:var(--text);margin-bottom:7px;font-weight:800}
+        .dl-card .btn-group{display:flex;flex-direction:column;gap:4px}
+        .dl-card button{padding:5px;background:var(--primary);color:white;border:none;border-radius:7px;cursor:pointer;font-size:10px;font-weight:800;font-family:'Nunito',sans-serif;transition:0.2s}
+        .dl-card button:disabled{background:#ddd;cursor:not-allowed}
+        .dl-card .view-btn{background:var(--success)}
+        .dl-card p{font-size:9px;color:var(--muted);margin-top:3px;font-weight:600}
+        .dl-card .pro-lock-badge{position:absolute;top:4px;right:4px;font-size:9px;background:#fff3cd;color:#856404;padding:2px 5px;border-radius:6px;font-weight:800}
+        .email-btn{width:100%;padding:11px;background:linear-gradient(135deg,var(--success),#38ef7d);color:white;border:none;border-radius:11px;cursor:pointer;font-weight:800;margin-top:10px;font-size:13px;font-family:'Nunito',sans-serif}
+
+        /* ── AFFILIATE POPUP ── */
+        .affiliate-overlay{display:none;position:fixed;inset:0;background:rgba(0,0,0,0.6);justify-content:center;align-items:center;z-index:3000;backdrop-filter:blur(4px)}
+        .affiliate-overlay.show{display:flex}
+        .affiliate-popup{background:white;border-radius:20px;padding:24px;width:90%;max-width:380px;text-align:center;animation:pop-in 0.4s cubic-bezier(0.34,1.56,0.64,1)}
+        @keyframes pop-in{0%{transform:scale(0.7);opacity:0}100%{transform:scale(1);opacity:1}}
+        .affiliate-popup .sponsor-label{font-size:10px;color:#aaa;font-weight:700;text-transform:uppercase;letter-spacing:1px;margin-bottom:8px}
+        .affiliate-popup h3{font-family:'Baloo 2',cursive;font-size:18px;font-weight:800;color:var(--text);margin-bottom:6px}
+        .affiliate-popup p{font-size:13px;color:var(--muted);font-weight:600;margin-bottom:16px}
+        .affiliate-popup .visit-btn{display:block;padding:12px 20px;background:linear-gradient(135deg,var(--primary),var(--secondary));color:white;border-radius:12px;text-decoration:none;font-weight:800;font-size:14px;margin-bottom:10px;transition:0.2s}
+        .affiliate-popup .visit-btn:hover{opacity:0.9;transform:translateY(-1px)}
+        .affiliate-popup .skip-btn{background:none;border:none;cursor:pointer;color:var(--muted);font-size:12px;font-weight:700;font-family:'Nunito',sans-serif;padding:6px}
+        .affiliate-popup .skip-btn:hover{color:var(--text)}
+
+        /* Session expired */
+        .session-expired-overlay{display:none;position:fixed;inset:0;background:rgba(0,0,0,0.7);justify-content:center;align-items:center;z-index:5000}
+        .session-expired-overlay.show{display:flex}
+        .session-card{background:white;border-radius:20px;padding:30px;text-align:center;max-width:320px;width:90%}
+        .session-card h3{font-size:18px;font-weight:900;color:#f5576c;margin-bottom:10px}
+        .session-card p{font-size:13px;color:var(--muted);font-weight:600;margin-bottom:20px}
+        .session-card a{display:block;padding:12px;background:linear-gradient(135deg,var(--primary),var(--secondary));color:white;border-radius:12px;text-decoration:none;font-weight:800}
+
+        .modal{display:none;position:fixed;inset:0;background:rgba(0,0,0,0.5);justify-content:center;align-items:center;z-index:1000;backdrop-filter:blur(4px)}
+        .modal-content{background:white;padding:24px;border-radius:var(--radius);width:90%;max-width:370px}
+        .modal-content h3{color:var(--primary);margin-bottom:12px;font-family:'Baloo 2',cursive}
+        .modal-content input{width:100%;padding:10px 14px;margin:7px 0;border:2px solid #eee;border-radius:10px;font-size:14px;font-family:'Nunito',sans-serif}
+        .modal-buttons{display:flex;gap:10px;margin-top:12px}
+        .modal-buttons button{flex:1;padding:10px;border:none;border-radius:10px;cursor:pointer;font-weight:800;font-family:'Nunito',sans-serif}
+        .btn-send{background:linear-gradient(135deg,var(--primary),var(--secondary));color:white}
+        .btn-cancel{background:#f0f0f0;color:var(--text)}
+        .viewer-modal{display:none;position:fixed;inset:0;background:rgba(0,0,0,0.85);justify-content:center;align-items:center;z-index:2000}
+        .viewer-content{background:white;padding:20px;border-radius:var(--radius);width:95%;max-width:750px;max-height:85vh;overflow:auto;position:relative}
+        .viewer-content iframe{width:100%;height:470px;border:none}
+        .viewer-content img{max-width:100%;border-radius:10px}
+        .close-btn{position:absolute;top:10px;right:15px;font-size:27px;cursor:pointer;color:var(--primary);font-weight:900}
+
+        .info-bar{background:linear-gradient(135deg,#e8f4f8,#f0f4ff);border-left:3px solid var(--primary);padding:9px 14px;border-radius:10px;font-size:11px;color:var(--muted);margin:8px 0;font-weight:600}
+        .nav-footer{text-align:center;padding:8px}
+        .nav-footer a{color:var(--primary);text-decoration:none;font-size:13px;font-weight:700;margin:0 8px}
+
+        .typing-dots span{height:7px;width:7px;background:var(--primary);border-radius:50%;display:inline-block;margin:0 2px;animation:bounce 1.4s infinite}
         .typing-dots span:nth-child(2){animation-delay:0.2s}
         .typing-dots span:nth-child(3){animation-delay:0.4s}
         @keyframes bounce{0%,60%,100%{transform:translateY(0)}30%{transform:translateY(-6px)}}
-        .loader { border:3px solid #f0f0f0; border-top:3px solid var(--primary); border-radius:50%; width:18px; height:18px; animation:spin 0.8s linear infinite; display:inline-block; vertical-align:middle; margin-right:8px; }
+        .loader{border:3px solid #f0f0f0;border-top:3px solid var(--primary);border-radius:50%;width:17px;height:17px;animation:spin 0.8s linear infinite;display:inline-block;vertical-align:middle;margin-right:7px}
         @keyframes spin{to{transform:rotate(360deg)}}
         @keyframes bounce-emoji{0%,100%{transform:translateY(0)}50%{transform:translateY(-15px)}}
     </style>
 </head>
 <body>
+
+<!-- SESSION EXPIRED OVERLAY -->
+<div class="session-expired-overlay" id="sessionExpiredOverlay">
+    <div class="session-card">
+        <h3>🔒 Session Expired!</h3>
+        <p>Aapka account kisi aur device pe login hua hai. Security ke liye aapko logout kar diya gaya.</p>
+        <a href="/login">🔑 Login Again</a>
+    </div>
+</div>
+
+<!-- AFFILIATE POPUP -->
+<div class="affiliate-overlay" id="affiliateOverlay">
+    <div class="affiliate-popup">
+        <div class="sponsor-label">📢 Sponsored</div>
+        <h3 id="affPopupTitle">Our Partner</h3>
+        <p id="affPopupDesc">Check out this amazing offer!</p>
+        <a href="#" id="affPopupLink" class="visit-btn" target="_blank" rel="noopener" onclick="proceedDownload()">
+            🔗 Visit Partner →
+        </a>
+        <button class="skip-btn" onclick="proceedDownload()">Skip & Download →</button>
+    </div>
+</div>
 
 <!-- TOP NAV -->
 <div class="topnav">
@@ -240,17 +256,29 @@
     <div class="user-info">
         <div class="avatar" id="avatarInitial">?</div>
         <span class="username" id="displayUsername">...</span>
-        <a href="/logout">Logout</a>
+        <span class="plan-badge free" id="planBadge">Free</span>
+        <div class="nav-links">
+            <a href="/pricing">⭐ Upgrade</a>
+            <a href="/dashboard">📊</a>
+            <a href="/admin" class="admin-link" id="adminLink" style="display:none">🛡️ Admin</a>
+            <a href="/logout">Logout</a>
+        </div>
     </div>
 </div>
 
 <div class="main">
 
-    <!-- WELCOME -->
     <div class="welcome">
         <div class="greeting">नमस्ते,</div>
         <div class="name" id="welcomeName">...</div>
         <div class="subtitle">कहाँ से शुरुआत करें? 🚀</div>
+    </div>
+
+    <!-- Query counter for free users -->
+    <div class="query-bar" id="queryBar" style="display:none">
+        <span id="queryCountText">0/10 queries used</span>
+        <div class="query-progress"><div class="query-progress-bar" id="queryProgressBar" style="width:0%"></div></div>
+        <a href="/pricing" class="upgrade-link">⭐ Upgrade</a>
     </div>
 
     <!-- MASCOT -->
@@ -266,7 +294,6 @@
         <div class="speaking-bar"></div>
     </div>
 
-    <!-- UPLOAD -->
     <div class="upload-card" onclick="document.getElementById('fileInput').click()">
         <p id="uploadText">📁 CSV / Excel Upload करें</p>
         <small>Database mein sync hoga automatically</small>
@@ -291,25 +318,24 @@
     <div class="quick-section">
         <h4>⚡ Quick Actions</h4>
         <div class="cards-grid">
-            <div class="action-card" onclick="sendCmd('dashboard')"><div class="card-icon">📊</div><div class="card-title">Dashboard</div><div class="card-desc">4-in-1 visual overview</div></div>
-            <div class="action-card" onclick="sendCmd('kpi')"><div class="card-icon">📈</div><div class="card-title">KPI Cards</div><div class="card-desc">Key metrics summary</div></div>
-            <div class="action-card" onclick="sendCmd('top 5')"><div class="card-icon">🏆</div><div class="card-title">Top 5</div><div class="card-desc">Best performing items</div></div>
+            <div class="action-card" onclick="sendCmd('dashboard')" id="cardDashboard"><div class="card-icon">📊</div><div class="card-title">Dashboard</div><div class="card-desc">4-in-1 overview</div><span class="pro-lock" id="dashLock" style="display:none">⭐ Pro</span></div>
+            <div class="action-card" onclick="sendCmd('kpi')"><div class="card-icon">📈</div><div class="card-title">KPI Cards</div><div class="card-desc">Key metrics</div></div>
+            <div class="action-card" onclick="sendCmd('top 5')"><div class="card-icon">🏆</div><div class="card-title">Top 5</div><div class="card-desc">Best performers</div></div>
             <div class="action-card" onclick="sendCmd('bar chart')"><div class="card-icon">📉</div><div class="card-title">Bar Chart</div><div class="card-desc">Visual comparison</div></div>
-            <div class="action-card" onclick="sendCmd('export excel')"><div class="card-icon">📄</div><div class="card-title">Export Excel</div><div class="card-desc">Microsoft 365 format</div></div>
-            <div class="action-card" onclick="sendCmd('export csv')"><div class="card-icon">📋</div><div class="card-title">Export CSV</div><div class="card-desc">Google Sheets format</div></div>
-            <div class="action-card" onclick="sendCmd('average')"><div class="card-icon">🔢</div><div class="card-title">Average</div><div class="card-desc">Mean of numeric cols</div></div>
-            <div class="action-card" onclick="sendCmd('export html')"><div class="card-icon">🌐</div><div class="card-title">HTML Report</div><div class="card-desc">Browser-friendly report</div></div>
+            <div class="action-card" onclick="sendCmd('export excel')" id="cardExcel"><div class="card-icon">📄</div><div class="card-title">Export Excel</div><div class="card-desc">Microsoft 365</div><span class="pro-lock" id="excelLock" style="display:none">⭐ Pro</span></div>
+            <div class="action-card" onclick="sendCmd('export csv')"><div class="card-icon">📋</div><div class="card-title">Export CSV</div><div class="card-desc">Google Sheets</div></div>
+            <div class="action-card" onclick="sendCmd('average')"><div class="card-icon">🔢</div><div class="card-title">Average</div><div class="card-desc">Mean values</div></div>
+            <div class="action-card" onclick="sendCmd('export html')"><div class="card-icon">🌐</div><div class="card-title">HTML Report</div><div class="card-desc">Browser report</div></div>
         </div>
     </div>
 
-    <!-- CHAT SECTION -->
+    <!-- CHAT -->
     <div class="chat-section" id="chatSection">
         <div class="chat-header">
             <span>💬 Chat</span>
             <span id="chatModeLabel">⚡ Command Mode</span>
         </div>
         <div class="chat-box" id="chatBox"></div>
-        <!-- AI TOGGLE (Optional) -->
         <div class="ai-toggle-bar">
             <span>⚡ Command</span>
             <label class="toggle-switch">
@@ -325,7 +351,7 @@
     <!-- INPUT -->
     <div class="input-section">
         <div class="input-row">
-            <button class="voice-btn" id="voiceBtn" onclick="toggleVoice()" title="Voice Input">🎤</button>
+            <button class="voice-btn" id="voiceBtn" onclick="toggleVoice()">🎤</button>
             <input type="text" id="userInput" placeholder="Pehle file upload karo..." disabled>
             <button class="send-btn" onclick="sendMessage()" id="sendBtn" disabled>➤</button>
         </div>
@@ -336,27 +362,55 @@
     <div id="downloadSection">
         <h4>📥 Download Your Files:</h4>
         <div class="download-grid">
-            <div class="dl-card"><div class="icon">📊</div><h5>Latest Plot</h5><div class="btn-group"><button class="view-btn" id="viewPlotBtn" onclick="viewPlot()" disabled>👁 View</button><button id="plotBtn" onclick="downloadPlot()" disabled>💾 Download</button></div><p>Gallery</p></div>
-            <div class="dl-card"><div class="icon">📈</div><h5>Dashboard</h5><div class="btn-group"><button class="view-btn" id="viewDashboardBtn" onclick="viewDashboard()" disabled>👁 View</button><button id="dashboardBtn" onclick="downloadDashboard()" disabled>💾 Download</button></div><p>Gallery</p></div>
-            <div class="dl-card"><div class="icon">📄</div><h5>Excel</h5><div class="btn-group"><button class="view-btn" id="viewExcelBtn" onclick="viewExcel()" disabled>👁 Info</button><button id="excelBtn" onclick="downloadExcel()" disabled>💾 Download</button></div><p>Microsoft 365</p></div>
-            <div class="dl-card"><div class="icon">📋</div><h5>CSV Data</h5><div class="btn-group"><button class="view-btn" id="viewCSVBtn" onclick="viewCSV()" disabled>👁 View</button><button id="csvBtn" onclick="downloadCSV()" disabled>💾 Download</button></div><p>Excel/Sheets</p></div>
-            <div class="dl-card"><div class="icon">🌐</div><h5>HTML Report</h5><div class="btn-group"><button class="view-btn" id="viewHTMLBtn" onclick="viewHTML()" disabled>👁 View</button><button id="htmlBtn" onclick="downloadHTML()" disabled>💾 Download</button></div><p>Any Browser</p></div>
+            <div class="dl-card"><div class="icon">📊</div><h5>Latest Plot</h5><div class="btn-group"><button class="view-btn" id="viewPlotBtn" onclick="viewPlot()" disabled>👁 View</button><button id="plotBtn" onclick="triggerDownload('plot')" disabled>💾 Download</button></div><p>Gallery</p></div>
+            <div class="dl-card"><div class="icon">📈</div><h5>Dashboard</h5><span class="pro-lock-badge" id="dlDashLock" style="display:none">⭐Pro</span><div class="btn-group"><button class="view-btn" id="viewDashboardBtn" onclick="viewDashboard()" disabled>👁 View</button><button id="dashboardBtn" onclick="triggerDownload('dashboard')" disabled>💾 Download</button></div><p>Gallery</p></div>
+            <div class="dl-card"><div class="icon">📄</div><h5>Excel</h5><span class="pro-lock-badge" id="dlExcelLock" style="display:none">⭐Pro</span><div class="btn-group"><button class="view-btn" id="viewExcelBtn" onclick="viewExcel()" disabled>👁 Info</button><button id="excelBtn" onclick="triggerDownload('excel')" disabled>💾 Download</button></div><p>Microsoft 365</p></div>
+            <div class="dl-card"><div class="icon">📋</div><h5>CSV</h5><div class="btn-group"><button class="view-btn" id="viewCSVBtn" onclick="viewCSV()" disabled>👁 View</button><button id="csvBtn" onclick="triggerDownload('csv')" disabled>💾 Download</button></div><p>Excel/Sheets</p></div>
+            <div class="dl-card"><div class="icon">🌐</div><h5>HTML Report</h5><div class="btn-group"><button class="view-btn" id="viewHTMLBtn" onclick="viewHTML()" disabled>👁 View</button><button id="htmlBtn" onclick="triggerDownload('html')" disabled>💾 Download</button></div><p>Browser</p></div>
             <div class="dl-card"><div class="icon">📝</div><h5>Text Reports</h5><div class="btn-group"><button onclick="downloadAllReports()">💾 All Reports</button></div><p>Chat history</p></div>
         </div>
         <button onclick="openEmailModal()" class="email-btn">📧 Email Reports</button>
     </div>
 
-    <div class="info-bar">📥 Downloads → <strong>Downloads folder</strong> | PNG → Gallery mein bhi!</div>
-    <div class="nav-footer"><a href="/dashboard">📊 Dashboard</a></div>
+    <div class="info-bar">📥 Downloads → <strong>Downloads folder</strong> | PNG → Gallery!</div>
+    <div class="nav-footer">
+        <a href="/pricing">⭐ Upgrade to Pro</a>
+        <a href="/dashboard">📊 Dashboard</a>
+    </div>
 </div>
 
-<!-- MODALS -->
+<!-- BOTTOM NAV BAR -->
+<nav class="bottom-nav">
+    <a href="/" class="active">
+        <span class="bn-icon">🏠</span>
+        <span class="bn-label">Home</span>
+    </a>
+    <a href="/dashboard">
+        <span class="bn-icon">📊</span>
+        <span class="bn-label">Dashboard</span>
+    </a>
+    <a href="/pricing" class="bn-upgrade">
+        <span class="bn-icon">⭐</span>
+        <span class="bn-label">Upgrade</span>
+    </a>
+    <a href="/admin" class="bn-admin" id="adminNavLink" style="display:none">
+        <span class="bn-icon">🛡️</span>
+        <span class="bn-label">Admin</span>
+    </a>
+    <a href="/logout">
+        <span class="bn-icon">🚪</span>
+        <span class="bn-label">Logout</span>
+    </a>
+</nav>
+
+<!-- VIEWER MODAL -->
 <div id="viewerModal" class="viewer-modal">
     <div class="viewer-content">
         <span class="close-btn" onclick="closeViewer()">&times;</span>
         <div id="viewerContainer"></div>
     </div>
 </div>
+<!-- EMAIL MODAL -->
 <div id="emailModal" class="modal">
     <div class="modal-content">
         <h3>📧 Send Report</h3>
@@ -369,396 +423,318 @@
 </div>
 
 <script>
-// ══════════════════════════════════════════
+// ══════════════════════════════════
 // STATE
-// ══════════════════════════════════════════
-let isFileReady=false, isProcessing=false, aiModeEnabled=false;
-let chatHistory=[], plotReady=false, dashboardReady=false;
-let htmlReady=false, csvReady=false, excelReady=false;
-let recognition=null, isListening=false;
-let voiceGender='female';
-let mascotAnim=null, bubbleTimer=null;
+// ══════════════════════════════════
+let isFileReady=false,isProcessing=false,aiModeEnabled=false;
+let chatHistory=[],plotReady=false,dashboardReady=false;
+let htmlReady=false,csvReady=false,excelReady=false;
+let recognition=null,isListening=false,voiceGender='female';
+let mascotAnim=null,bubbleTimer=null;
+let currentPlan='free';
+let affiliateLinks=[];
+let pendingDownload=null; // what to download after affiliate popup
 
-// ══════════════════════════════════════════
-// REACTION CHARACTERS — different emojis per mood
-// ══════════════════════════════════════════
-const REACTIONS = {
-    success:    { emoji:'🎉', label:'Celebrating!', anim:'celebrate' },
-    happy:      { emoji:'😊', label:'Happy!',       anim:'' },
-    excited:    { emoji:'🤩', label:'Wow!',         anim:'celebrate' },
-    thinking:   { emoji:'🤔', label:'Hmm...',       anim:'thinking' },
-    data:       { emoji:'📊', label:'Data!',        anim:'' },
-    error:      { emoji:'😅', label:'Oops!',        anim:'shake' },
-    chart:      { emoji:'📈', label:'Chart!',       anim:'celebrate' },
-    export:     { emoji:'💾', label:'Saving!',      anim:'' },
-    welcome:    { emoji:'👋', label:'Hello!',       anim:'' },
-    code:       { emoji:'💻', label:'Code!',        anim:'' },
-    tip:        { emoji:'💡', label:'Tip!',         anim:'' },
-    ai:         { emoji:'🧠', label:'AI Mode!',     anim:'' },
+// ══════════════════════════════════
+// REACTION CHARACTERS
+// ══════════════════════════════════
+const REACTIONS={
+    success:{emoji:'🎉',label:'Celebrating!',anim:'celebrate'},
+    happy:{emoji:'😊',label:'Happy!',anim:''},
+    excited:{emoji:'🤩',label:'Wow!',anim:'celebrate'},
+    thinking:{emoji:'🤔',label:'Hmm...',anim:'thinking'},
+    data:{emoji:'📊',label:'Data!',anim:''},
+    error:{emoji:'😅',label:'Oops!',anim:'shake'},
+    chart:{emoji:'📈',label:'Chart!',anim:'celebrate'},
+    export:{emoji:'💾',label:'Saving!',anim:''},
+    welcome:{emoji:'👋',label:'Hello!',anim:''},
+    code:{emoji:'💻',label:'Code!',anim:''},
+    tip:{emoji:'💡',label:'Tip!',anim:''},
+    pro:{emoji:'⭐',label:'Pro only!',anim:''}
 };
 
-function getReaction(text) {
-    const t = text.toLowerCase();
-    if (t.includes('✅') || t.includes('saved') || t.includes('success') || t.includes('report saved')) return REACTIONS.success;
-    if (t.includes('dashboard')) return REACTIONS.chart;
-    if (t.includes('❌') || t.includes('error') || t.includes('⚠️')) return REACTIONS.error;
-    if (t.includes('chart') || t.includes('plot') || t.includes('graph')) return REACTIONS.chart;
-    if (t.includes('excel') || t.includes('csv') || t.includes('html') || t.includes('export')) return REACTIONS.export;
-    if (t.includes('📊') || t.includes('total') || t.includes('average') || t.includes('max') || t.includes('min')) return REACTIONS.data;
-    if (t.includes('code') || t.includes('python') || t.includes('df.')) return REACTIONS.code;
-    if (t.includes('💡') || t.includes('tip') || t.includes('suggest')) return REACTIONS.tip;
-    if (t.includes('thinking') || t.includes('soch')) return REACTIONS.thinking;
-    if (t.includes('hello') || t.includes('namaste') || t.includes('hi')) return REACTIONS.welcome;
+function getReaction(text){
+    const t=text.toLowerCase();
+    if(t.includes('✅')||t.includes('saved')||t.includes('success'))return REACTIONS.success;
+    if(t.includes('dashboard'))return REACTIONS.chart;
+    if(t.includes('❌')||t.includes('error')||t.includes('⚠️'))return REACTIONS.error;
+    if(t.includes('⭐')||t.includes('pro plan')||t.includes('upgrade'))return REACTIONS.pro;
+    if(t.includes('chart')||t.includes('plot')||t.includes('graph'))return REACTIONS.chart;
+    if(t.includes('excel')||t.includes('csv')||t.includes('export'))return REACTIONS.export;
+    if(t.includes('📊')||t.includes('total')||t.includes('average'))return REACTIONS.data;
+    if(t.includes('code')||t.includes('df.'))return REACTIONS.code;
+    if(t.includes('💡'))return REACTIONS.tip;
+    if(t.includes('hello')||t.includes('namaste'))return REACTIONS.welcome;
     return REACTIONS.happy;
 }
 
-// ══════════════════════════════════════════
-// LOTTIE MASCOT
-// ══════════════════════════════════════════
-function initMascot() {
-    mascotAnim = lottie.loadAnimation({
-        container: document.getElementById('lottie-mascot'),
-        renderer: 'svg', loop: true, autoplay: true,
-        path: 'https://assets9.lottiefiles.com/packages/lf20_qp1q7mct.json'
-    });
-    mascotAnim.addEventListener('data_failed', () => {
-        document.getElementById('lottie-mascot').innerHTML =
-            '<div style="font-size:68px;text-align:center;line-height:120px;animation:bounce-emoji 1.2s ease-in-out infinite;">🤖</div>';
-    });
-    setTimeout(() => showBubble('Data upload karo! 🚀','happy'), 1500);
+// ══════════════════════════════════
+// MASCOT
+// ══════════════════════════════════
+function initMascot(){
+    mascotAnim=lottie.loadAnimation({container:document.getElementById('lottie-mascot'),renderer:'svg',loop:true,autoplay:true,path:'https://assets9.lottiefiles.com/packages/lf20_qp1q7mct.json'});
+    mascotAnim.addEventListener('data_failed',()=>{document.getElementById('lottie-mascot').innerHTML='<div style="font-size:65px;text-align:center;line-height:110px;animation:bounce-emoji 1.2s ease-in-out infinite;">🤖</div>';});
+    setTimeout(()=>showBubble('Data upload karo! 🚀','happy'),1500);
 }
 
-function showBubble(text, mood='happy') {
-    const b = document.getElementById('mascotBubble');
-    b.textContent = text;
-    b.className = 'mascot-bubble ' + mood + ' show';
+function showBubble(text,mood='happy'){
+    const b=document.getElementById('mascotBubble');
+    b.textContent=text; b.className='mascot-bubble '+mood+' show';
     clearTimeout(bubbleTimer);
-    bubbleTimer = setTimeout(() => b.classList.remove('show'), 3500);
+    bubbleTimer=setTimeout(()=>b.classList.remove('show'),3500);
 }
 
-function mascotTalk() {
-    const msgs = [
-        ['Kya analysis karni hai? 🤔','thinking'],
-        ['Data ready hai? Upload karo! 💪','excited'],
-        ['Dashboard try karo! 📊','happy'],
-        ['Main hoon na bhai! 😄','happy'],
-        ['AI Mode try karo! 🧠','excited'],
-    ];
-    const [m,mood] = msgs[Math.floor(Math.random()*msgs.length)];
-    showBubble(m, mood);
+function mascotTalk(){
+    const msgs=[['Kya analysis karni hai? 🤔','thinking'],['Data ready hai? 💪','excited'],['Dashboard try karo! 📊','happy'],['Main hoon na! 😄','happy'],['AI Mode try karo! 🧠','excited']];
+    const[m,mood]=msgs[Math.floor(Math.random()*msgs.length)];
+    showBubble(m,mood);
 }
 
-// ══════════════════════════════════════════
-// VOICE GENDER SELECT
-// ══════════════════════════════════════════
-function setVoiceGender(g) {
-    voiceGender = g;
-    document.getElementById('btnFemale').className = 'gender-btn' + (g==='female'?' active':'');
-    document.getElementById('btnMale').className   = 'gender-btn' + (g==='male'?' active':'');
-    // Preview voice
-    speakText(g==='female' ? 'Main hun aapki female assistant!' : 'Main hun aapka male assistant!');
+// ══════════════════════════════════
+// VOICE
+// ══════════════════════════════════
+function setVoiceGender(g){
+    voiceGender=g;
+    document.getElementById('btnFemale').className='gender-btn'+(g==='female'?' active':'');
+    document.getElementById('btnMale').className='gender-btn'+(g==='male'?' active':'');
+    speakText(g==='female'?'Main hun aapki female assistant!':'Main hun aapka male assistant!');
 }
+document.getElementById('voiceSpeed').addEventListener('input',function(){document.getElementById('speedVal').textContent=this.value+'x';});
 
-document.getElementById('voiceSpeed').addEventListener('input', function() {
-    document.getElementById('speedVal').textContent = this.value + 'x';
-});
-
-// ══════════════════════════════════════════
-// VOICE OUTPUT (Text to Speech)
-// ══════════════════════════════════════════
-function speakText(text) {
-    if (!window.speechSynthesis) return;
+function speakText(text){
+    if(!window.speechSynthesis)return;
     window.speechSynthesis.cancel();
-    const clean = text.replace(/[^\x00-\x7F\u0900-\u097F\s]/g,'').replace(/\*\*/g,'').trim().substring(0,300);
-    if (!clean) return;
-
-    const utt = new SpeechSynthesisUtterance(clean);
-    utt.lang = 'hi-IN';
-    utt.rate = parseFloat(document.getElementById('voiceSpeed').value);
-    utt.pitch = voiceGender === 'female' ? 1.4 : 0.7;
-    utt.volume = 1;
-
-    // Try to find matching voice
-    const voices = window.speechSynthesis.getVoices();
-    const hindiVoices = voices.filter(v => v.lang.includes('hi') || v.lang.includes('IN'));
-    if (hindiVoices.length > 0) {
-        if (voiceGender === 'female') {
-            utt.voice = hindiVoices.find(v => v.name.toLowerCase().includes('female') || v.name.toLowerCase().includes('woman')) || hindiVoices[0];
-        } else {
-            utt.voice = hindiVoices.find(v => v.name.toLowerCase().includes('male') || v.name.toLowerCase().includes('man')) || hindiVoices[hindiVoices.length-1];
-        }
-    }
-
-    utt.onstart = () => { document.getElementById('speakingIndicator').classList.add('active'); };
-    utt.onend   = () => { document.getElementById('speakingIndicator').classList.remove('active'); };
+    const clean=text.replace(/[^\x00-\x7F\u0900-\u097F\s]/g,'').replace(/\*\*/g,'').trim().substring(0,300);
+    if(!clean)return;
+    const utt=new SpeechSynthesisUtterance(clean);
+    utt.lang='hi-IN'; utt.rate=parseFloat(document.getElementById('voiceSpeed').value);
+    utt.pitch=voiceGender==='female'?1.4:0.7; utt.volume=1;
+    const voices=window.speechSynthesis.getVoices();
+    const hi=voices.filter(v=>v.lang.includes('hi')||v.lang.includes('IN'));
+    if(hi.length>0) utt.voice=voiceGender==='female'?(hi.find(v=>v.name.toLowerCase().includes('female'))||hi[0]):(hi.find(v=>v.name.toLowerCase().includes('male'))||hi[hi.length-1]);
+    utt.onstart=()=>document.getElementById('speakingIndicator').classList.add('active');
+    utt.onend=()=>document.getElementById('speakingIndicator').classList.remove('active');
     window.speechSynthesis.speak(utt);
 }
+if(window.speechSynthesis) window.speechSynthesis.onvoiceschanged=()=>window.speechSynthesis.getVoices();
 
-// Load voices async
-if (window.speechSynthesis) {
-    window.speechSynthesis.onvoiceschanged = () => window.speechSynthesis.getVoices();
+function initVoice(){
+    const SR=window.SpeechRecognition||window.webkitSpeechRecognition;
+    if(!SR){document.getElementById('voiceBtn').style.opacity='0.4';return;}
+    recognition=new SR(); recognition.lang='hi-IN'; recognition.continuous=false; recognition.interimResults=true;
+    recognition.onstart=()=>{isListening=true;document.getElementById('voiceBtn').classList.add('listening');document.getElementById('voiceStatus').textContent='🎤 Sun raha hoon...';showBubble('Bol do! 👂','thinking');};
+    recognition.onresult=(e)=>{let t='';for(let i=e.resultIndex;i<e.results.length;i++)t+=e.results[i][0].transcript;document.getElementById('userInput').value=t;document.getElementById('voiceStatus').textContent='📝 '+t;};
+    recognition.onend=()=>{isListening=false;document.getElementById('voiceBtn').classList.remove('listening');document.getElementById('voiceStatus').textContent='';const v=document.getElementById('userInput').value.trim();if(v&&isFileReady)setTimeout(()=>sendMessage(),500);};
+    recognition.onerror=()=>{isListening=false;document.getElementById('voiceBtn').classList.remove('listening');document.getElementById('voiceStatus').textContent='⚠️ Dobara try karo';setTimeout(()=>document.getElementById('voiceStatus').textContent='',2000);};
 }
+function toggleVoice(){if(!recognition){alert('Chrome browser mein try karo!');return;}if(isListening)recognition.stop();else{recognition.lang='hi-IN';recognition.start();}}
 
-// ══════════════════════════════════════════
-// VOICE INPUT
-// ══════════════════════════════════════════
-function initVoice() {
-    const SR = window.SpeechRecognition || window.webkitSpeechRecognition;
-    if (!SR) { document.getElementById('voiceBtn').style.opacity='0.4'; return; }
-    recognition = new SR();
-    recognition.lang = 'hi-IN';
-    recognition.continuous = false;
-    recognition.interimResults = true;
-    recognition.onstart = () => {
-        isListening=true;
-        document.getElementById('voiceBtn').classList.add('listening');
-        document.getElementById('voiceStatus').textContent='🎤 Sun raha hoon... bolo!';
-        showBubble('Bol do! Sun raha hoon 👂','thinking');
-    };
-    recognition.onresult = (e) => {
-        let t='';
-        for(let i=e.resultIndex;i<e.results.length;i++) t+=e.results[i][0].transcript;
-        document.getElementById('userInput').value=t;
-        document.getElementById('voiceStatus').textContent='📝 '+t;
-    };
-    recognition.onend = () => {
-        isListening=false;
-        document.getElementById('voiceBtn').classList.remove('listening');
-        document.getElementById('voiceStatus').textContent='';
-        const v=document.getElementById('userInput').value.trim();
-        if(v&&isFileReady) setTimeout(()=>sendMessage(),500);
-    };
-    recognition.onerror = () => {
-        isListening=false;
-        document.getElementById('voiceBtn').classList.remove('listening');
-        document.getElementById('voiceStatus').textContent='⚠️ Dobara try karo';
-        setTimeout(()=>document.getElementById('voiceStatus').textContent='',2000);
-    };
-}
-
-function toggleVoice() {
-    if(!recognition){alert('Chrome browser mein try karo!');return;}
-    if(isListening) recognition.stop();
-    else { recognition.lang='hi-IN'; recognition.start(); }
-}
-
-// ══════════════════════════════════════════
-// INIT
-// ══════════════════════════════════════════
-window.addEventListener('DOMContentLoaded', () => {
-    initMascot();
-    initVoice();
-    fetch('/get_username')
-        .then(r=>r.json())
-        .then(d=>{
-            const name=d.username||'User';
-            document.getElementById('welcomeName').textContent=name.toUpperCase()+'! 👋';
-            document.getElementById('displayUsername').textContent=name;
-            document.getElementById('avatarInitial').textContent=name.charAt(0).toUpperCase();
-            setTimeout(()=>showBubble('Namaste '+name+'! 😄','happy'),2000);
-        })
-        .catch(()=>{
-            document.getElementById('welcomeName').textContent='USER! 👋';
-            document.getElementById('displayUsername').textContent='User';
-            document.getElementById('avatarInitial').textContent='U';
-        });
+// ══════════════════════════════════
+// INIT — load user info
+// ══════════════════════════════════
+window.addEventListener('DOMContentLoaded',()=>{
+    initMascot(); initVoice();
+    fetch('/get_username').then(r=>r.json()).then(d=>{
+        const name=d.username||'User';
+        currentPlan=d.plan||'free';
+        document.getElementById('welcomeName').textContent=name.toUpperCase()+'! 👋';
+        document.getElementById('displayUsername').textContent=name;
+        document.getElementById('avatarInitial').textContent=name.charAt(0).toUpperCase();
+        // Plan badge
+        const badge=document.getElementById('planBadge');
+        badge.textContent=currentPlan==='pro'?'⭐ Pro':'Free';
+        badge.className='plan-badge '+(currentPlan==='pro'?'pro':'free');
+        // Admin links
+        if(d.is_admin){
+            document.getElementById('adminLink').style.display='block';
+            document.getElementById('adminNavLink').style.display='flex';
+        }
+        // Query bar for free
+        if(currentPlan==='free'){
+            document.getElementById('queryBar').style.display='flex';
+            const used=d.queries_used||0, limit=d.queries_limit||10;
+            document.getElementById('queryCountText').textContent=`${used}/${limit} queries today`;
+            document.getElementById('queryProgressBar').style.width=(used/limit*100)+'%';
+        }
+        // Pro lock badges
+        if(currentPlan!=='pro'){
+            document.getElementById('dashLock').style.display='inline-block';
+            document.getElementById('excelLock').style.display='inline-block';
+            document.getElementById('dlDashLock').style.display='inline-block';
+            document.getElementById('dlExcelLock').style.display='inline-block';
+        }
+        setTimeout(()=>showBubble('Namaste '+name+'! 😄','happy'),2000);
+    }).catch(()=>{
+        document.getElementById('welcomeName').textContent='USER! 👋';
+        document.getElementById('displayUsername').textContent='User';
+        document.getElementById('avatarInitial').textContent='U';
+    });
+    // Load affiliate links
+    fetch('/affiliate_links').then(r=>r.json()).then(d=>affiliateLinks=d).catch(()=>{});
 });
 
-// ══════════════════════════════════════════
+// ══════════════════════════════════
+// AFFILIATE POPUP
+// ══════════════════════════════════
+function showAffiliatePopup(downloadCallback){
+    if(!affiliateLinks.length){downloadCallback();return;}
+    // Pick random affiliate link
+    const link=affiliateLinks[Math.floor(Math.random()*affiliateLinks.length)];
+    document.getElementById('affPopupTitle').textContent=link.title;
+    document.getElementById('affPopupDesc').textContent=link.description||'Check out our partner offer!';
+    document.getElementById('affPopupLink').href=link.url;
+    pendingDownload=downloadCallback;
+    document.getElementById('affiliateOverlay').classList.add('show');
+}
+
+function proceedDownload(){
+    document.getElementById('affiliateOverlay').classList.remove('show');
+    if(pendingDownload){pendingDownload();pendingDownload=null;}
+}
+
+// ══════════════════════════════════
+// SESSION CHECK
+// ══════════════════════════════════
+function handleSessionExpired(){
+    document.getElementById('sessionExpiredOverlay').classList.add('show');
+}
+
+// ══════════════════════════════════
 // AI TOGGLE
-// ══════════════════════════════════════════
-function toggleAIMode(cb) {
+// ══════════════════════════════════
+function toggleAIMode(cb){
+    if(cb.checked && currentPlan!=='pro'){
+        cb.checked=false;
+        addMessage('⭐ AI Chat Mode sirf Pro plan mein available hai!\n\nUpgrade karo: /pricing','bot');
+        showBubble('Pro feature! Upgrade karo ⭐','excited');
+        window.location.href='/pricing';
+        return;
+    }
     aiModeEnabled=cb.checked;
     document.getElementById('aiModeBadge').className='ai-badge'+(aiModeEnabled?' on':'');
     document.getElementById('aiModeHint').className='ai-hint'+(aiModeEnabled?' on':'');
     document.getElementById('chatModeLabel').textContent=aiModeEnabled?'🤖 AI Chat Mode':'⚡ Command Mode';
-    document.getElementById('userInput').placeholder=aiModeEnabled?'Seedha Hinglish mein puch lo...':"Ask: 'dashboard', 'export csv', 'top 5'...";
+    document.getElementById('userInput').placeholder=aiModeEnabled?'Seedha Hinglish mein puch lo...':"Ask: 'dashboard', 'top 5'...";
     showChat();
-    addMessage(aiModeEnabled?'🤖 AI Chat Mode ON! Kuch bhi puch sakte ho!':'⚡ Command Mode ON!', aiModeEnabled?'bot ai-mode':'bot');
-    showBubble(aiModeEnabled?'AI Mode ON! 🧠':'Command Mode ⚡', aiModeEnabled?'excited':'happy');
+    addMessage(aiModeEnabled?'🤖 AI Chat Mode ON!':'⚡ Command Mode ON!',aiModeEnabled?'bot ai-mode':'bot');
+    showBubble(aiModeEnabled?'AI Mode ON! 🧠':'Command Mode ⚡',aiModeEnabled?'excited':'happy');
 }
 
-// ══════════════════════════════════════════
+// ══════════════════════════════════
 // CHAT
-// ══════════════════════════════════════════
+// ══════════════════════════════════
 function showChat(){document.getElementById('chatSection').classList.add('visible');}
 
-function addMessage(text, sender) {
+function addMessage(text,sender){
     showChat();
     const chatBox=document.getElementById('chatBox');
     const row=document.createElement('div');
     row.className='msg-row '+(sender.includes('bot')?'bot-row':'user-row');
-
-    if(sender.includes('bot')) {
-        // ✅ Reaction character with different emoji per response
+    if(sender.includes('bot')){
         const reaction=getReaction(text);
         const charDiv=document.createElement('div');
         charDiv.className='reaction-char';
-        const emojiSpan=document.createElement('span');
-        emojiSpan.className='reaction-emoji'+(reaction.anim?' '+reaction.anim:'');
-        emojiSpan.textContent=reaction.emoji;
-        const labelSpan=document.createElement('span');
-        labelSpan.className='reaction-label';
-        labelSpan.textContent=reaction.label;
-        charDiv.appendChild(emojiSpan);
-        charDiv.appendChild(labelSpan);
+        charDiv.innerHTML=`<span class="reaction-emoji${reaction.anim?' '+reaction.anim:''}">${reaction.emoji}</span><span class="reaction-label">${reaction.label}</span>`;
         row.appendChild(charDiv);
-        // Mascot bubble reaction
-        setTimeout(()=>showBubble(reaction.emoji+' '+reaction.label, 'happy'),200);
+        setTimeout(()=>showBubble(reaction.emoji+' '+reaction.label,'happy'),200);
     }
-
     const d=document.createElement('div');
     d.className='message '+sender;
     d.innerText=text;
-
-    if(sender.includes('bot')) {
-        // Action buttons: download + speak
+    if(sender.includes('bot')){
         const actions=document.createElement('div');
         actions.className='msg-actions';
-        const dlBtn=document.createElement('button');
-        dlBtn.className='msg-action-btn'; dlBtn.textContent='💾';
-        dlBtn.onclick=()=>downloadSingleMessage(text);
-        const spkBtn=document.createElement('button');
-        spkBtn.className='msg-action-btn'; spkBtn.textContent='🔊';
-        spkBtn.onclick=()=>speakText(text);
-        actions.appendChild(dlBtn);
-        actions.appendChild(spkBtn);
+        const dlBtn=document.createElement('button');dlBtn.className='msg-action-btn';dlBtn.textContent='💾';dlBtn.onclick=()=>downloadSingleMessage(text);
+        const spkBtn=document.createElement('button');spkBtn.className='msg-action-btn';spkBtn.textContent='🔊';spkBtn.onclick=()=>speakText(text);
+        actions.appendChild(dlBtn);actions.appendChild(spkBtn);
         d.appendChild(actions);
         chatHistory.push({type:'bot',text,timestamp:new Date().toLocaleString()});
-        // Auto speak in AI mode for short replies
-        if(aiModeEnabled && text.length<200) setTimeout(()=>speakText(text),400);
-    } else {
-        chatHistory.push({type:'user',text,timestamp:new Date().toLocaleString()});
-    }
-
-    row.appendChild(d);
-    chatBox.appendChild(row);
-    chatBox.scrollTop=chatBox.scrollHeight;
+        if(aiModeEnabled&&text.length<200)setTimeout(()=>speakText(text),400);
+    }else{chatHistory.push({type:'user',text,timestamp:new Date().toLocaleString()});}
+    row.appendChild(d);chatBox.appendChild(row);chatBox.scrollTop=chatBox.scrollHeight;
 }
 
-function downloadSingleMessage(text) {
-    const blob=new Blob([text],{type:'text/plain'});
-    const url=URL.createObjectURL(blob);
-    const a=document.createElement('a');
-    a.href=url; a.download='response_'+Date.now()+'.txt';
-    document.body.appendChild(a); a.click(); document.body.removeChild(a);
-    URL.revokeObjectURL(url);
-}
+function downloadSingleMessage(text){const blob=new Blob([text],{type:'text/plain'});const url=URL.createObjectURL(blob);const a=document.createElement('a');a.href=url;a.download='response_'+Date.now()+'.txt';document.body.appendChild(a);a.click();document.body.removeChild(a);URL.revokeObjectURL(url);}
 
-function downloadAllReports() {
-    if(!chatHistory.length){alert('No history!');return;}
-    let c="🤖 DS Agent Report\n"+"=".repeat(50)+"\n"+new Date().toLocaleString()+"\n\n";
-    chatHistory.forEach(m=>{c+=`[${m.timestamp}] ${m.type==='user'?'👤 You':'🤖 Bot'}:\n${m.text}\n\n`+"-".repeat(50)+"\n\n";});
-    const blob=new Blob([c],{type:'text/plain'});
-    const url=URL.createObjectURL(blob);
-    const a=document.createElement('a');
-    a.href=url; a.download='report_'+Date.now()+'.txt';
-    document.body.appendChild(a); a.click(); document.body.removeChild(a);
-    URL.revokeObjectURL(url);
-}
+function downloadAllReports(){if(!chatHistory.length){alert('No history!');return;}let c="🤖 DS Agent Report\n"+"=".repeat(50)+"\n"+new Date().toLocaleString()+"\n\n";chatHistory.forEach(m=>{c+=`[${m.timestamp}] ${m.type==='user'?'👤 You':'🤖 Bot'}:\n${m.text}\n\n`+"-".repeat(50)+"\n\n";});const blob=new Blob([c],{type:'text/plain'});const url=URL.createObjectURL(blob);const a=document.createElement('a');a.href=url;a.download='report_'+Date.now()+'.txt';document.body.appendChild(a);a.click();document.body.removeChild(a);URL.revokeObjectURL(url);}
 
-function showTyping() {
-    showChat();
-    const chatBox=document.getElementById('chatBox');
-    const row=document.createElement('div');
-    row.className='msg-row bot-row'; row.id='typingRow';
-    const charDiv=document.createElement('div');
-    charDiv.className='reaction-char';
-    charDiv.innerHTML='<span class="reaction-emoji thinking">🤔</span><span class="reaction-label">Thinking...</span>';
-    const d=document.createElement('div');
-    d.className='message bot';
-    d.innerHTML='<div class="typing-dots"><span></span><span></span><span></span></div>';
-    row.appendChild(charDiv); row.appendChild(d);
-    chatBox.appendChild(row);
-    chatBox.scrollTop=chatBox.scrollHeight;
-    showBubble('Soch raha hoon... 🤔','thinking');
-}
-
+function showTyping(){showChat();const chatBox=document.getElementById('chatBox');const row=document.createElement('div');row.className='msg-row bot-row';row.id='typingRow';const charDiv=document.createElement('div');charDiv.className='reaction-char';charDiv.innerHTML='<span class="reaction-emoji thinking">🤔</span><span class="reaction-label">Thinking...</span>';const d=document.createElement('div');d.className='message bot';d.innerHTML='<div class="typing-dots"><span></span><span></span><span></span></div>';row.appendChild(charDiv);row.appendChild(d);chatBox.appendChild(row);chatBox.scrollTop=chatBox.scrollHeight;showBubble('Soch raha hoon... 🤔','thinking');}
 function removeTyping(){const el=document.getElementById('typingRow');if(el)el.remove();}
 function setInput(e){document.getElementById('userInput').disabled=!e;document.getElementById('sendBtn').disabled=!e;}
 function sendCmd(cmd){document.getElementById('userInput').value=cmd;sendMessage();}
 
-function uploadFile(input) {
+function uploadFile(input){
     if(!input.files[0])return;
-    const fd=new FormData(); fd.append('file',input.files[0]);
+    const fd=new FormData();fd.append('file',input.files[0]);
     document.getElementById('uploadText').innerHTML='<div class="loader"></div> Syncing...';
-    setInput(false);
-    showBubble('Upload ho rahi hai... ⏳','thinking');
+    setInput(false);showBubble('Upload ho rahi hai... ⏳','thinking');
     fetch('/upload',{method:'POST',body:fd})
-        .then(r=>r.json())
-        .then(d=>{
-            addMessage("✅ "+d.message,'bot');
-            document.getElementById('uploadText').innerText="✅ Synced: "+input.files[0].name;
-            isFileReady=true; setInput(true);
-            document.getElementById('userInput').placeholder="Kuch bhi puch lo...";
-            showBubble('File ready! 🎉','excited');
-        })
-        .catch(()=>{
-            addMessage("❌ Upload failed!",'bot');
-            document.getElementById('uploadText').innerText="📁 Try Again";
-            setInput(true);
-            showBubble('Upload fail 😅','error');
-        });
+    .then(r=>{if(r.status===401)return r.json().then(d=>{if(d.error==='SESSION_EXPIRED')handleSessionExpired();throw new Error('session');});return r.json();})
+    .then(d=>{addMessage("✅ "+d.message,'bot');document.getElementById('uploadText').innerText="✅ Synced: "+input.files[0].name;isFileReady=true;setInput(true);document.getElementById('userInput').placeholder="Kuch bhi puch lo...";showBubble('File ready! 🎉','excited');})
+    .catch(e=>{if(e.message==='session')return;addMessage("❌ Upload failed!",'bot');document.getElementById('uploadText').innerText="📁 Try Again";setInput(true);showBubble('Upload fail 😅','error');});
 }
 
-function sendMessage() {
+function sendMessage(){
     const input=document.getElementById('userInput');
     const msg=input.value.trim();
     if(!msg||isProcessing)return;
     if(!isFileReady){addMessage("⚠️ Pehle file upload karo!","bot");return;}
-    addMessage(msg,'user'); input.value='';
-    isProcessing=true; setInput(false); showTyping();
+    addMessage(msg,'user');input.value='';isProcessing=true;setInput(false);showTyping();
     fetch('/chat',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({message:msg,ai_mode:aiModeEnabled})})
-    .then(r=>r.json())
+    .then(r=>{if(r.status===401)return r.json().then(d=>{if(d.error==='SESSION_EXPIRED')handleSessionExpired();throw new Error('session');});return r.json();})
     .then(d=>{
         removeTyping();
         addMessage(d.response,aiModeEnabled?'bot ai-mode':'bot');
+        if(d.limit_reached) showBubble('Query limit! Upgrade karo ⭐','excited');
         if(!aiModeEnabled){
             const ml=msg.toLowerCase();
-            if(['plot','chart','graph','bar','hist'].some(t=>ml.includes(t))||d.response.toLowerCase().includes('plot saved'))
-                setTimeout(()=>{plotReady=true;document.getElementById('plotBtn').disabled=false;document.getElementById('viewPlotBtn').disabled=false;showDownloads();},1500);
-            if(ml.includes('dashboard')||d.response.toLowerCase().includes('dashboard saved'))
-                setTimeout(()=>{dashboardReady=true;document.getElementById('dashboardBtn').disabled=false;document.getElementById('viewDashboardBtn').disabled=false;showDownloads();},2500);
-            if(['excel','xlsx'].some(t=>ml.includes(t)))
-                setTimeout(()=>{excelReady=true;document.getElementById('excelBtn').disabled=false;document.getElementById('viewExcelBtn').disabled=false;showDownloads();},1500);
-            if(ml.includes('csv'))
-                setTimeout(()=>{csvReady=true;document.getElementById('csvBtn').disabled=false;document.getElementById('viewCSVBtn').disabled=false;showDownloads();},1500);
-            if(ml.includes('html'))
-                setTimeout(()=>{htmlReady=true;document.getElementById('htmlBtn').disabled=false;document.getElementById('viewHTMLBtn').disabled=false;showDownloads();},1500);
+            if(['plot','chart','graph','bar','hist'].some(t=>ml.includes(t))||d.response.toLowerCase().includes('plot saved'))setTimeout(()=>{plotReady=true;document.getElementById('plotBtn').disabled=false;document.getElementById('viewPlotBtn').disabled=false;showDownloads();},1500);
+            if(ml.includes('dashboard')||d.response.toLowerCase().includes('dashboard saved'))setTimeout(()=>{dashboardReady=true;document.getElementById('dashboardBtn').disabled=false;document.getElementById('viewDashboardBtn').disabled=false;showDownloads();},2500);
+            if(['excel','xlsx'].some(t=>ml.includes(t)))setTimeout(()=>{excelReady=true;document.getElementById('excelBtn').disabled=false;document.getElementById('viewExcelBtn').disabled=false;showDownloads();},1500);
+            if(ml.includes('csv'))setTimeout(()=>{csvReady=true;document.getElementById('csvBtn').disabled=false;document.getElementById('viewCSVBtn').disabled=false;showDownloads();},1500);
+            if(ml.includes('html'))setTimeout(()=>{htmlReady=true;document.getElementById('htmlBtn').disabled=false;document.getElementById('viewHTMLBtn').disabled=false;showDownloads();},1500);
         }
-        isProcessing=false; setInput(true);
+        isProcessing=false;setInput(true);
     })
-    .catch(()=>{
-        removeTyping();
-        addMessage("⚠️ Server slow hai, dobara try karo.",'bot');
-        showBubble('Connection issue 😅','error');
-        isProcessing=false; setInput(true);
-    });
+    .catch(e=>{if(e.message==='session')return;removeTyping();addMessage("⚠️ Server slow hai.",'bot');showBubble('Connection issue 😅','error');isProcessing=false;setInput(true);});
 }
 
 function showDownloads(){document.getElementById('downloadSection').style.display='block';}
+
+// ── DOWNLOAD WITH AFFILIATE POPUP ──
+function triggerDownload(type){
+    showAffiliatePopup(()=>doDownload(type));
+}
+
+function doDownload(type){
+    const dlMap={
+        'plot':{ready:plotReady,url:'/plot.png',name:'plot_'+Date.now()+'.png',check:'Pehle chart banao!'},
+        'dashboard':{ready:dashboardReady,url:'/dashboard.png',name:'dashboard_'+Date.now()+'.png',check:'Pehle dashboard banao!'},
+        'excel':{ready:excelReady,url:'/download/excel',name:'report_'+Date.now()+'.xlsx',check:'"export excel" command do!'},
+        'csv':{ready:csvReady,url:'/download/csv',name:'data_'+Date.now()+'.csv',check:'"export csv" command do!'},
+        'html':{ready:htmlReady,url:'/download/html',name:'report_'+Date.now()+'.html',check:'"export html" command do!'}
+    };
+    const item=dlMap[type];
+    if(!item){return;}
+    if(!item.ready){alert(item.check);return;}
+    dl(item.url+'?t='+Date.now(),item.name);
+}
+
+function dl(href,name){const a=document.createElement('a');a.href=href;a.download=name;document.body.appendChild(a);a.click();document.body.removeChild(a);}
+
 function viewPlot(){document.getElementById('viewerContainer').innerHTML='<img src="/plot.png?t='+Date.now()+'" alt="Plot">';document.getElementById('viewerModal').style.display='flex';}
 function viewDashboard(){document.getElementById('viewerContainer').innerHTML='<img src="/dashboard.png?t='+Date.now()+'" alt="Dashboard">';document.getElementById('viewerModal').style.display='flex';}
 function viewExcel(){alert('Download karo → Microsoft 365 se kholo!');}
 function viewHTML(){document.getElementById('viewerContainer').innerHTML='<iframe src="/download/html?t='+Date.now()+'"></iframe>';document.getElementById('viewerModal').style.display='flex';}
 function viewCSV(){document.getElementById('viewerContainer').innerHTML='<iframe src="/download/csv?t='+Date.now()+'"></iframe>';document.getElementById('viewerModal').style.display='flex';}
 function closeViewer(){document.getElementById('viewerModal').style.display='none';document.getElementById('viewerContainer').innerHTML='';}
-function dl(href,name){const a=document.createElement('a');a.href=href;a.download=name;document.body.appendChild(a);a.click();document.body.removeChild(a);}
-function downloadPlot(){if(!plotReady){alert('Pehle chart banao!');return;}dl('/plot.png?t='+Date.now(),'plot_'+Date.now()+'.png');}
-function downloadDashboard(){if(!dashboardReady){alert('Pehle dashboard banao!');return;}dl('/dashboard.png?t='+Date.now(),'dashboard_'+Date.now()+'.png');}
-function downloadExcel(){if(!excelReady){alert('"export excel" command do!');return;}dl('/download/excel?t='+Date.now(),'report_'+Date.now()+'.xlsx');}
-function downloadHTML(){if(!htmlReady){alert('"export html" command do!');return;}dl('/download/html?t='+Date.now(),'report_'+Date.now()+'.html');}
-function downloadCSV(){if(!csvReady){alert('"export csv" command do!');return;}dl('/download/csv?t='+Date.now(),'data_'+Date.now()+'.csv');}
 function openEmailModal(){document.getElementById('emailModal').style.display='flex';}
 function closeEmailModal(){document.getElementById('emailModal').style.display='none';}
-function sendReport(){
-    const email=document.getElementById('clientEmail').value;
-    if(!email){alert('Email enter karo');return;}
-    fetch('/send_report',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({email})})
-        .then(r=>r.json()).then(d=>{alert(d.message||d.error);if(d.message)closeEmailModal();}).catch(()=>alert('Error'));
-}
+function sendReport(){const email=document.getElementById('clientEmail').value;if(!email){alert('Email enter karo');return;}fetch('/send_report',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({email})}).then(r=>r.json()).then(d=>{alert(d.message||d.error);if(d.message)closeEmailModal();}).catch(()=>alert('Error'));}
+
 document.getElementById('userInput').addEventListener('keypress',e=>{if(e.key==='Enter'&&!e.target.disabled)sendMessage();});
 document.getElementById('viewerModal').addEventListener('click',e=>{if(e.target===document.getElementById('viewerModal'))closeViewer();});
+const s=document.createElement('style');s.textContent='@keyframes bounce-emoji{0%,100%{transform:translateY(0)}50%{transform:translateY(-15px)}}';document.head.appendChild(s);
 </script>
 </body>
 </html>
