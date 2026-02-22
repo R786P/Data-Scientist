@@ -1,0 +1,173 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>🛡️ Admin Panel</title>
+    <link href="https://fonts.googleapis.com/css2?family=Nunito:wght@400;600;700;800;900&display=swap" rel="stylesheet">
+    <style>
+        *{margin:0;padding:0;box-sizing:border-box}
+        body{font-family:'Nunito',sans-serif;background:#f0f2f8;min-height:100vh}
+        .topnav{display:flex;align-items:center;justify-content:space-between;padding:12px 20px;background:white;box-shadow:0 2px 12px rgba(102,126,234,0.12)}
+        .logo{font-size:18px;font-weight:900;color:#667eea}
+        .topnav a{color:#667eea;text-decoration:none;font-size:13px;font-weight:700;background:#f0f2ff;padding:5px 12px;border-radius:20px;margin-left:8px}
+        .main{max-width:900px;margin:0 auto;padding:20px 15px}
+        h2{font-size:20px;font-weight:900;color:#2d3748;margin:20px 0 12px}
+        .card{background:white;border-radius:16px;padding:20px;margin-bottom:20px;box-shadow:0 4px 15px rgba(102,126,234,0.08)}
+        .card h3{font-size:15px;font-weight:900;color:#667eea;margin-bottom:15px}
+        input,select,textarea{width:100%;padding:10px 14px;border:2px solid #eee;border-radius:10px;font-size:13px;font-family:'Nunito',sans-serif;margin-bottom:10px;outline:none;transition:0.2s}
+        input:focus,select:focus{border-color:#667eea}
+        .btn{padding:10px 20px;border:none;border-radius:10px;cursor:pointer;font-weight:800;font-family:'Nunito',sans-serif;font-size:13px;transition:0.2s}
+        .btn-primary{background:linear-gradient(135deg,#667eea,#764ba2);color:white}
+        .btn-danger{background:#f5576c;color:white}
+        .btn-success{background:#11998e;color:white}
+        .btn:hover{opacity:0.85;transform:translateY(-1px)}
+        table{width:100%;border-collapse:collapse}
+        th,td{padding:10px 12px;text-align:left;border-bottom:1px solid #f0f0f0;font-size:13px}
+        th{font-weight:900;color:#667eea;background:#f8f9ff}
+        .badge{padding:3px 10px;border-radius:20px;font-size:11px;font-weight:800}
+        .badge-pro{background:#e8f4ff;color:#667eea}
+        .badge-free{background:#f0f0f0;color:#888}
+        .badge-admin{background:#fff3cd;color:#856404}
+        .msg{padding:10px 14px;border-radius:10px;font-size:13px;font-weight:700;margin:8px 0;display:none}
+        .msg.success{background:#d4edda;color:#155724;display:block}
+        .msg.error{background:#f8d7da;color:#721c24;display:block}
+        .affiliate-item{display:flex;align-items:center;justify-content:space-between;padding:10px 14px;background:#f8f9fc;border-radius:10px;margin-bottom:8px;border:1px solid #eee}
+        .affiliate-info{flex:1}
+        .affiliate-info strong{font-size:13px;color:#333;display:block}
+        .affiliate-info small{font-size:11px;color:#888}
+        .affiliate-actions{display:flex;gap:6px}
+        .row2{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+    </style>
+</head>
+<body>
+<div class="topnav">
+    <div class="logo">🛡️ Admin Panel</div>
+    <div>
+        <a href="/">🏠 Home</a>
+        <a href="/logout">Logout</a>
+    </div>
+</div>
+
+<div class="main">
+
+    <!-- AFFILIATE LINKS -->
+    <div class="card">
+        <h3>🔗 Affiliate Links (Download se pehle popup mein dikhenge)</h3>
+        <div id="affiliateMsg" class="msg"></div>
+        <div class="row2">
+            <input type="text" id="affTitle" placeholder="Title (e.g. Try Razorpay Free)">
+            <input type="url" id="affUrl" placeholder="Affiliate URL">
+        </div>
+        <textarea id="affDesc" rows="2" placeholder="Description (optional)" style="resize:none"></textarea>
+        <button class="btn btn-primary" onclick="addAffiliate()">➕ Add Affiliate Link</button>
+        <div id="affiliateList" style="margin-top:15px"></div>
+    </div>
+
+    <!-- USER MANAGEMENT -->
+    <div class="card">
+        <h3>👥 User Management</h3>
+        <div id="userMsg" class="msg"></div>
+        <table id="usersTable">
+            <thead><tr><th>ID</th><th>Username</th><th>Role</th><th>Plan</th><th>Action</th></tr></thead>
+            <tbody id="usersBody"></tbody>
+        </table>
+    </div>
+
+</div>
+
+<script>
+    // ── AFFILIATE ──
+    function showMsg(elId, text, type) {
+        const el = document.getElementById(elId);
+        el.textContent = text;
+        el.className = 'msg ' + type;
+        setTimeout(() => el.className = 'msg', 3000);
+    }
+
+    async function loadAffiliates() {
+        const r = await fetch('/affiliate_links');
+        const links = await r.json();
+        const container = document.getElementById('affiliateList');
+        if (!links.length) { container.innerHTML = '<p style="color:#888;font-size:13px">No affiliate links yet.</p>'; return; }
+        container.innerHTML = links.map(l => `
+            <div class="affiliate-item">
+                <div class="affiliate-info">
+                    <strong>🔗 ${l.title}</strong>
+                    <small>${l.url}</small>
+                    ${l.description ? `<small style="display:block;color:#aaa">${l.description}</small>` : ''}
+                </div>
+                <div class="affiliate-actions">
+                    <button class="btn btn-danger" style="padding:5px 12px;font-size:11px" onclick="deleteAffiliate(${l.id})">🗑 Remove</button>
+                </div>
+            </div>`).join('');
+    }
+
+    async function addAffiliate() {
+        const title = document.getElementById('affTitle').value.trim();
+        const url = document.getElementById('affUrl').value.trim();
+        const desc = document.getElementById('affDesc').value.trim();
+        if (!title || !url) { showMsg('affiliateMsg', '⚠️ Title aur URL required!', 'error'); return; }
+        const r = await fetch('/admin/affiliate', {
+            method: 'POST',
+            headers: {'Content-Type': 'application/json'},
+            body: JSON.stringify({title, url, description: desc})
+        });
+        const d = await r.json();
+        if (d.message) {
+            showMsg('affiliateMsg', d.message, 'success');
+            document.getElementById('affTitle').value = '';
+            document.getElementById('affUrl').value = '';
+            document.getElementById('affDesc').value = '';
+            loadAffiliates();
+        } else {
+            showMsg('affiliateMsg', d.error || 'Error!', 'error');
+        }
+    }
+
+    async function deleteAffiliate(id) {
+        if (!confirm('Remove this affiliate link?')) return;
+        const r = await fetch('/admin/affiliate/' + id, {method: 'DELETE'});
+        const d = await r.json();
+        showMsg('affiliateMsg', d.message || d.error, d.message ? 'success' : 'error');
+        loadAffiliates();
+    }
+
+    // ── USERS ──
+    async function loadUsers() {
+        const r = await fetch('/admin/users');
+        const users = await r.json();
+        const tbody = document.getElementById('usersBody');
+        tbody.innerHTML = users.map(u => `
+            <tr>
+                <td>${u.id}</td>
+                <td><strong>${u.username}</strong></td>
+                <td>${u.is_admin ? '<span class="badge badge-admin">👑 Admin</span>' : '<span class="badge badge-free">User</span>'}</td>
+                <td><span class="badge ${u.plan==='pro'?'badge-pro':'badge-free'}">${u.plan==='pro'?'⭐ Pro':'Free'}</span></td>
+                <td>
+                    <select id="plan_${u.id}" style="width:90px;padding:4px;margin:0">
+                        <option value="free" ${u.plan==='free'?'selected':''}>Free</option>
+                        <option value="pro" ${u.plan==='pro'?'selected':''}>Pro</option>
+                    </select>
+                    <button class="btn btn-success" style="padding:4px 10px;font-size:11px;margin-left:4px" onclick="setPlan(${u.id})">Set</button>
+                </td>
+            </tr>`).join('');
+    }
+
+    async function setPlan(userId) {
+        const plan = document.getElementById('plan_' + userId).value;
+        const r = await fetch('/admin/set_plan', {
+            method: 'POST',
+            headers: {'Content-Type': 'application/json'},
+            body: JSON.stringify({user_id: userId, plan, expires_days: plan==='pro' ? 30 : null})
+        });
+        const d = await r.json();
+        showMsg('userMsg', d.message || d.error, d.message ? 'success' : 'error');
+        loadUsers();
+    }
+
+    loadAffiliates();
+    loadUsers();
+</script>
+</body>
+</html>
