@@ -17,7 +17,7 @@ from werkzeug.security import check_password_hash, generate_password_hash
 import razorpay
 
 from core.database import (engine, Base, SessionLocal, UserQuery,
-                            AffiliateLink, QueryCount, ScreenPost, MusicTrack)
+                            AffiliateLink, QueryCount, ScreenPost, MusicTrack, VideoTrack)
 from core.auth import (User, create_default_admin,
                        create_session_token, validate_session_token,
                        invalidate_session, get_user_plan, set_user_plan)
@@ -721,6 +721,83 @@ def delete_music(track_id):
             t.is_active = False
             db.commit()
             return jsonify({"message": "✅ Track removed!"})
+        return jsonify({"error": "Not found"}), 404
+    except Exception as e:
+        db.rollback()
+        return jsonify({"error": str(e)}), 500
+    finally:
+        db.close()
+
+# ── Video API ─────────────────────────────────────────────────────
+@app.route('/api/video')
+@login_required
+def get_videos():
+    db = SessionLocal()
+    try:
+        videos = db.query(VideoTrack).filter_by(is_active=True)\
+                   .order_by(VideoTrack.created_at.asc()).all()
+        return jsonify([{
+            "id": v.id,
+            "title": v.title,
+            "description": v.description or "",
+            "video_data": v.video_data,
+            "mime_type": v.mime_type,
+            "thumbnail": v.thumbnail,
+            "thumb_mime": v.thumb_mime or "image/jpeg"
+        } for v in videos])
+    finally:
+        db.close()
+
+@app.route('/api/video', methods=['POST'])
+@login_required
+@admin_required
+def upload_video():
+    import base64
+    db = SessionLocal()
+    try:
+        if 'video' not in request.files:
+            return jsonify({"error": "No video file"}), 400
+        f     = request.files['video']
+        title = request.form.get('title', f.filename or 'Video')
+        desc  = request.form.get('description', '')
+        if not f or not f.filename:
+            return jsonify({"error": "Empty file"}), 400
+        raw       = f.read()
+        video_b64 = base64.b64encode(raw).decode('utf-8')
+        mime      = f.content_type or 'video/mp4'
+        # Optional thumbnail
+        thumb_b64, thumb_mime = None, None
+        if 'thumbnail' in request.files:
+            th = request.files['thumbnail']
+            if th and th.filename:
+                thumb_b64 = base64.b64encode(th.read()).decode('utf-8')
+                thumb_mime = th.content_type or 'image/jpeg'
+        video = VideoTrack(
+            title=title, description=desc,
+            video_data=video_b64, mime_type=mime,
+            thumbnail=thumb_b64, thumb_mime=thumb_mime,
+            is_active=True
+        )
+        db.add(video)
+        db.commit()
+        return jsonify({"message": f"✅ '{title}' upload ho gaya!", "id": video.id})
+    except Exception as e:
+        db.rollback()
+        return jsonify({"error": str(e)}), 500
+    finally:
+        db.close()
+
+@app.route('/api/video/<int:video_id>', methods=['DELETE'])
+@login_required
+@admin_required
+def delete_video(video_id):
+    db = SessionLocal()
+    try:
+        v = db.query(VideoTrack).filter_by(id=video_id).first()
+        if v:
+            v.is_active = False
+            db.commit()
+            return jsonify({"message": "✅ Video removed!"})
         return jsonify({"error": "Not found"}), 404
     except Exception as e:
         db.rollback()
