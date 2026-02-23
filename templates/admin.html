@@ -82,18 +82,29 @@
         <div id="postList"></div>
     </div>
 
-    <!-- MUSIC -->
+    <!-- MUSIC + VIDEO -->
     <div class="card">
-        <h2>🎵 Music Tracks</h2>
+        <h2>🎵 Music & Video</h2>
         <div class="msg" id="musicMsg"></div>
         <div class="row2">
-            <input type="text" id="songTitle" placeholder="Song title">
-            <input type="text" id="songArtist" placeholder="Artist name">
+            <input type="text" id="songTitle" placeholder="Title">
+            <input type="text" id="songArtist" placeholder="Artist / Creator">
         </div>
-        <input type="file" id="songFile" accept="audio/*,.mp3,.wav">
-        <small style="color:#888;font-size:11px;display:block;margin-bottom:10px">MP3 / WAV — Max 10MB</small>
+        <div class="tabs" style="margin-bottom:10px">
+            <button class="tab on" id="tabAudio" onclick="setMediaType('audio',this)">🎵 Audio (MP3)</button>
+            <button class="tab" id="tabVideo" onclick="setMediaType('video',this)">🎬 Video (MP4)</button>
+        </div>
+        <input type="hidden" id="mediaType" value="audio">
+        <div id="audioField">
+            <input type="file" id="songFile" accept="audio/*,.mp3,.wav">
+            <small style="color:#888;font-size:11px;display:block;margin-bottom:10px">MP3 / WAV — Max 10MB</small>
+        </div>
+        <div id="videoField" style="display:none">
+            <input type="file" id="videoFile" accept="video/*,.mp4,.webm">
+            <small style="color:#888;font-size:11px;display:block;margin-bottom:10px">MP4 / WebM — Max 10MB</small>
+        </div>
         <div class="prog" id="musicProg"><div class="prog-bar" id="musicProgBar" style="width:0%"></div></div>
-        <button class="btn btn-blue" onclick="uploadSong()">🎵 Upload Song</button>
+        <button class="btn btn-blue" onclick="uploadMedia()">⬆️ Upload</button>
         <div id="songList"></div>
     </div>
 
@@ -198,38 +209,69 @@ async function delPost(id){
 }
 
 // ── MUSIC ──
+// ── MEDIA TYPE TOGGLE ──
+function setMediaType(type,btn){
+    document.getElementById('mediaType').value=type;
+    document.querySelectorAll('.tab').forEach(b=>b.className='tab');
+    btn.className='tab on';
+    document.getElementById('audioField').style.display=type==='audio'?'block':'none';
+    document.getElementById('videoField').style.display=type==='video'?'block':'none';
+}
+
+// ── MUSIC / VIDEO ──
 async function loadSongs(){
     try{
-        const r=await fetch('/api/music');
-        const tracks=await r.json();
+        const [musicR, videoR] = await Promise.all([
+            fetch('/api/music'), fetch('/api/video')
+        ]);
+        const music = await musicR.json();
+        const videos = await videoR.json();
         const c=document.getElementById('songList');
-        if(!tracks.length){c.innerHTML='<div class="empty">Koi song nahi — upar se upload karo!</div>';return;}
-        c.innerHTML=tracks.map(t=>`
+        const all=[
+            ...music.map(t=>({...t,_type:'audio'})),
+            ...videos.map(v=>({...v,_type:'video'}))
+        ];
+        if(!all.length){c.innerHTML='<div class="empty">Koi media nahi — upar se upload karo!</div>';return;}
+        c.innerHTML=all.map(t=>`
             <div class="item">
-                <span style="font-size:24px">🎵</span>
+                <span style="font-size:24px">${t._type==='video'?'🎬':'🎵'}</span>
                 <div class="item-info">
                     <strong>${t.title}</strong>
-                    <small>${t.artist||'Unknown artist'}</small>
+                    <small>${t._type==='video'?'🎬 Video Channel':'🎵 Music'} • ${t.artist||t.description||''}</small>
                 </div>
-                <button class="del-btn" onclick="delSong(${t.id})">🗑 Del</button>
+                <button class="del-btn" onclick="delSong(${t.id},'${t._type}')">🗑 Del</button>
             </div>`).join('');
     }catch(e){document.getElementById('songList').innerHTML='<div class="empty">Load failed!</div>';}
 }
 
-async function uploadSong(){
-    const file=document.getElementById('songFile').files[0];
+async function uploadMedia(){
+    const type=document.getElementById('mediaType').value;
+    const file=type==='video'
+        ? document.getElementById('videoFile').files[0]
+        : document.getElementById('songFile').files[0];
     if(!file){showMsg('musicMsg','⚠️ File select karo!','err');return;}
-    if(file.size>10*1024*1024){showMsg('musicMsg','⚠️ Max 10MB!','err');return;}
+    if(file.size>10*1024*1024){showMsg('musicMsg','⚠️ Max 10MB allowed!','err');return;}
     const fd=new FormData();
-    fd.append('audio',file);
-    fd.append('title',document.getElementById('songTitle').value.trim()||file.name.replace(/\.[^/.]+$/,''));
-    fd.append('artist',document.getElementById('songArtist').value.trim());
+    const title=document.getElementById('songTitle').value.trim()||file.name.replace(/\.[^/.]+$/,'');
+    const artist=document.getElementById('songArtist').value.trim();
     const pw=document.getElementById('musicProg');
     const pb=document.getElementById('musicProgBar');
     pw.style.display='block';pb.style.width='20%';
     const t=setTimeout(()=>pb.style.width='70%',800);
     try{
-        const r=await fetch('/api/music',{method:'POST',body:fd});
+        let url, r;
+        if(type==='video'){
+            fd.append('video',file);
+            fd.append('title',title);
+            fd.append('description',artist);
+            url='/api/video';
+        }else{
+            fd.append('audio',file);
+            fd.append('title',title);
+            fd.append('artist',artist);
+            url='/api/music';
+        }
+        r=await fetch(url,{method:'POST',body:fd});
         clearTimeout(t);pb.style.width='100%';
         const d=await r.json();
         setTimeout(()=>{pw.style.display='none';pb.style.width='0%';},500);
@@ -238,14 +280,16 @@ async function uploadSong(){
             document.getElementById('songTitle').value='';
             document.getElementById('songArtist').value='';
             document.getElementById('songFile').value='';
+            document.getElementById('videoFile').value='';
             loadSongs();
         }else showMsg('musicMsg',d.error||'Error!','err');
     }catch(e){clearTimeout(t);pw.style.display='none';showMsg('musicMsg','Upload failed!','err');}
 }
 
-async function delSong(id){
+async function delSong(id,type){
     if(!confirm('Delete?'))return;
-    const r=await fetch('/api/music/'+id,{method:'DELETE'});
+    const url=type==='video'?'/api/video/'+id:'/api/music/'+id;
+    const r=await fetch(url,{method:'DELETE'});
     const d=await r.json();
     showMsg('musicMsg',d.message||d.error,d.message?'ok':'err');
     loadSongs();
