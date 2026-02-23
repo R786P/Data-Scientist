@@ -3,441 +3,327 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>📺 Screen — DS Agent</title>
-    <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&family=Sora:wght@700;800&display=swap" rel="stylesheet">
+    <title>Admin Panel</title>
     <style>
-        :root{
-            --p:#5b5ef4;--p2:#8b5cf6;--acc:#06d6a0;
-            --warn:#f59e0b;--danger:#ef4444;
-            --bg:#0f0f1a;--surface:#1a1a2e;--surface2:#232340;
-            --text:#f0f0ff;--muted:#8890a4;--border:#2a2a4a;
-        }
         *{margin:0;padding:0;box-sizing:border-box}
-        body{font-family:'DM Sans',sans-serif;background:var(--bg);min-height:100vh;color:var(--text);overflow-x:hidden}
-
-        /* ── PARTICLES BG ── */
-        .particles{position:fixed;inset:0;pointer-events:none;z-index:0;overflow:hidden}
-        .particle{position:absolute;border-radius:50%;opacity:0.15;animation:float linear infinite}
-        @keyframes float{0%{transform:translateY(100vh) rotate(0deg);opacity:0}10%{opacity:0.15}90%{opacity:0.1}100%{transform:translateY(-10vh) rotate(720deg);opacity:0}}
-
-        /* ── TOP NAV ── */
-        .topnav{position:sticky;top:0;z-index:100;display:flex;align-items:center;justify-content:space-between;padding:12px 20px;background:rgba(15,15,26,0.85);backdrop-filter:blur(12px);border-bottom:1px solid var(--border)}
-        .logo{font-family:'Sora',sans-serif;font-size:18px;font-weight:800;background:linear-gradient(135deg,var(--p),var(--p2));-webkit-background-clip:text;-webkit-text-fill-color:transparent}
-        .nav-links{display:flex;gap:8px}
-        .nav-links a{color:var(--muted);text-decoration:none;font-size:12px;font-weight:700;padding:5px 12px;border-radius:20px;border:1px solid var(--border);transition:0.2s}
-        .nav-links a:hover{color:var(--text);border-color:var(--p)}
-        .admin-badge{background:linear-gradient(135deg,var(--warn),#fb923c);color:white;padding:5px 12px;border-radius:20px;font-size:12px;font-weight:800;text-decoration:none;border:none}
-
-        /* ── TICKER ── */
-        .ticker-wrap{background:linear-gradient(90deg,var(--p),var(--p2));padding:8px 0;overflow:hidden;position:relative;z-index:10}
-        .ticker-wrap::before,.ticker-wrap::after{content:'';position:absolute;top:0;bottom:0;width:60px;z-index:1}
-        .ticker-wrap::before{left:0;background:linear-gradient(90deg,var(--p),transparent)}
-        .ticker-wrap::after{right:0;background:linear-gradient(-90deg,var(--p2),transparent)}
-        .ticker-inner{display:flex;white-space:nowrap;animation:ticker 30s linear infinite}
-        .ticker-inner:hover{animation-play-state:paused}
-        .ticker-item{display:inline-flex;align-items:center;gap:6px;padding:0 32px;font-size:13px;font-weight:700;color:white}
-        .ticker-sep{opacity:0.5;margin:0 8px}
-        @keyframes ticker{0%{transform:translateX(0)}100%{transform:translateX(-50%)}}
-
-        /* ── MAIN LAYOUT ── */
-        .page{display:flex;flex-direction:column;gap:16px;padding:16px;max-width:700px;margin:0 auto;position:relative;z-index:1}
-
-        /* ── POSTS SECTION ── */
-        .section-label{font-size:11px;font-weight:800;color:var(--muted);text-transform:uppercase;letter-spacing:1.5px;margin-bottom:10px;display:flex;align-items:center;gap:8px}
-        .section-label::after{content:'';flex:1;height:1px;background:var(--border)}
-
-        /* Post Carousel */
-        .posts-carousel{position:relative;overflow:hidden;border-radius:20px}
-        .post-slide{display:none;position:relative;animation:slideIn 0.5s cubic-bezier(0.34,1.2,0.64,1)}
-        .post-slide.active{display:block}
-        @keyframes slideIn{0%{opacity:0;transform:translateX(40px) scale(0.97)}100%{opacity:1;transform:translateX(0) scale(1)}}
-
-        /* TEXT POST */
-        .post-text{background:var(--surface);border-radius:20px;padding:24px;border:1px solid var(--border);position:relative;overflow:hidden;min-height:200px;display:flex;flex-direction:column;justify-content:space-between}
-        .post-text::before{content:'';position:absolute;top:-40px;right:-40px;width:150px;height:150px;border-radius:50%;background:linear-gradient(135deg,var(--p),var(--p2));opacity:0.12}
-        .post-text::after{content:'';position:absolute;bottom:-30px;left:-30px;width:100px;height:100px;border-radius:50%;background:linear-gradient(135deg,var(--acc),#34d399);opacity:0.1}
-        .post-title{font-family:'Sora',sans-serif;font-size:20px;font-weight:800;line-height:1.3;background:linear-gradient(135deg,#fff,#c4b5fd);-webkit-background-clip:text;-webkit-text-fill-color:transparent;margin-bottom:10px}
-        .post-content{font-size:14px;color:var(--muted);line-height:1.7;flex:1}
-
-        /* IMAGE POST */
-        .post-image-wrap{position:relative;border-radius:20px;overflow:hidden;min-height:220px;border:1px solid var(--border)}
-        .post-image-wrap img{width:100%;height:280px;object-fit:cover;display:block}
-        .post-image-overlay{position:absolute;bottom:0;left:0;right:0;background:linear-gradient(transparent,rgba(0,0,0,0.85));padding:20px 18px 16px}
-        .post-image-title{font-family:'Sora',sans-serif;font-size:18px;font-weight:800;color:white;margin-bottom:6px}
-
-        /* Affiliate button */
-        .aff-btn{display:inline-flex;align-items:center;gap:6px;padding:10px 20px;background:linear-gradient(135deg,var(--p),var(--p2));color:white;border-radius:12px;text-decoration:none;font-size:13px;font-weight:800;margin-top:12px;transition:0.2s;border:none;cursor:pointer;font-family:'DM Sans',sans-serif}
-        .aff-btn:hover{opacity:0.9;transform:translateY(-1px);box-shadow:0 6px 20px rgba(91,94,244,0.4)}
-
-        /* Dots nav */
-        .post-dots{display:flex;gap:6px;justify-content:center;margin-top:10px}
-        .dot{width:7px;height:7px;border-radius:50%;background:var(--border);cursor:pointer;transition:0.3s}
-        .dot.active{background:var(--p);width:20px;border-radius:4px}
-
-        /* Auto-play progress bar */
-        .post-progress{height:2px;background:var(--border);border-radius:2px;margin-top:8px;overflow:hidden}
-        .post-progress-bar{height:100%;background:linear-gradient(90deg,var(--p),var(--p2));border-radius:2px;width:0%;transition:width linear}
-
-        /* ── MUSIC PLAYER ── */
-        .music-player{background:var(--surface);border-radius:20px;border:1px solid var(--border);overflow:hidden}
-        .player-header{padding:16px 18px;background:linear-gradient(135deg,rgba(91,94,244,0.15),rgba(139,92,246,0.1));border-bottom:1px solid var(--border);display:flex;align-items:center;gap:10px}
-        .player-header h3{font-family:'Sora',sans-serif;font-size:15px;font-weight:800}
-        .now-playing-wrap{padding:18px}
-        .now-playing-art{width:56px;height:56px;border-radius:14px;background:linear-gradient(135deg,var(--p),var(--p2));display:flex;align-items:center;justify-content:center;font-size:24px;flex-shrink:0;animation:spin-art 8s linear infinite;animation-play-state:paused}
-        .now-playing-art.playing{animation-play-state:running}
-        @keyframes spin-art{to{transform:rotate(360deg)}}
-        .now-playing-info{flex:1;min-width:0}
-        .np-title{font-size:15px;font-weight:800;color:var(--text);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
-        .np-artist{font-size:12px;color:var(--muted);font-weight:600;margin-top:2px}
-        .np-row{display:flex;align-items:center;gap:12px;margin-bottom:14px}
-
-        /* Progress */
-        .progress-wrap{margin-bottom:14px}
-        .prog-bar{height:4px;background:var(--border);border-radius:4px;cursor:pointer;position:relative}
-        .prog-fill{height:100%;background:linear-gradient(90deg,var(--p),var(--p2));border-radius:4px;pointer-events:none;transition:width 0.1s}
-        .prog-times{display:flex;justify-content:space-between;font-size:10px;color:var(--muted);font-weight:600;margin-top:4px}
-
-        /* Controls */
-        .controls{display:flex;align-items:center;justify-content:center;gap:14px;margin-bottom:14px}
-        .ctrl-btn{background:none;border:none;cursor:pointer;color:var(--muted);font-size:20px;transition:0.15s;padding:4px}
-        .ctrl-btn:hover{color:var(--text);transform:scale(1.1)}
-        .play-btn{width:46px;height:46px;border-radius:50%;background:linear-gradient(135deg,var(--p),var(--p2));border:none;cursor:pointer;display:flex;align-items:center;justify-content:center;font-size:18px;color:white;box-shadow:0 4px 16px rgba(91,94,244,0.35);transition:0.15s}
-        .play-btn:hover{transform:scale(1.08)}
-
-        /* Volume */
-        .volume-row{display:flex;align-items:center;gap:8px;padding:0 2px}
-        .vol-icon{font-size:14px;color:var(--muted)}
-        .vol-slider{flex:1;accent-color:var(--p);height:4px}
-
-        /* Song list */
-        .song-list{border-top:1px solid var(--border)}
-        .song-item{display:flex;align-items:center;gap:10px;padding:11px 18px;cursor:pointer;transition:0.15s;border-bottom:1px solid rgba(255,255,255,0.04)}
-        .song-item:last-child{border-bottom:none}
-        .song-item:hover{background:rgba(91,94,244,0.08)}
-        .song-item.active{background:rgba(91,94,244,0.12)}
-        .song-num{font-size:11px;color:var(--muted);width:18px;text-align:center;flex-shrink:0;font-weight:700}
-        .song-item.active .song-num{color:var(--p)}
-        .song-info{flex:1;min-width:0}
-        .song-name{font-size:13px;font-weight:700;color:var(--text);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
-        .song-item.active .song-name{color:var(--p)}
-        .song-artist{font-size:11px;color:var(--muted)}
-        .song-bars{display:none;gap:2px;align-items:flex-end;height:14px}
-        .song-item.active .song-bars{display:flex}
-        .sb{width:3px;background:var(--p);border-radius:1px}
-        .sb:nth-child(1){animation:sb1 0.6s ease infinite;height:6px}
-        .sb:nth-child(2){animation:sb1 0.6s ease infinite 0.15s;height:10px}
-        .sb:nth-child(3){animation:sb1 0.6s ease infinite 0.3s;height:7px}
-        @keyframes sb1{0%,100%{transform:scaleY(0.5)}50%{transform:scaleY(1.2)}}
-
-        /* Empty states */
-        .empty{text-align:center;padding:30px 20px;color:var(--muted)}
-        .empty .ei{font-size:36px;margin-bottom:8px}
-        .empty p{font-size:13px}
-
-        /* Loading */
-        .spin{border:3px solid var(--border);border-top:3px solid var(--p);border-radius:50%;width:24px;height:24px;animation:sp .8s linear infinite;margin:20px auto}
-        @keyframes sp{to{transform:rotate(360deg)}}
+        body{font-family:Arial,sans-serif;background:#f0f2f8;color:#333;min-height:100vh}
+        .topbar{background:#667eea;padding:14px 16px;display:flex;align-items:center;justify-content:space-between}
+        .topbar h1{color:white;font-size:17px}
+        .topbar a{color:white;text-decoration:none;font-size:12px;background:rgba(255,255,255,0.2);padding:5px 12px;border-radius:20px;margin-left:6px}
+        .page{max-width:700px;margin:0 auto;padding:16px}
+        .card{background:white;border-radius:12px;padding:18px;margin-bottom:16px;box-shadow:0 2px 8px rgba(0,0,0,0.08)}
+        .card h2{font-size:15px;color:#667eea;margin-bottom:14px;font-weight:700}
+        .tabs{display:flex;gap:6px;margin-bottom:12px}
+        .tab{flex:1;padding:8px;border:2px solid #ddd;border-radius:8px;background:white;cursor:pointer;font-size:12px;font-weight:700;text-align:center}
+        .tab.on{background:#667eea;color:white;border-color:#667eea}
+        .panel{display:none}.panel.on{display:block}
+        input,textarea,select{width:100%;padding:10px 12px;border:2px solid #ddd;border-radius:8px;font-size:13px;margin-bottom:10px;outline:none;font-family:Arial}
+        input:focus,textarea:focus{border-color:#667eea}
+        .type-row{display:flex;gap:6px;margin-bottom:10px}
+        .type-btn{flex:1;padding:8px;border:2px solid #ddd;border-radius:8px;background:white;cursor:pointer;font-size:12px;font-weight:700}
+        .type-btn.on{background:#667eea;color:white;border-color:#667eea}
+        .img-field{display:none}
+        .btn{width:100%;padding:11px;border:none;border-radius:8px;font-size:13px;font-weight:700;cursor:pointer;margin-bottom:8px}
+        .btn-blue{background:#667eea;color:white}
+        .btn-green{background:#11998e;color:white}
+        .msg{padding:8px 12px;border-radius:8px;font-size:12px;font-weight:700;margin-bottom:8px;display:none}
+        .msg.ok{background:#d4edda;color:#155724;display:block}
+        .msg.err{background:#f8d7da;color:#721c24;display:block}
+        .item{display:flex;align-items:center;gap:8px;padding:10px;background:#f8f9fc;border-radius:8px;margin-bottom:6px}
+        .item-info{flex:1;min-width:0}
+        .item-info strong{font-size:13px;display:block;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+        .item-info small{font-size:11px;color:#888}
+        .del-btn{background:none;border:1px solid #f5a;border-radius:6px;color:#e44;padding:4px 10px;cursor:pointer;font-size:11px;font-weight:700;flex-shrink:0}
+        .thumb{width:40px;height:40px;border-radius:6px;object-fit:cover;flex-shrink:0}
+        table{width:100%;border-collapse:collapse}
+        th,td{padding:9px 10px;text-align:left;border-bottom:1px solid #f0f0f0;font-size:12px}
+        th{background:#f8f9ff;color:#667eea;font-weight:700}
+        .badge{padding:2px 8px;border-radius:10px;font-size:10px;font-weight:700}
+        .bp{background:#e8eaff;color:#667eea}
+        .bf{background:#f0f0f0;color:#888}
+        .ba{background:#fff3cd;color:#856404}
+        .row2{display:grid;grid-template-columns:1fr 1fr;gap:8px}
+        .prog{width:100%;height:5px;background:#eee;border-radius:4px;margin:6px 0;display:none;overflow:hidden}
+        .prog-bar{height:100%;background:#667eea;border-radius:4px;transition:width 0.4s}
+        .empty{text-align:center;padding:16px;color:#aaa;font-size:12px}
     </style>
 </head>
 <body>
 
-<!-- PARTICLES -->
-<div class="particles" id="particles"></div>
-
-<!-- TOP NAV -->
-<div class="topnav">
-    <div class="logo">📺 Screen</div>
-    <div class="nav-links">
+<div class="topbar">
+    <h1>🛡️ Admin Panel</h1>
+    <div>
+        <a href="/screen">📺 Screen</a>
         <a href="/">🏠 Home</a>
-        <a href="/dashboard">📊</a>
-        <a href="/admin" class="admin-badge" id="adminLink" style="display:none">🛡️ Admin</a>
-        <a href="/logout">🚪</a>
+        <a href="/logout">Logout</a>
     </div>
 </div>
 
-<!-- LIVE STATS TICKER -->
-<div class="ticker-wrap">
-    <div class="ticker-inner" id="tickerInner">
-        <span class="ticker-item">⚡ Loading stats...</span>
-        <span class="ticker-item">⚡ Loading stats...</span>
-    </div>
-</div>
-
-<!-- MAIN -->
 <div class="page">
 
-    <!-- POSTS -->
-    <div>
-        <div class="section-label">📢 Posts & Offers</div>
-        <div class="posts-carousel" id="postsCarousel">
-            <div class="spin"></div>
+    <!-- SCREEN POSTS -->
+    <div class="card">
+        <h2>📢 Screen Posts</h2>
+        <div class="msg" id="postMsg"></div>
+        <div class="type-row">
+            <button class="type-btn on" onclick="setType('text',this)">📝 Text</button>
+            <button class="type-btn" onclick="setType('image',this)">🖼️ Image</button>
         </div>
-        <div class="post-progress"><div class="post-progress-bar" id="postProgressBar"></div></div>
-        <div class="post-dots" id="postDots"></div>
+        <input type="hidden" id="postType" value="text">
+        <input type="text" id="postTitle" placeholder="Title / Heading">
+        <textarea id="postContent" rows="3" placeholder="Content text..."></textarea>
+        <div class="img-field" id="imgField">
+            <input type="file" id="postImg" accept="image/*">
+            <small style="color:#888;font-size:11px;display:block;margin-bottom:8px">✅ GIF bhi chalega!</small>
+        </div>
+        <input type="url" id="postAff" placeholder="🔗 Affiliate URL (optional)">
+        <div class="prog" id="postProg"><div class="prog-bar" id="postProgBar" style="width:0%"></div></div>
+        <button class="btn btn-blue" onclick="addPost()">➕ Add Post to TV Screen</button>
+        <div id="postList"></div>
     </div>
 
-    <!-- MUSIC PLAYER -->
-    <div>
-        <div class="section-label">🎵 Music Player</div>
-        <div class="music-player">
-            <div class="player-header">
-                <span>🎵</span>
-                <h3>Now Playing</h3>
-                <span style="margin-left:auto;font-size:11px;color:var(--muted);font-weight:700" id="trackCount">Loading...</span>
-            </div>
-            <div class="now-playing-wrap">
-                <div class="np-row">
-                    <div class="now-playing-art" id="npArt">🎵</div>
-                    <div class="now-playing-info">
-                        <div class="np-title" id="npTitle">Select a song</div>
-                        <div class="np-artist" id="npArtist">—</div>
-                    </div>
-                </div>
-                <div class="progress-wrap">
-                    <div class="prog-bar" id="progBar" onclick="seekAudio(event)">
-                        <div class="prog-fill" id="progFill" style="width:0%"></div>
-                    </div>
-                    <div class="prog-times">
-                        <span id="curTime">0:00</span>
-                        <span id="durTime">0:00</span>
-                    </div>
-                </div>
-                <div class="controls">
-                    <button class="ctrl-btn" onclick="prevTrack()" title="Previous">⏮</button>
-                    <button class="play-btn" id="playBtn" onclick="togglePlay()">▶</button>
-                    <button class="ctrl-btn" onclick="nextTrack()" title="Next">⏭</button>
-                </div>
-                <div class="volume-row">
-                    <span class="vol-icon">🔈</span>
-                    <input type="range" class="vol-slider" id="volSlider" min="0" max="1" step="0.05" value="0.8" oninput="setVolume(this.value)">
-                    <span class="vol-icon">🔊</span>
-                </div>
-            </div>
-            <div class="song-list" id="songList">
-                <div class="spin"></div>
-            </div>
+    <!-- MUSIC -->
+    <div class="card">
+        <h2>🎵 Music Tracks</h2>
+        <div class="msg" id="musicMsg"></div>
+        <div class="row2">
+            <input type="text" id="songTitle" placeholder="Song title">
+            <input type="text" id="songArtist" placeholder="Artist name">
         </div>
+        <input type="file" id="songFile" accept="audio/*,.mp3,.wav">
+        <small style="color:#888;font-size:11px;display:block;margin-bottom:10px">MP3 / WAV — Max 10MB</small>
+        <div class="prog" id="musicProg"><div class="prog-bar" id="musicProgBar" style="width:0%"></div></div>
+        <button class="btn btn-blue" onclick="uploadSong()">🎵 Upload Song</button>
+        <div id="songList"></div>
+    </div>
+
+    <!-- AFFILIATE -->
+    <div class="card">
+        <h2>🔗 Affiliate Links</h2>
+        <div class="msg" id="affMsg"></div>
+        <div class="row2">
+            <input type="text" id="affTitle" placeholder="Title">
+            <input type="url" id="affUrl" placeholder="URL">
+        </div>
+        <textarea id="affDesc" rows="2" placeholder="Description (optional)"></textarea>
+        <button class="btn btn-blue" onclick="addAff()">➕ Add Affiliate Link</button>
+        <div id="affList"></div>
+    </div>
+
+    <!-- USERS -->
+    <div class="card">
+        <h2>👥 Users</h2>
+        <div class="msg" id="userMsg"></div>
+        <table>
+            <thead><tr><th>ID</th><th>Username</th><th>Role</th><th>Plan</th><th>Action</th></tr></thead>
+            <tbody id="userBody"></tbody>
+        </table>
     </div>
 
 </div>
 
-<!-- Hidden audio -->
-<audio id="audioEl" preload="metadata"></audio>
-
 <script>
-// ══ PARTICLES ══════════════════════════════════════════
-(function(){
-    const colors=['#5b5ef4','#8b5cf6','#06d6a0','#f59e0b'];
-    for(let i=0;i<18;i++){
-        const d=document.createElement('div');
-        d.className='particle';
-        const sz=Math.random()*12+4;
-        d.style.cssText=`width:${sz}px;height:${sz}px;background:${colors[i%colors.length]};left:${Math.random()*100}%;animation-duration:${8+Math.random()*14}s;animation-delay:${Math.random()*10}s`;
-        document.getElementById('particles').appendChild(d);
-    }
-})();
-
-// ══ STATE ══════════════════════════════════════════════
-let posts=[], currentPost=0, postTimer=null, postInterval=5000;
-let tracks=[], currentTrack=0, isPlaying=false;
-const audio=document.getElementById('audioEl');
-
-// ══ INIT ═══════════════════════════════════════════════
-window.addEventListener('DOMContentLoaded',()=>{
-    fetch('/get_username').then(r=>r.json()).then(d=>{
-        if(d.is_admin) document.getElementById('adminLink').style.display='inline-block';
-    }).catch(()=>{});
-    loadStats();
-    loadPosts();
-    loadMusic();
-    setInterval(loadStats, 30000);
-});
-
-// ══ TICKER / STATS ══════════════════════════════════════
-async function loadStats(){
-    try{
-        const r=await fetch('/api/stats');
-        const d=await r.json();
-        const items=[
-            `👥 Total Users: ${d.total_users}`,
-            `⭐ Pro Users: ${d.pro_users}`,
-            `💬 Today Queries: ${d.today_queries}`,
-            `📊 Total Queries: ${d.total_queries}`,
-            `🕐 Updated: ${new Date().toLocaleTimeString()}`,
-            `🤖 DS Agent Live`,
-            `👥 Total Users: ${d.total_users}`,
-            `⭐ Pro Users: ${d.pro_users}`,
-            `💬 Today Queries: ${d.today_queries}`,
-            `📊 Total Queries: ${d.total_queries}`,
-            `🕐 Updated: ${new Date().toLocaleTimeString()}`,
-            `🤖 DS Agent Live`
-        ];
-        document.getElementById('tickerInner').innerHTML=
-            items.map(t=>`<span class="ticker-item">${t}<span class="ticker-sep">•</span></span>`).join('');
-    }catch(e){console.error('Stats error',e);}
+// ── helpers ──
+function showMsg(id,txt,type){
+    const el=document.getElementById(id);
+    el.textContent=txt;el.className='msg '+type;
+    setTimeout(()=>el.className='msg',3500);
+}
+function setType(type,btn){
+    document.getElementById('postType').value=type;
+    document.querySelectorAll('.type-btn').forEach(b=>b.className='type-btn');
+    btn.className='type-btn on';
+    document.getElementById('imgField').style.display=type==='image'?'block':'none';
+    document.getElementById('postContent').placeholder=type==='image'?'Caption (optional)...':'Content text...';
 }
 
-// ══ POSTS ═══════════════════════════════════════════════
+// ── POSTS ──
 async function loadPosts(){
     try{
         const r=await fetch('/api/screen/posts');
-        posts=await r.json();
-        if(!posts.length){
-            document.getElementById('postsCarousel').innerHTML=`
-                <div class="empty"><div class="ei">📢</div><p>Koi post nahi — Admin se add karwao!</p></div>`;
-            return;
-        }
-        renderPosts();
-        startAutoPlay();
-    }catch(e){
-        document.getElementById('postsCarousel').innerHTML=`<div class="empty"><div class="ei">⚠️</div><p>Posts load nahi huye</p></div>`;
+        const posts=await r.json();
+        const c=document.getElementById('postList');
+        if(!posts.length){c.innerHTML='<div class="empty">Koi post nahi — upar se add karo!</div>';return;}
+        c.innerHTML=posts.map(p=>`
+            <div class="item">
+                ${p.post_type==='image'&&p.image_data?`<img class="thumb" src="data:${p.image_mime};base64,${p.image_data}">`:`<span style="font-size:24px">${p.post_type==='image'?'🖼️':'📝'}</span>`}
+                <div class="item-info">
+                    <strong>${p.title}</strong>
+                    <small>${p.post_type==='image'?'Image post':'Text post'}${p.affiliate_url?' • 🔗 Link':''}</small>
+                </div>
+                <button class="del-btn" onclick="delPost(${p.id})">🗑 Del</button>
+            </div>`).join('');
+    }catch(e){document.getElementById('postList').innerHTML='<div class="empty">Load failed — app.py check karo!</div>';}
+}
+
+async function addPost(){
+    const title=document.getElementById('postTitle').value.trim();
+    const type=document.getElementById('postType').value;
+    if(!title){showMsg('postMsg','⚠️ Title required!','err');return;}
+    const fd=new FormData();
+    fd.append('title',title);
+    fd.append('post_type',type);
+    fd.append('content',document.getElementById('postContent').value);
+    fd.append('affiliate_url',document.getElementById('postAff').value);
+    if(type==='image'){
+        const img=document.getElementById('postImg').files[0];
+        if(!img){showMsg('postMsg','⚠️ Image select karo!','err');return;}
+        fd.append('image',img);
     }
+    const pw=document.getElementById('postProg');
+    const pb=document.getElementById('postProgBar');
+    pw.style.display='block';pb.style.width='40%';
+    try{
+        const r=await fetch('/api/screen/posts',{method:'POST',body:fd});
+        pb.style.width='100%';
+        const d=await r.json();
+        setTimeout(()=>{pw.style.display='none';pb.style.width='0%';},500);
+        if(d.message){
+            showMsg('postMsg',d.message,'ok');
+            document.getElementById('postTitle').value='';
+            document.getElementById('postContent').value='';
+            document.getElementById('postAff').value='';
+            document.getElementById('postImg').value='';
+            loadPosts();
+        }else showMsg('postMsg',d.error||'Error!','err');
+    }catch(e){pw.style.display='none';showMsg('postMsg','Failed! app.py check karo','err');}
 }
 
-function renderPosts(){
-    const car=document.getElementById('postsCarousel');
-    const dots=document.getElementById('postDots');
-    car.innerHTML=posts.map((p,i)=>`
-        <div class="post-slide${i===0?' active':''}" id="slide_${i}">
-            ${p.post_type==='image' && p.image_data
-                ?`<div class="post-image-wrap">
-                    <img src="data:${p.image_mime};base64,${p.image_data}" alt="${p.title}" loading="lazy">
-                    <div class="post-image-overlay">
-                        <div class="post-image-title">${p.title}</div>
-                        ${p.affiliate_url?`<a href="${p.affiliate_url}" target="_blank" rel="noopener" class="aff-btn">🔗 Check it out →</a>`:''}
-                    </div>
-                </div>`
-                :`<div class="post-text">
-                    <div>
-                        <div class="post-title">${p.title}</div>
-                        <div class="post-content">${(p.content||'').replace(/\n/g,'<br>')}</div>
-                    </div>
-                    ${p.affiliate_url?`<a href="${p.affiliate_url}" target="_blank" rel="noopener" class="aff-btn">🔗 Check it out →</a>`:''}
-                </div>`
-            }
-        </div>`).join('');
-    dots.innerHTML=posts.map((_,i)=>`<div class="dot${i===0?' active':''}" onclick="goPost(${i})"></div>`).join('');
+async function delPost(id){
+    if(!confirm('Delete?'))return;
+    const r=await fetch('/api/screen/posts/'+id,{method:'DELETE'});
+    const d=await r.json();
+    showMsg('postMsg',d.message||d.error,d.message?'ok':'err');
+    loadPosts();
 }
 
-function goPost(idx){
-    document.querySelectorAll('.post-slide').forEach(s=>s.classList.remove('active'));
-    document.querySelectorAll('.dot').forEach(d=>d.classList.remove('active'));
-    const slide=document.getElementById('slide_'+idx);
-    if(slide) slide.classList.add('active');
-    const dotEls=document.querySelectorAll('.dot');
-    if(dotEls[idx]) dotEls[idx].classList.add('active');
-    currentPost=idx;
-    resetProgress();
-}
-
-function startAutoPlay(){
-    if(posts.length<=1) return;
-    resetProgress();
-}
-
-function resetProgress(){
-    const bar=document.getElementById('postProgressBar');
-    bar.style.transition='none';
-    bar.style.width='0%';
-    clearTimeout(postTimer);
-    setTimeout(()=>{
-        bar.style.transition=`width ${postInterval}ms linear`;
-        bar.style.width='100%';
-        postTimer=setTimeout(()=>{
-            const next=(currentPost+1)%posts.length;
-            goPost(next);
-        }, postInterval);
-    },50);
-}
-
-// ══ MUSIC ════════════════════════════════════════════════
-async function loadMusic(){
+// ── MUSIC ──
+async function loadSongs(){
     try{
         const r=await fetch('/api/music');
-        tracks=await r.json();
-        document.getElementById('trackCount').textContent=tracks.length+' tracks';
-        if(!tracks.length){
-            document.getElementById('songList').innerHTML=`
-                <div class="empty"><div class="ei">🎵</div><p>Koi gaana nahi — Admin se upload karwao!</p></div>`;
-            return;
-        }
-        renderSongList();
-        loadTrack(0, false);
-    }catch(e){
-        document.getElementById('songList').innerHTML=`<div class="empty"><p>Music load nahi hua</p></div>`;
-    }
+        const tracks=await r.json();
+        const c=document.getElementById('songList');
+        if(!tracks.length){c.innerHTML='<div class="empty">Koi song nahi — upar se upload karo!</div>';return;}
+        c.innerHTML=tracks.map(t=>`
+            <div class="item">
+                <span style="font-size:24px">🎵</span>
+                <div class="item-info">
+                    <strong>${t.title}</strong>
+                    <small>${t.artist||'Unknown artist'}</small>
+                </div>
+                <button class="del-btn" onclick="delSong(${t.id})">🗑 Del</button>
+            </div>`).join('');
+    }catch(e){document.getElementById('songList').innerHTML='<div class="empty">Load failed!</div>';}
 }
 
-function renderSongList(){
-    document.getElementById('songList').innerHTML=tracks.map((t,i)=>`
-        <div class="song-item${i===0?' active':''}" id="song_${i}" onclick="loadTrack(${i},true)">
-            <span class="song-num">${i+1}</span>
-            <div class="song-info">
-                <div class="song-name">${t.title}</div>
-                <div class="song-artist">${t.artist||'Unknown'}</div>
-            </div>
-            <div class="song-bars"><div class="sb"></div><div class="sb"></div><div class="sb"></div></div>
-        </div>`).join('');
+async function uploadSong(){
+    const file=document.getElementById('songFile').files[0];
+    if(!file){showMsg('musicMsg','⚠️ File select karo!','err');return;}
+    if(file.size>10*1024*1024){showMsg('musicMsg','⚠️ Max 10MB!','err');return;}
+    const fd=new FormData();
+    fd.append('audio',file);
+    fd.append('title',document.getElementById('songTitle').value.trim()||file.name.replace(/\.[^/.]+$/,''));
+    fd.append('artist',document.getElementById('songArtist').value.trim());
+    const pw=document.getElementById('musicProg');
+    const pb=document.getElementById('musicProgBar');
+    pw.style.display='block';pb.style.width='20%';
+    const t=setTimeout(()=>pb.style.width='70%',800);
+    try{
+        const r=await fetch('/api/music',{method:'POST',body:fd});
+        clearTimeout(t);pb.style.width='100%';
+        const d=await r.json();
+        setTimeout(()=>{pw.style.display='none';pb.style.width='0%';},500);
+        if(d.message){
+            showMsg('musicMsg',d.message,'ok');
+            document.getElementById('songTitle').value='';
+            document.getElementById('songArtist').value='';
+            document.getElementById('songFile').value='';
+            loadSongs();
+        }else showMsg('musicMsg',d.error||'Error!','err');
+    }catch(e){clearTimeout(t);pw.style.display='none';showMsg('musicMsg','Upload failed!','err');}
 }
 
-function loadTrack(idx, autoPlay=false){
-    if(!tracks[idx]) return;
-    currentTrack=idx;
-    const t=tracks[idx];
-    document.getElementById('npTitle').textContent=t.title;
-    document.getElementById('npArtist').textContent=t.artist||'Unknown';
-    // Set audio src from base64
-    audio.src=`data:${t.mime_type};base64,${t.audio_data}`;
-    audio.load();
-    // Update list highlight
-    document.querySelectorAll('.song-item').forEach((el,i)=>el.classList.toggle('active',i===idx));
-    // Scroll to active
-    const el=document.getElementById('song_'+idx);
-    if(el) el.scrollIntoView({block:'nearest',behavior:'smooth'});
-    if(autoPlay){ audio.play(); setPlaying(true); }
-    else{ setPlaying(false); }
+async function delSong(id){
+    if(!confirm('Delete?'))return;
+    const r=await fetch('/api/music/'+id,{method:'DELETE'});
+    const d=await r.json();
+    showMsg('musicMsg',d.message||d.error,d.message?'ok':'err');
+    loadSongs();
 }
 
-function setPlaying(val){
-    isPlaying=val;
-    document.getElementById('playBtn').textContent=val?'⏸':'▶';
-    document.getElementById('npArt').classList.toggle('playing',val);
+// ── AFFILIATE ──
+async function loadAffs(){
+    try{
+        const r=await fetch('/affiliate_links');
+        const links=await r.json();
+        const c=document.getElementById('affList');
+        if(!links.length){c.innerHTML='<div class="empty">Koi link nahi</div>';return;}
+        c.innerHTML=links.map(l=>`
+            <div class="item">
+                <span style="font-size:22px">🔗</span>
+                <div class="item-info"><strong>${l.title}</strong><small>${l.url}</small></div>
+                <button class="del-btn" onclick="delAff(${l.id})">🗑 Del</button>
+            </div>`).join('');
+    }catch(e){}
 }
 
-function togglePlay(){
-    if(!tracks.length) return;
-    if(isPlaying){ audio.pause(); setPlaying(false); }
-    else{ audio.play().then(()=>setPlaying(true)).catch(()=>{}); }
+async function addAff(){
+    const title=document.getElementById('affTitle').value.trim();
+    const url=document.getElementById('affUrl').value.trim();
+    if(!title||!url){showMsg('affMsg','⚠️ Title aur URL required!','err');return;}
+    const r=await fetch('/admin/affiliate',{method:'POST',headers:{'Content-Type':'application/json'},
+        body:JSON.stringify({title,url,description:document.getElementById('affDesc').value})});
+    const d=await r.json();
+    if(d.message){
+        showMsg('affMsg',d.message,'ok');
+        document.getElementById('affTitle').value='';
+        document.getElementById('affUrl').value='';
+        document.getElementById('affDesc').value='';
+        loadAffs();
+    }else showMsg('affMsg',d.error||'Error!','err');
 }
 
-function prevTrack(){ loadTrack((currentTrack-1+tracks.length)%tracks.length, isPlaying); }
-function nextTrack(){ loadTrack((currentTrack+1)%tracks.length, isPlaying); }
-function setVolume(v){ audio.volume=parseFloat(v); }
-
-function seekAudio(e){
-    if(!audio.duration) return;
-    const rect=e.currentTarget.getBoundingClientRect();
-    const pct=(e.clientX-rect.left)/rect.width;
-    audio.currentTime=pct*audio.duration;
+async function delAff(id){
+    if(!confirm('Delete?'))return;
+    const r=await fetch('/admin/affiliate/'+id,{method:'DELETE'});
+    const d=await r.json();
+    showMsg('affMsg',d.message||d.error,d.message?'ok':'err');
+    loadAffs();
 }
 
-function fmt(s){
-    if(isNaN(s)) return '0:00';
-    const m=Math.floor(s/60), sec=Math.floor(s%60);
-    return m+':'+(sec<10?'0':'')+sec;
+// ── USERS ──
+async function loadUsers(){
+    try{
+        const r=await fetch('/admin/users');
+        const users=await r.json();
+        document.getElementById('userBody').innerHTML=users.map(u=>`
+            <tr>
+                <td>${u.id}</td>
+                <td><strong>${u.username}</strong>${u.is_admin?'<span class="badge ba" style="margin-left:4px">👑</span>':''}</td>
+                <td>${u.is_admin?'Admin':'User'}</td>
+                <td><span class="badge ${u.plan==='pro'?'bp':'bf'}">${u.plan==='pro'?'⭐ Pro':'Free'}</span></td>
+                <td>
+                    <select id="p_${u.id}" style="padding:3px 6px;border:1px solid #ddd;border-radius:6px;font-size:11px">
+                        <option value="free" ${u.plan==='free'?'selected':''}>Free</option>
+                        <option value="pro" ${u.plan==='pro'?'selected':''}>Pro</option>
+                    </select>
+                    <button onclick="setPlan(${u.id})" style="margin-left:4px;padding:3px 8px;background:#11998e;color:white;border:none;border-radius:6px;cursor:pointer;font-size:11px">Set</button>
+                </td>
+            </tr>`).join('');
+    }catch(e){}
 }
 
-audio.addEventListener('timeupdate',()=>{
-    if(!audio.duration) return;
-    const pct=(audio.currentTime/audio.duration)*100;
-    document.getElementById('progFill').style.width=pct+'%';
-    document.getElementById('curTime').textContent=fmt(audio.currentTime);
-});
-audio.addEventListener('loadedmetadata',()=>{
-    document.getElementById('durTime').textContent=fmt(audio.duration);
-});
-audio.addEventListener('ended',()=>{ nextTrack(); });
-audio.volume=0.8;
+async function setPlan(uid){
+    const plan=document.getElementById('p_'+uid).value;
+    const r=await fetch('/admin/set_plan',{method:'POST',headers:{'Content-Type':'application/json'},
+        body:JSON.stringify({user_id:uid,plan,expires_days:plan==='pro'?30:null})});
+    const d=await r.json();
+    showMsg('userMsg',d.message||d.error,d.message?'ok':'err');
+    loadUsers();
+}
+
+// Init
+loadPosts();loadSongs();loadAffs();loadUsers();
 </script>
 </body>
 </html>
