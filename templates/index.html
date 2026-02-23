@@ -334,6 +334,7 @@
         .loader { border:3px solid #eee; border-top:3px solid var(--p); border-radius:50%; width:16px; height:16px; animation:spin .8s linear infinite; display:inline-block; vertical-align:middle; }
         @keyframes spin{to{transform:rotate(360deg)}}
         @keyframes tvsl{0%{opacity:0;transform:translateX(18px)}100%{opacity:1;transform:translateX(0)}}
+        @keyframes blink{0%,100%{opacity:1}50%{opacity:0}}
 
         /* ══ FLOATING LED TV ══ */
         .led-tv{position:fixed;top:80px;right:12px;width:145px;z-index:500;cursor:grab;user-select:none;-webkit-user-select:none;box-shadow:0 6px 24px rgba(91,94,244,0.35)}
@@ -618,6 +619,17 @@
             </div>
         </div>
 
+        <!-- ── CHANNEL TABS ── -->
+        <div style="background:#0a0a18;padding:3px 5px;display:flex;align-items:center;gap:2px;border-top:1px solid #1a1a3a">
+            <button id="chPosts" onclick="tvSetChannel('posts')" style="flex:1;background:#5b5ef4;border:none;border-radius:4px;color:white;cursor:pointer;font-size:6.5px;font-weight:800;padding:3px 1px;line-height:1.2;font-family:'DM Sans',sans-serif;transition:0.15s">📢<br>Posts</button>
+            <button id="chVideo" onclick="tvSetChannel('video')" style="flex:1;background:#1e1e38;border:none;border-radius:4px;color:#8890a4;cursor:pointer;font-size:6.5px;font-weight:800;padding:3px 1px;line-height:1.2;font-family:'DM Sans',sans-serif;transition:0.15s">🎬<br>Video</button>
+            <button id="chMusic" onclick="tvSetChannel('music')" style="flex:1;background:#1e1e38;border:none;border-radius:4px;color:#8890a4;cursor:pointer;font-size:6.5px;font-weight:800;padding:3px 1px;line-height:1.2;font-family:'DM Sans',sans-serif;transition:0.15s">🎵<br>Music</button>
+            <button id="chLive" onclick="tvSetChannel('live')" style="flex:1;background:#1e1e38;border:none;border-radius:4px;color:#8890a4;cursor:pointer;font-size:6.5px;font-weight:800;padding:3px 1px;line-height:1.2;font-family:'DM Sans',sans-serif;transition:0.15s;position:relative">
+                📡<br>Live
+                <span id="chLiveDot" style="position:absolute;top:2px;right:2px;width:4px;height:4px;border-radius:50%;background:#ef4444;display:none;animation:blink 1s infinite"></span>
+            </button>
+        </div>
+
         <!-- ══ BUILT-IN REMOTE CONTROLS ══ -->
         <div style="background:#060612;padding:4px 5px 5px;border-top:1px solid #1a1a3a">
 
@@ -685,10 +697,11 @@
     </div>
     <div style="padding:12px">
         <div id="tapMsg" style="font-size:10px;font-weight:700;padding:5px 8px;border-radius:6px;margin-bottom:6px;display:none"></div>
-        <div style="display:flex;gap:5px;margin-bottom:10px">
+        <div style="display:flex;gap:5px;margin-bottom:10px;flex-wrap:wrap">
             <button id="tTab1" onclick="tSwitch(1)" style="flex:1;padding:6px;border-radius:8px;border:1.5px solid #5b5ef4;cursor:pointer;font-size:10px;font-weight:800;background:linear-gradient(135deg,#5b5ef4,#8b5cf6);color:white;font-family:'DM Sans',sans-serif">📢 Posts</button>
             <button id="tTab2" onclick="tSwitch(2)" style="flex:1;padding:6px;border-radius:8px;border:1.5px solid #e8eaf0;cursor:pointer;font-size:10px;font-weight:800;background:white;color:#1a1a2e;font-family:'DM Sans',sans-serif">🎵 Music</button>
             <button id="tTab3" onclick="tSwitch(3)" style="flex:1;padding:6px;border-radius:8px;border:1.5px solid #e8eaf0;cursor:pointer;font-size:10px;font-weight:800;background:white;color:#1a1a2e;font-family:'DM Sans',sans-serif">🎬 Video</button>
+            <button id="tTab4" onclick="tSwitch(4)" style="flex:1;padding:6px;border-radius:8px;border:1.5px solid #e8eaf0;cursor:pointer;font-size:10px;font-weight:800;background:white;color:#1a1a2e;font-family:'DM Sans',sans-serif">📡 Live</button>
         </div>
         <!-- Posts -->
         <div id="tPanel1">
@@ -724,6 +737,21 @@
             <small style="font-size:9px;color:#888;display:block;margin-bottom:8px">MP4/WebM — Max 10MB</small>
             <button class="tap-btn-main" onclick="tUploadVideo()">🎬 Upload Video</button>
             <div id="tVideoList"></div>
+        </div>
+        <!-- Live URLs -->
+        <div id="tPanel4" style="display:none">
+            <div style="background:#f0fff4;border:1.5px solid #a7f3d0;border-radius:8px;padding:8px 10px;margin-bottom:10px">
+                <p style="font-size:10px;font-weight:700;color:#065f46;margin-bottom:3px">📡 Live / Custom URL kaise daale?</p>
+                <p style="font-size:9px;color:#555;line-height:1.6">
+                    ✅ Direct MP4 link: <b>https://example.com/video.mp4</b><br>
+                    ✅ Archive.org videos<br>
+                    ✅ Any direct .mp4 / .webm / .m3u8 URL
+                </p>
+            </div>
+            <input class="tap-inp" type="text" id="tLiveTitle" placeholder="Channel naam (e.g. DD National)">
+            <input class="tap-inp" type="url" id="tLiveUrl" placeholder="https://... (direct MP4/stream URL)">
+            <button class="tap-btn-main" onclick="tSaveLive()">📡 Save Channel</button>
+            <div id="tLiveList"></div>
         </div>
     </div>
 </div>
@@ -1191,7 +1219,7 @@ function tvCollapse(e){
 }
 
 // ── CHANNEL ────────────────────────────────────────────────
-const CH_IDS={posts:'chPosts',video:'chVideo',music:'chMusic'};
+const CH_IDS={posts:'chPosts',video:'chVideo',music:'chMusic',live:'chLive'};
 function tvSetChannel(ch){
     tvChannel=ch;
     Object.entries(CH_IDS).forEach(([c,id])=>{
@@ -1205,15 +1233,18 @@ function tvSetChannel(ch){
     } else if(ch==='video'){
         document.getElementById('tvStatus').textContent='🎬 Video';
         tvRenderVideo();
+    } else if(ch==='live'){
+        document.getElementById('tvStatus').textContent='📡 Live';
+        tvRenderLive();
     } else {
         document.getElementById('tvStatus').textContent='🎵 Music';
         tvRenderMusicViz();
     }
 }
 
-const CHANNELS=['posts','video','music'];
-function tvChPrev(){const i=CHANNELS.indexOf(tvChannel);tvSetChannel(CHANNELS[(i-1+3)%3]);}
-function tvChNext(){const i=CHANNELS.indexOf(tvChannel);tvSetChannel(CHANNELS[(i+1)%3]);}
+const CHANNELS=['posts','video','music','live'];
+function tvChPrev(){const i=CHANNELS.indexOf(tvChannel);tvSetChannel(CHANNELS[(i-1+4)%4]);}
+function tvChNext(){const i=CHANNELS.indexOf(tvChannel);tvSetChannel(CHANNELS[(i+1)%4]);}
 
 // ── POSTS CHANNEL ──────────────────────────────────────────
 async function tvLoadPosts(){
@@ -1308,6 +1339,9 @@ function tvTogglePlay(){
     if(tvChannel==='video'){
         const vel=document.getElementById('tvVid'); if(!vel)return;
         if(tvPlaying){vel.pause();tvSetPlay(false);}else vel.play().then(()=>tvSetPlay(true)).catch(()=>{});
+    } else if(tvChannel==='live'){
+        const vel=document.getElementById('tvLiveEl'); if(!vel)return;
+        if(tvPlaying){vel.pause();tvSetPlay(false);}else vel.play().then(()=>tvSetPlay(true)).catch(()=>{});
     } else {
         if(!tvTracks.length)return;
         if(tvPlaying){tvAudio.pause();tvSetPlay(false);}else tvAudio.play().then(()=>tvSetPlay(true)).catch(()=>{});
@@ -1315,11 +1349,13 @@ function tvTogglePlay(){
 }
 function tvPrev(){
     if(tvChannel==='video')tvGoVid((tvCurVideo-1+Math.max(1,tvVideos.length))%Math.max(1,tvVideos.length));
+    else if(tvChannel==='live')tvGoLive((tvCurLive-1+Math.max(1,tvLiveLinks.length))%Math.max(1,tvLiveLinks.length));
     else if(tvChannel==='posts')tvGo((tvCur-1+Math.max(1,tvPosts.length))%Math.max(1,tvPosts.length));
     else if(tvTracks.length)tvLoadTrack((tvCurTrack-1+tvTracks.length)%tvTracks.length,tvPlaying);
 }
 function tvNext(){
     if(tvChannel==='video')tvGoVid((tvCurVideo+1)%Math.max(1,tvVideos.length));
+    else if(tvChannel==='live')tvGoLive((tvCurLive+1)%Math.max(1,tvLiveLinks.length));
     else if(tvChannel==='posts')tvGo((tvCur+1)%Math.max(1,tvPosts.length));
     else if(tvTracks.length)tvLoadTrack((tvCurTrack+1)%tvTracks.length,tvPlaying);
 }
@@ -1373,13 +1409,14 @@ function tvAdminPanel(e){
 document.addEventListener('click',e=>{if(tapOpen2&&!e.target.closest('#tapWrap')&&!e.target.closest('#tvEditBtn'))tvAdminPanel();});
 
 function tSwitch(n){
-    [1,2,3].forEach(i=>{
+    [1,2,3,4].forEach(i=>{
         document.getElementById('tPanel'+i).style.display=i===n?'block':'none';
         const b=document.getElementById('tTab'+i);
         b.style.background=i===n?'linear-gradient(135deg,#5b5ef4,#8b5cf6)':'white';
         b.style.color=i===n?'white':'#1a1a2e';
         b.style.borderColor=i===n?'#5b5ef4':'#e8eaf0';
     });
+    if(n===4) tLoadLiveList();
 }
 function tType(type){
     tPostType=type;
@@ -1459,6 +1496,95 @@ async function tUploadVideo(){
     else tMsg(d.error||'Error!',false);}catch(e){tMsg('Failed!',false);}
 }
 async function tDelVideo(id){if(!confirm('Remove?'))return;const r=await fetch('/api/video/'+id,{method:'DELETE'});const d=await r.json();tMsg(d.message||d.error,!!d.message);tLoadVideos();tvLoadVideos();}
+
+// ── LIVE CHANNEL ───────────────────────────────────────────
+let tvLiveLinks=[],tvCurLive=0;
+
+function tGetLiveLinks(){try{return JSON.parse(localStorage.getItem('liveLinks')||'[]');}catch(e){return[];}}
+function tSaveLiveLinks(d){try{localStorage.setItem('liveLinks',JSON.stringify(d));}catch(e){}}
+
+function tvRenderLive(){
+    tvLiveLinks=tGetLiveLinks();
+    // Show red dot if channels exist
+    const dot=document.getElementById('chLiveDot');
+    if(dot) dot.style.display=tvLiveLinks.length?'block':'none';
+    document.getElementById('tvDots').innerHTML='';
+    if(!tvLiveLinks.length){
+        tvScreen.innerHTML=`<div style="width:100%;height:100%;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:4px;background:#0a0a14">
+            <span style="font-size:24px">📡</span>
+            <p style="font-size:7px;color:#4a4a7a;font-weight:700;text-align:center">Admin se Live URL add karo<br><span style="color:#3a3a5a">✏️ icon tap karo</span></p>
+        </div>`;
+        return;
+    }
+    const l=tvLiveLinks[tvCurLive];
+    tvScreen.innerHTML=`
+        <video id="tvLiveEl" style="width:100%;height:100%;object-fit:contain;background:#000"
+            src="${l.url}" playsinline controls></video>
+        <div style="position:absolute;top:3px;left:3px;background:rgba(239,68,68,0.9);border-radius:3px;padding:1px 5px;display:flex;align-items:center;gap:2px">
+            <span style="width:5px;height:5px;border-radius:50%;background:white;animation:blink 1s infinite;display:inline-block"></span>
+            <span style="font-size:6px;font-weight:800;color:white">LIVE</span>
+        </div>
+        <div style="position:absolute;bottom:3px;left:3px;right:3px;background:rgba(0,0,0,0.75);border-radius:3px;padding:2px 5px">
+            <div style="font-size:7px;font-weight:800;color:#fff;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">📡 ${l.title}</div>
+        </div>`;
+    // Dots for multiple channels
+    if(tvLiveLinks.length>1){
+        document.getElementById('tvDots').innerHTML=tvLiveLinks.map((_,i)=>
+            `<div onclick="tvGoLive(${i})" style="width:4px;height:4px;border-radius:50%;background:${i===tvCurLive?'#ef4444':'#2a2a4a'};cursor:pointer;flex-shrink:0" id="tvld${i}"></div>`).join('');
+    }
+    // Try autoplay
+    const vel=document.getElementById('tvLiveEl');
+    if(vel){vel.volume=rVolVal;vel.play().catch(()=>{});}
+    tvPlaying=true;
+    document.getElementById('tvPlayBtn').textContent='⏸';
+}
+
+function tvGoLive(idx){
+    tvCurLive=idx; tvRenderLive();
+}
+
+// Admin: Save live link
+function tSaveLive(){
+    const title=document.getElementById('tLiveTitle').value.trim();
+    const url=document.getElementById('tLiveUrl').value.trim();
+    if(!title){tMsg('⚠️ Channel naam daalo!',false);return;}
+    if(!url||!url.startsWith('http')){tMsg('⚠️ Valid URL daalo!',false);return;}
+    const links=tGetLiveLinks();
+    links.push({title,url});
+    tSaveLiveLinks(links);
+    document.getElementById('tLiveTitle').value='';
+    document.getElementById('tLiveUrl').value='';
+    tMsg('✅ Channel save ho gaya!',true);
+    tLoadLiveList();
+    // Update live dot
+    const dot=document.getElementById('chLiveDot');
+    if(dot) dot.style.display='block';
+}
+
+function tLoadLiveList(){
+    const links=tGetLiveLinks();
+    const c=document.getElementById('tLiveList');
+    if(!links.length){c.innerHTML='<p style="font-size:10px;color:#aaa;text-align:center;padding:8px">Koi channel nahi — upar se add karo!</p>';return;}
+    c.innerHTML=links.map((l,i)=>`
+        <div class="tap-item">
+            <span style="font-size:16px">📡</span>
+            <div style="flex:1;min-width:0">
+                <strong style="font-size:10px;display:block;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;color:#1a1a2e">${l.title}</strong>
+                <small style="font-size:8px;color:#888;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;display:block">${l.url}</small>
+            </div>
+            <button class="tap-del" onclick="tDelLive(${i})">✕</button>
+        </div>`).join('');
+}
+
+function tDelLive(idx){
+    const links=tGetLiveLinks();
+    links.splice(idx,1);
+    tSaveLiveLinks(links);
+    tLoadLiveList();
+    tMsg('🗑️ Channel hata diya!',true);
+    const dot=document.getElementById('chLiveDot');
+    if(dot) dot.style.display=links.length?'block':'none';
+}
 
 // ── BUILT-IN CONTROL FUNCTIONS ─────────────────────────────
 function tvMuteToggle(){
