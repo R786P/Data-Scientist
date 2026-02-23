@@ -17,7 +17,7 @@ from werkzeug.security import check_password_hash, generate_password_hash
 import razorpay
 
 from core.database import (engine, Base, SessionLocal, UserQuery,
-                            AffiliateLink, QueryCount)
+                            AffiliateLink, QueryCount, ScreenPost, MusicTrack)
 from core.auth import (User, create_default_admin,
                        create_session_token, validate_session_token,
                        invalidate_session, get_user_plan, set_user_plan)
@@ -580,6 +580,176 @@ def send_report():
         return jsonify({"error": "PDF generation failed"}), 500
     except Exception as e:
         return jsonify({"error": str(e)}), 500
+
+@app.route('/screen')
+@login_required
+def screen():
+    return render_template('screen.html')
+
+# ── Screen Posts API ──────────────────────────────────────────────
+@app.route('/api/screen/posts')
+@login_required
+def get_screen_posts():
+    db = SessionLocal()
+    try:
+        posts = db.query(ScreenPost).filter_by(is_active=True)\
+                  .order_by(ScreenPost.order_num.asc(), ScreenPost.created_at.desc()).all()
+        result = []
+        for p in posts:
+            result.append({
+                "id": p.id,
+                "title": p.title,
+                "content": p.content,
+                "post_type": p.post_type,
+                "affiliate_url": p.affiliate_url,
+                "image_data": p.image_data,
+                "image_mime": p.image_mime,
+            })
+        return jsonify(result)
+    finally:
+        db.close()
+
+@app.route('/api/screen/posts', methods=['POST'])
+@login_required
+@admin_required
+def add_screen_post():
+    import base64
+    db = SessionLocal()
+    try:
+        post_type = request.form.get('post_type', 'text')
+        title     = request.form.get('title', '')
+        content   = request.form.get('content', '')
+        aff_url   = request.form.get('affiliate_url', '')
+        order_num = int(request.form.get('order_num', 0))
+        image_data, image_mime = None, None
+
+        if post_type == 'image' and 'image' in request.files:
+            img = request.files['image']
+            if img and img.filename:
+                raw = img.read()
+                image_data = base64.b64encode(raw).decode('utf-8')
+                image_mime = img.content_type or 'image/jpeg'
+
+        post = ScreenPost(
+            title=title, content=content, post_type=post_type,
+            affiliate_url=aff_url if aff_url else None,
+            image_data=image_data, image_mime=image_mime,
+            order_num=order_num, is_active=True
+        )
+        db.add(post)
+        db.commit()
+        return jsonify({"message": "✅ Post added!", "id": post.id})
+    except Exception as e:
+        db.rollback()
+        return jsonify({"error": str(e)}), 500
+    finally:
+        db.close()
+
+@app.route('/api/screen/posts/<int:post_id>', methods=['DELETE'])
+@login_required
+@admin_required
+def delete_screen_post(post_id):
+    db = SessionLocal()
+    try:
+        p = db.query(ScreenPost).filter_by(id=post_id).first()
+        if p:
+            p.is_active = False
+            db.commit()
+            return jsonify({"message": "✅ Post removed!"})
+        return jsonify({"error": "Not found"}), 404
+    except Exception as e:
+        db.rollback()
+        return jsonify({"error": str(e)}), 500
+    finally:
+        db.close()
+
+# ── Music API ─────────────────────────────────────────────────────
+@app.route('/api/music')
+@login_required
+def get_music():
+    db = SessionLocal()
+    try:
+        tracks = db.query(MusicTrack).filter_by(is_active=True)\
+                   .order_by(MusicTrack.created_at.asc()).all()
+        return jsonify([{
+            "id": t.id, "title": t.title,
+            "artist": t.artist or "Unknown",
+            "audio_data": t.audio_data,
+            "mime_type": t.mime_type
+        } for t in tracks])
+    finally:
+        db.close()
+
+@app.route('/api/music', methods=['POST'])
+@login_required
+@admin_required
+def upload_music():
+    import base64
+    db = SessionLocal()
+    try:
+        if 'audio' not in request.files:
+            return jsonify({"error": "No file"}), 400
+        f     = request.files['audio']
+        title  = request.form.get('title', f.filename or 'Unknown')
+        artist = request.form.get('artist', '')
+        if not f or not f.filename:
+            return jsonify({"error": "Empty file"}), 400
+        raw       = f.read()
+        audio_b64 = base64.b64encode(raw).decode('utf-8')
+        mime      = f.content_type or 'audio/mpeg'
+        track = MusicTrack(
+            title=title, artist=artist,
+            audio_data=audio_b64, mime_type=mime, is_active=True
+        )
+        db.add(track)
+        db.commit()
+        return jsonify({"message": f"✅ '{title}' upload ho gaya!", "id": track.id})
+    except Exception as e:
+        db.rollback()
+        return jsonify({"error": str(e)}), 500
+    finally:
+        db.close()
+
+@app.route('/api/music/<int:track_id>', methods=['DELETE'])
+@login_required
+@admin_required
+def delete_music(track_id):
+    db = SessionLocal()
+    try:
+        t = db.query(MusicTrack).filter_by(id=track_id).first()
+        if t:
+            t.is_active = False
+            db.commit()
+            return jsonify({"message": "✅ Track removed!"})
+        return jsonify({"error": "Not found"}), 404
+    except Exception as e:
+        db.rollback()
+        return jsonify({"error": str(e)}), 500
+    finally:
+        db.close()
+
+# ── Stats for ticker ──────────────────────────────────────────────
+@app.route('/api/stats')
+@login_required
+def get_stats():
+    from core.database import Subscription
+    db = SessionLocal()
+    try:
+        total_users = db.query(User).count()
+        pro_users   = db.query(Subscription).filter_by(plan='pro', is_active=True).count()
+        today       = datetime.utcnow().strftime('%Y-%m-%d')
+        today_q     = db.query(QueryCount).filter_by(date=today).all()
+        today_total = sum(q.count for q in today_q)
+        total_q     = db.query(QueryCount).all()
+        total_queries = sum(q.count for q in total_q)
+        return jsonify({
+            "total_users": total_users,
+            "pro_users": pro_users,
+            "today_queries": today_total,
+            "total_queries": total_queries
+        })
+    finally:
+        db.close()
 
 @app.route('/health')
 def health():
