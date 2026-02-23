@@ -55,5 +55,30 @@ class QueryCount(Base):
     __tablename__ = "query_counts"
     id         = Column(Integer, primary_key=True, index=True)
     user_id    = Column(Integer, index=True)
-    date       = Column(String)   # YYYY-MM-DD
+    date       = Column(String)
     count      = Column(Integer, default=0)
+
+class ScreenPost(Base):
+    """Admin posts on /screen — text or image + affiliate link."""
+    __tablename__ = "screen_posts"
+    id            = Column(Integer, primary_key=True, index=True)
+    title         = Column(String)
+    content       = Column(Text, nullable=True)
+    image_data    = Column(Text, nullable=True)   # base64
+    image_mime    = Column(String, nullable=True)
+    affiliate_url = Column(String, nullable=True)
+    post_type     = Column(String, default="text")  # "text" | "image"
+    is_active     = Column(Boolean, default=True)
+    order_num     = Column(Integer, default=0)
+    created_at    = Column(DateTime, default=datetime.utcnow)
+
+class MusicTrack(Base):
+    """Admin uploaded music tracks — stored as base64."""
+    __tablename__ = "music_tracks"
+    id         = Column(Integer, primary_key=True, index=True)
+    title      = Column(String)
+    artist     = Column(String, nullable=True)
+    audio_data = Column(Text)        # base64 MP3
+    mime_type  = Column(String, default="audio/mpeg")
+    is_active  = Column(Boolean, default=True)
+    created_at = Column(DateTime, default=datetime.utcnow)
