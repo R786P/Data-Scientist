@@ -82,3 +82,16 @@ class MusicTrack(Base):
     mime_type  = Column(String, default="audio/mpeg")
     is_active  = Column(Boolean, default=True)
     created_at = Column(DateTime, default=datetime.utcnow)
+
+class VideoTrack(Base):
+    """Admin uploaded video clips — stored as base64."""
+    __tablename__ = "video_tracks"
+    id          = Column(Integer, primary_key=True, index=True)
+    title       = Column(String)
+    description = Column(Text, nullable=True)
+    video_data  = Column(Text)       # base64 MP4/WebM
+    mime_type   = Column(String, default="video/mp4")
+    thumbnail   = Column(Text, nullable=True)   # base64 thumbnail image
+    thumb_mime  = Column(String, nullable=True)
+    is_active   = Column(Boolean, default=True)
+    created_at  = Column(DateTime, default=datetime.utcnow)
