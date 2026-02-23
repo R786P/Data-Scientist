@@ -333,96 +333,53 @@
 
         .loader { border:3px solid #eee; border-top:3px solid var(--p); border-radius:50%; width:16px; height:16px; animation:spin .8s linear infinite; display:inline-block; vertical-align:middle; }
         @keyframes spin{to{transform:rotate(360deg)}}
+        @keyframes tvsl{0%{opacity:0;transform:translateX(18px)}100%{opacity:1;transform:translateX(0)}}
 
-        /* ══ MASCOT + MINI TV ROW ══ */
-        .hero-row{display:flex;align-items:flex-end;justify-content:center;gap:8px;margin-bottom:6px}
+        /* ══ FLOATING LED TV ══ */
+        .led-tv{position:fixed;top:80px;right:12px;width:145px;z-index:500;cursor:grab;user-select:none;-webkit-user-select:none;box-shadow:0 6px 24px rgba(91,94,244,0.35)}
+        .led-tv:active{cursor:grabbing}
 
-        /* ── Mini LED TV ── */
-        .mini-tv{flex-shrink:0;position:relative}
-        .mini-tv-body{
-            width:95px;
-            background:linear-gradient(180deg,#1c1c30,#0f0f1a);
-            border-radius:9px 9px 5px 5px;
-            border:2.5px solid #2a2a4a;
-            box-shadow:0 0 0 1px #3a3a5a, 0 4px 16px rgba(91,94,244,0.3), inset 0 0 10px rgba(91,94,244,0.08);
-            overflow:hidden;position:relative
-        }
-        .mini-tv-body::after{content:'';position:absolute;inset:0;pointer-events:none;z-index:9;background:repeating-linear-gradient(0deg,transparent,transparent 2px,rgba(0,0,0,0.07) 2px,rgba(0,0,0,0.07) 4px);border-radius:7px}
-        .mini-screen{width:100%;height:72px;background:#000;overflow:hidden;position:relative}
-        .mini-post{display:none;width:100%;height:100%;position:absolute;top:0;left:0;animation:mslide .35s ease}
-        .mini-post.on{display:flex;flex-direction:column}
-        @keyframes mslide{0%{opacity:0;transform:translateX(20px)}100%{opacity:1;transform:translateX(0)}}
-        .mini-post-img{width:100%;height:100%;object-fit:cover;display:block}
-        .mini-post-txt{width:100%;height:100%;padding:6px 6px 4px;display:flex;flex-direction:column;justify-content:space-between;background:linear-gradient(135deg,#0f0f1a,#1a1a2e)}
-        .mini-post-title{font-size:8px;font-weight:800;line-height:1.3;background:linear-gradient(135deg,#fff,#c4b5fd);-webkit-background-clip:text;-webkit-text-fill-color:transparent}
-        .mini-post-body{font-size:7px;color:#8890a4;line-height:1.4;overflow:hidden;flex:1;display:-webkit-box;-webkit-line-clamp:3;-webkit-box-orient:vertical;margin-top:2px}
-        .mini-aff-btn{display:block;text-align:center;padding:2px 5px;background:linear-gradient(135deg,var(--p),var(--p2));color:#fff;border-radius:4px;font-size:6.5px;font-weight:800;text-decoration:none;margin-top:3px}
-        .mini-empty-screen{width:100%;height:100%;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:2px;background:linear-gradient(135deg,#0f0f1a,#1a1a2e)}
-        .mini-empty-screen span{font-size:20px}
-        .mini-empty-screen p{font-size:6.5px;color:#4a4a7a;font-weight:700;text-align:center}
+        /* ══ TV REMOTE ══ */
+        .tv-remote{position:fixed;top:80px;right:170px;width:64px;z-index:499;cursor:grab;user-select:none;-webkit-user-select:none;box-shadow:0 4px 14px rgba(0,0,0,0.4);transition:opacity 0.2s}
+        .tv-remote.hidden{opacity:0;pointer-events:none}
+        .remote-body{background:linear-gradient(170deg,#1a1a2e,#0d0d1a);border-radius:14px 14px 22px 22px;border:2px solid #2a2a4a;box-shadow:inset 0 0 12px rgba(91,94,244,0.1),0 0 0 1px #3a3a5a;padding:8px 6px 14px;display:flex;flex-direction:column;gap:5px;align-items:center;position:relative}
+        .r-brand{font-size:6px;font-weight:800;color:#5b5ef4;letter-spacing:1.5px}
+        .r-power{width:20px;height:20px;border-radius:50%;background:linear-gradient(135deg,#ef4444,#dc2626);border:none;cursor:pointer;display:flex;align-items:center;justify-content:center;font-size:10px;color:white;box-shadow:0 0 8px rgba(239,68,68,0.4);transition:0.15s}
+        .r-power:hover{transform:scale(1.1)}
+        .r-power:active{transform:scale(0.9)}
+        .r-div{width:46px;height:1px;background:#2a2a4a}
+        .r-dpad{display:grid;grid-template-columns:repeat(3,18px);grid-template-rows:repeat(3,16px);gap:2px}
+        .dp{background:#1e1e38;border:1px solid #3a3a5a;border-radius:4px;cursor:pointer;color:#8890a4;font-size:9px;display:flex;align-items:center;justify-content:center;transition:0.15s}
+        .dp:hover{background:#2a2a4a;color:#fff}
+        .dp:active{background:#5b5ef4;color:#fff;transform:scale(0.88)}
+        .dp.mid{background:linear-gradient(135deg,#5b5ef4,#8b5cf6);color:white;border-radius:50%;border-color:#5b5ef4;font-size:7px}
+        .dp.empty{background:transparent;border:none;pointer-events:none}
+        .r-row{display:flex;align-items:center;gap:3px;width:50px}
+        .r-sm-btn{background:#1e1e38;border:1px solid #3a3a5a;border-radius:5px;cursor:pointer;color:#8890a4;width:16px;height:16px;display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:900;transition:0.15s;flex-shrink:0;line-height:1}
+        .r-sm-btn:hover{background:#2a2a4a;color:#fff}
+        .r-sm-btn:active{background:#5b5ef4;color:#fff;transform:scale(0.9)}
+        .r-disp{flex:1;text-align:center;font-size:7.5px;font-weight:800;background:#0f0f1a;border-radius:4px;padding:2px 0}
+        .r-grid2{display:grid;grid-template-columns:1fr 1fr;gap:3px;width:50px}
+        .r-gbtn{background:#1e1e38;border:1px solid #3a3a5a;border-radius:6px;cursor:pointer;color:#8890a4;font-size:6.5px;font-weight:700;padding:4px 2px;text-align:center;transition:0.15s;font-family:'DM Sans',sans-serif;line-height:1.4}
+        .r-gbtn:hover{background:#2a2a4a;color:#fff}
+        .r-gbtn:active{transform:scale(0.9)}
+        .r-gbtn.on{background:linear-gradient(135deg,#5b5ef4,#8b5cf6);color:white;border-color:#5b5ef4}
+        .r-gbtn span{display:block;font-size:11px;margin-bottom:1px}
+        .r-bright-lbl{font-size:6px;color:#4a4a7a;font-weight:700;align-self:flex-start;width:50px}
+        .r-bright-track{width:50px;height:5px;background:#1a1a3a;border-radius:3px;cursor:pointer;overflow:hidden}
+        .r-bright-fill{height:100%;background:linear-gradient(90deg,#f59e0b,#fbbf24);border-radius:3px;width:80%;pointer-events:none}
+        .r-resize{position:absolute;bottom:3px;right:3px;width:13px;height:13px;cursor:se-resize;display:flex;align-items:center;justify-content:center}
+        .remote-toggle{position:fixed;z-index:498;background:#1a1a2e;border:1.5px solid #3a3a5a;border-radius:8px;cursor:pointer;color:#8890a4;font-size:9px;padding:3px 8px;font-weight:700;box-shadow:0 2px 8px rgba(0,0,0,0.3);transition:0.2s;font-family:'DM Sans',sans-serif}
+        .remote-toggle:hover{color:#fff;border-color:#5b5ef4}
 
-        /* channel dots row */
-        .mini-dots-row{background:#0d0d1f;padding:3px 5px;display:flex;align-items:center;gap:3px}
-        .mini-dot{width:4px;height:4px;border-radius:50%;background:#2a2a4a;cursor:pointer;transition:0.2s;flex-shrink:0}
-        .mini-dot.on{background:var(--p)}
-        .mini-prog-wrap{flex:1;height:2px;background:#1a1a3a;border-radius:2px;overflow:hidden}
-        .mini-prog-fill{height:100%;background:linear-gradient(90deg,var(--p),var(--p2));border-radius:2px;width:0%;transition:width linear}
-
-        /* music strip */
-        .mini-music{background:#080815;padding:3px 5px;display:flex;align-items:center;gap:4px;border-top:1px solid #1a1a3a}
-        .mini-music-art{width:14px;height:14px;border-radius:3px;background:linear-gradient(135deg,var(--p),var(--p2));display:flex;align-items:center;justify-content:center;font-size:7px;flex-shrink:0}
-        .mini-music-info{flex:1;min-width:0}
-        .mini-music-title{font-size:6.5px;font-weight:800;color:#e0e0ff;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
-        .mini-ctrl{display:flex;gap:1px}
-        .mini-ctrl button{background:none;border:none;cursor:pointer;color:#8890a4;font-size:9px;padding:0;line-height:1;transition:0.15s}
-        .mini-ctrl button:hover{color:#fff}
-        .mini-play-btn{color:var(--p)!important;font-size:10px!important}
-
-        /* bottom strip */
-        .mini-strip{background:linear-gradient(180deg,#14142a,#0f0f1a);padding:3px 6px;display:flex;align-items:center;justify-content:space-between}
-        .mini-strip-txt{font-size:6.5px;font-weight:700;color:#4a4a7a}
-        .mini-edit-icon{font-size:10px;cursor:pointer;display:none;padding:1px 3px;border-radius:3px;transition:0.15s;line-height:1}
-        .mini-edit-icon:hover{background:#2a2a4a}
-
-        /* TV stand */
-        .mini-neck{width:14px;height:5px;background:#1a1a2e;margin:0 auto}
-        .mini-base{width:40px;height:3px;background:#1a1a2e;margin:0 auto;border-radius:0 0 4px 4px}
-
-        /* Admin panel popup */
-        .tap-panel-wrap{
-            position:fixed;bottom:150px;left:50%;transform:translateX(-50%) scale(0.88);
-            width:270px;background:white;border-radius:16px;
-            box-shadow:0 8px 32px rgba(0,0,0,0.18);border:1px solid var(--border);
-            z-index:600;opacity:0;pointer-events:none;
-            transition:all 0.25s cubic-bezier(0.34,1.56,0.64,1);
-            max-height:70vh;overflow-y:auto
-        }
-        .tap-panel-wrap.show{transform:translateX(-50%) scale(1);opacity:1;pointer-events:all}
-        .tap-hdr{padding:12px 14px;background:linear-gradient(135deg,var(--p),var(--p2));border-radius:15px 15px 0 0;display:flex;align-items:center;justify-content:space-between}
-        .tap-hdr h4{font-size:13px;font-weight:800;color:white}
-        .tap-hdr button{background:rgba(255,255,255,0.2);border:none;border-radius:8px;color:white;cursor:pointer;font-size:14px;padding:2px 7px}
-        .tap-bdy{padding:12px}
-        .tap-tabs2{display:flex;gap:5px;margin-bottom:10px}
-        .tap-tab2{flex:1;padding:6px;border-radius:8px;border:1.5px solid var(--border);cursor:pointer;font-size:10px;font-weight:800;text-align:center;background:white;transition:0.15s;font-family:'DM Sans',sans-serif;color:var(--text)}
-        .tap-tab2.on{border-color:var(--p);background:linear-gradient(135deg,var(--p),var(--p2));color:white}
-        .tap-pnl{display:none}.tap-pnl.on{display:block}
-        .tap-inp{width:100%;padding:7px 10px;border:1.5px solid var(--border);border-radius:8px;font-size:11px;font-family:'DM Sans',sans-serif;margin-bottom:7px;outline:none;box-sizing:border-box}
-        .tap-inp:focus{border-color:var(--p)}
-        .tap-file2{width:100%;padding:7px;border:1.5px dashed var(--p);border-radius:8px;font-size:10px;margin-bottom:7px;background:#f8f8ff;cursor:pointer;box-sizing:border-box}
-        .tap-submit{width:100%;padding:8px;background:linear-gradient(135deg,var(--p),var(--p2));color:white;border:none;border-radius:8px;font-size:11px;font-weight:800;cursor:pointer;font-family:'DM Sans',sans-serif;margin-bottom:6px}
-        .tap-msg2{font-size:10px;font-weight:700;padding:5px 8px;border-radius:6px;margin-bottom:6px;display:none}
-        .tap-msg2.ok{background:#d4edda;color:#155724;display:block}
-        .tap-msg2.err{background:#f8d7da;color:#721c24;display:block}
-        .tap-row{display:flex;align-items:center;gap:6px;padding:6px;background:#f8f8fc;border-radius:8px;margin-bottom:5px}
-        .tap-row-info{flex:1;min-width:0}
-        .tap-row-info strong{font-size:10px;color:var(--text);display:block;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
-        .tap-row-info small{font-size:9px;color:var(--muted)}
-        .tap-row-del{background:none;border:1px solid #fca5a5;border-radius:5px;color:#ef4444;cursor:pointer;font-size:9px;padding:2px 6px;flex-shrink:0}
-        .tap-type-row{display:flex;gap:5px;margin-bottom:7px}
-        .tap-type-btn2{flex:1;padding:5px;border-radius:7px;border:1.5px solid var(--border);cursor:pointer;font-size:10px;font-weight:700;background:white;transition:0.15s;font-family:'DM Sans',sans-serif}
-        .tap-type-btn2.on{border-color:var(--p);background:linear-gradient(135deg,var(--p),var(--p2));color:white}
-        .tap-img-field{display:none;margin-bottom:7px}
-        .tap-thumb{width:26px;height:26px;border-radius:4px;object-fit:cover;flex-shrink:0}
+        /* Admin editor */
+        .tap-wrap{position:fixed;width:265px;background:white;border-radius:16px;box-shadow:0 8px 32px rgba(0,0,0,0.18);border:1px solid #e8eaf0;z-index:601;opacity:0;pointer-events:none;transform:scale(0.88);transition:all 0.25s cubic-bezier(0.34,1.56,0.64,1);max-height:72vh;overflow-y:auto}
+        .tap-wrap.show{opacity:1;pointer-events:all;transform:scale(1)}
+        .tap-inp{width:100%;padding:7px 10px;border:1.5px solid #e8eaf0;border-radius:8px;font-size:11px;font-family:'DM Sans',sans-serif;margin-bottom:7px;outline:none;box-sizing:border-box}
+        .tap-inp:focus{border-color:#5b5ef4}
+        .tap-btn-main{width:100%;padding:8px;background:linear-gradient(135deg,#5b5ef4,#8b5cf6);color:white;border:none;border-radius:8px;font-size:11px;font-weight:800;cursor:pointer;font-family:'DM Sans',sans-serif;margin-bottom:8px}
+        .tap-item{display:flex;align-items:center;gap:6px;padding:6px;background:#f8f8fc;border-radius:8px;margin-bottom:5px}
+        .tap-del{background:none;border:1px solid #fca5a5;border-radius:5px;color:#ef4444;cursor:pointer;font-size:9px;padding:2px 6px;flex-shrink:0}
     </style>
 </head>
 <body>
@@ -521,8 +478,8 @@
 <div class="main">
     <div class="center-section">
 
-        <!-- MASCOT ONLY (TV is floating separately) -->
-        <div class="mascot-wrap" onclick="mascotTap()" style="margin-bottom:0">
+        <!-- MASCOT -->
+        <div class="mascot-wrap" onclick="mascotTap()">
             <div class="speech-bubble" id="bubble">Namaste! 👋</div>
             <div id="lottie-bot"></div>
         </div>
@@ -641,109 +598,136 @@
     <div class="voice-status" id="vStatus"></div>
 </div>
 
-<!-- ════ FLOATING DRAGGABLE LED TV ════ -->
-<div id="ledTv" style="position:fixed;bottom:100px;right:16px;width:140px;z-index:500;cursor:grab;user-select:none;-webkit-user-select:none;filter:drop-shadow(0 6px 20px rgba(91,94,244,0.4))">
-
-    <!-- Size label (shown while resizing) -->
+<!-- ════ FLOATING LED TV ════ -->
+<div id="ledTv" class="led-tv">
     <div id="tvSizeLabel" style="position:absolute;top:-22px;left:50%;transform:translateX(-50%);background:rgba(91,94,244,0.9);color:white;font-size:9px;font-weight:800;padding:2px 8px;border-radius:6px;white-space:nowrap;pointer-events:none;opacity:0;transition:opacity 0.2s;z-index:10"></div>
-
-    <!-- TV Body -->
     <div style="background:linear-gradient(180deg,#1c1c30,#0f0f1a);border-radius:10px 10px 6px 6px;border:2.5px solid #2a2a4a;box-shadow:0 0 0 1px #3a3a5a,inset 0 0 12px rgba(91,94,244,0.1);overflow:hidden;position:relative">
-        <!-- Scanline -->
         <div style="position:absolute;inset:0;pointer-events:none;z-index:20;background:repeating-linear-gradient(0deg,transparent,transparent 2px,rgba(0,0,0,0.06) 2px,rgba(0,0,0,0.06) 4px);border-radius:8px"></div>
-
         <!-- Screen -->
         <div id="tvScreen" style="width:100%;height:90px;background:#000;overflow:hidden;position:relative">
-            <div id="tvEmpty" style="width:100%;height:100%;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:3px;background:linear-gradient(135deg,#0f0f1a,#1a1a2e)">
+            <div style="width:100%;height:100%;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:3px;background:linear-gradient(135deg,#0f0f1a,#1a1a2e)">
                 <span style="font-size:22px">📺</span>
                 <p style="font-size:7px;color:#4a4a7a;font-weight:700">Loading...</p>
             </div>
         </div>
-
-        <!-- Channel dots + progress -->
-        <div style="background:#0d0d1f;padding:3px 6px;display:flex;align-items:center;gap:3px">
+        <!-- Dots + Progress -->
+        <div style="background:#0d0d1f;padding:2px 5px;display:flex;align-items:center;gap:3px">
             <div id="tvDots" style="display:flex;gap:2px"></div>
             <div style="flex:1;height:2px;background:#1a1a3a;border-radius:2px;overflow:hidden">
                 <div id="tvProgFill" style="height:100%;background:linear-gradient(90deg,#5b5ef4,#8b5cf6);border-radius:2px;width:0%;transition:width linear"></div>
             </div>
         </div>
 
-        <!-- Music strip -->
-        <div style="background:#080815;padding:4px 6px;display:flex;align-items:center;gap:4px;border-top:1px solid #1a1a3a">
-            <div style="width:16px;height:16px;border-radius:3px;background:linear-gradient(135deg,#5b5ef4,#8b5cf6);display:flex;align-items:center;justify-content:center;font-size:8px;flex-shrink:0">🎵</div>
-            <div style="flex:1;min-width:0">
-                <div id="tvMusicTitle" style="font-size:7px;font-weight:800;color:#e0e0ff;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">No songs</div>
+        <!-- ══ BUILT-IN REMOTE CONTROLS ══ -->
+        <div style="background:#060612;padding:4px 5px 5px;border-top:1px solid #1a1a3a">
+
+            <!-- Row 1: Now Playing info -->
+            <div style="display:flex;align-items:center;gap:4px;margin-bottom:3px">
+                <div style="width:14px;height:14px;border-radius:3px;background:linear-gradient(135deg,#5b5ef4,#8b5cf6);display:flex;align-items:center;justify-content:center;font-size:7px;flex-shrink:0">🎵</div>
+                <div id="tvMusicTitle" style="flex:1;font-size:6.5px;font-weight:800;color:#e0e0ff;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">No songs</div>
+                <span id="tvStatus" style="font-size:6px;font-weight:700;color:#4a4a7a;flex-shrink:0">📺 Posts</span>
             </div>
-            <div style="display:flex;gap:1px">
-                <button onclick="tvPrev()" style="background:none;border:none;cursor:pointer;color:#8890a4;font-size:9px;padding:0;line-height:1">⏮</button>
-                <button id="tvPlayBtn" onclick="tvTogglePlay()" style="background:none;border:none;cursor:pointer;color:#5b5ef4;font-size:11px;padding:0;line-height:1">▶</button>
-                <button onclick="tvNext()" style="background:none;border:none;cursor:pointer;color:#8890a4;font-size:9px;padding:0;line-height:1">⏭</button>
+
+            <!-- Row 2: Playback controls -->
+            <div style="display:flex;align-items:center;gap:3px;margin-bottom:3px">
+                <button onclick="tvPrev()" style="flex:1;background:#1e1e38;border:1px solid #3a3a5a;border-radius:5px;color:#8890a4;cursor:pointer;font-size:13px;padding:3px 0;line-height:1;transition:0.1s" ontouchstart="this.style.background='#2a2a5a'" ontouchend="this.style.background='#1e1e38'">⏮</button>
+                <button id="tvPlayBtn" onclick="tvTogglePlay()" style="flex:2;background:linear-gradient(135deg,#5b5ef4,#8b5cf6);border:none;border-radius:6px;color:white;cursor:pointer;font-size:14px;padding:4px 0;line-height:1;transition:0.1s">▶</button>
+                <button onclick="tvNext()" style="flex:1;background:#1e1e38;border:1px solid #3a3a5a;border-radius:5px;color:#8890a4;cursor:pointer;font-size:13px;padding:3px 0;line-height:1;transition:0.1s" ontouchstart="this.style.background='#2a2a5a'" ontouchend="this.style.background='#1e1e38'">⏭</button>
+                <button id="tvMuteBtn" onclick="tvMuteToggle()" style="flex:1;background:#1e1e38;border:1px solid #3a3a5a;border-radius:5px;color:#8890a4;cursor:pointer;font-size:11px;padding:3px 0;line-height:1;transition:0.1s">🔊</button>
+            </div>
+
+            <!-- Row 3: Volume + Speed -->
+            <div style="display:flex;align-items:center;gap:3px;margin-bottom:3px">
+                <!-- Volume -->
+                <button onclick="tvVolChange(-0.1)" style="background:#1e1e38;border:1px solid #3a3a5a;border-radius:4px;color:#8890a4;cursor:pointer;font-size:12px;width:20px;height:18px;line-height:1;flex-shrink:0">−</button>
+                <div id="tvVolDisp" style="width:28px;text-align:center;font-size:7px;font-weight:800;color:#5b5ef4;background:#0f0f1a;border-radius:4px;padding:3px 0;flex-shrink:0">80%</div>
+                <button onclick="tvVolChange(0.1)" style="background:#1e1e38;border:1px solid #3a3a5a;border-radius:4px;color:#8890a4;cursor:pointer;font-size:12px;width:20px;height:18px;line-height:1;flex-shrink:0">+</button>
+                <div style="width:1px;height:14px;background:#2a2a4a;flex-shrink:0"></div>
+                <!-- Speed -->
+                <button onclick="tvSpeedChange(-1)" style="background:#1e1e38;border:1px solid #3a3a5a;border-radius:4px;color:#8890a4;cursor:pointer;font-size:9px;width:18px;height:18px;line-height:1;font-weight:900;flex-shrink:0">−</button>
+                <div id="tvSpdDisp" style="width:24px;text-align:center;font-size:7px;font-weight:800;color:#06d6a0;background:#0f0f1a;border-radius:4px;padding:3px 0;flex-shrink:0">1x</div>
+                <button onclick="tvSpeedChange(1)" style="background:#1e1e38;border:1px solid #3a3a5a;border-radius:4px;color:#8890a4;cursor:pointer;font-size:9px;width:18px;height:18px;line-height:1;font-weight:900;flex-shrink:0">+</button>
+                <div style="width:1px;height:14px;background:#2a2a4a;flex-shrink:0"></div>
+                <!-- Quality -->
+                <button id="tvQualBtn" onclick="tvQualToggle()" style="flex:1;background:#1e1e38;border:1px solid #3a3a5a;border-radius:4px;color:#8890a4;cursor:pointer;font-size:6.5px;font-weight:800;padding:3px 2px;line-height:1;font-family:'DM Sans',sans-serif">📺HQ</button>
+            </div>
+
+            <!-- Row 4: Brightness + Edit + Drag handle -->
+            <div style="display:flex;align-items:center;gap:3px">
+                <span style="font-size:6px;color:#4a4a7a;flex-shrink:0">🔆</span>
+                <div id="tvBrightTrack" onclick="tvBrightSet(event)" style="flex:1;height:5px;background:#1a1a3a;border-radius:3px;cursor:pointer;overflow:hidden">
+                    <div id="tvBrightFill" style="height:100%;background:linear-gradient(90deg,#f59e0b,#fbbf24);width:80%;border-radius:3px;pointer-events:none"></div>
+                </div>
+                <button id="tvEditBtn" onclick="tvAdminPanel(event)" style="display:none;background:#1e1e38;border:1px solid #3a3a5a;border-radius:4px;color:#5b5ef4;cursor:pointer;font-size:11px;padding:2px 4px;line-height:1;flex-shrink:0">✏️</button>
+                <button onclick="tvCollapse(event)" id="tvColBtn" style="background:#1e1e38;border:1px solid #3a3a5a;border-radius:4px;color:#4a4a7a;cursor:pointer;font-size:9px;padding:2px 5px;line-height:1;flex-shrink:0">▼</button>
             </div>
         </div>
 
-        <!-- Toolbar (drag handle) -->
-        <div id="tvToolbar" style="background:linear-gradient(180deg,#14142a,#0f0f1a);padding:3px 6px;display:flex;align-items:center;justify-content:space-between;cursor:grab">
-            <span id="tvStatus" style="font-size:6.5px;font-weight:700;color:#4a4a7a">📺 Live</span>
-            <div style="display:flex;gap:3px;align-items:center">
-                <button id="tvEditBtn" onclick="toggleAdminPanel(event)" style="display:none;background:none;border:none;cursor:pointer;font-size:11px;padding:1px 3px;border-radius:3px;line-height:1" title="Edit Screen">✏️</button>
-                <button onclick="tvToggleCollapse(event)" id="tvColBtn" style="background:none;border:none;cursor:pointer;font-size:10px;color:#4a4a7a;padding:1px 3px;border-radius:3px;line-height:1" title="Minimize">▼</button>
-            </div>
+        <!-- Drag handle bar -->
+        <div id="tvToolbar" style="background:#030308;padding:2px 6px;display:flex;align-items:center;justify-content:center;cursor:grab">
+            <span style="font-size:8px;color:#2a2a4a;letter-spacing:3px">⠿⠿⠿</span>
         </div>
 
         <!-- Resize handle -->
-        <div id="tvResizeHandle" style="position:absolute;bottom:0;right:0;width:18px;height:18px;cursor:se-resize;z-index:30;display:flex;align-items:center;justify-content:center">
-            <svg width="10" height="10" viewBox="0 0 10 10"><path d="M1 9L9 1M5 9L9 5M9 9L9 9" stroke="#5b5ef4" stroke-width="2" stroke-linecap="round"/></svg>
+        <div id="tvResize" style="position:absolute;bottom:0;right:0;width:18px;height:18px;cursor:se-resize;z-index:30;display:flex;align-items:center;justify-content:center">
+            <svg width="10" height="10" viewBox="0 0 10 10"><path d="M1 9L9 1M5 9L9 5" stroke="#5b5ef4" stroke-width="2" stroke-linecap="round"/></svg>
         </div>
     </div>
-
-    <!-- Stand -->
     <div style="width:16px;height:5px;background:#1a1a2e;margin:0 auto"></div>
     <div style="width:44px;height:4px;background:#1a1a2e;margin:0 auto;border-radius:0 0 4px 4px"></div>
 </div>
 
-<!-- ADMIN EDITOR PANEL -->
-<div id="tapWrap" style="position:fixed;bottom:100px;right:170px;width:265px;background:white;border-radius:16px;box-shadow:0 8px 32px rgba(0,0,0,0.18);border:1px solid #e8eaf0;z-index:600;opacity:0;pointer-events:none;transform:scale(0.88) translateX(10px);transition:all 0.25s cubic-bezier(0.34,1.56,0.64,1);max-height:72vh;overflow-y:auto">
+<!-- ════ ADMIN EDITOR PANEL ════ -->
+<div class="tap-wrap" id="tapWrap">
     <div style="padding:11px 14px;background:linear-gradient(135deg,#5b5ef4,#8b5cf6);border-radius:15px 15px 0 0;display:flex;align-items:center;justify-content:space-between">
         <h4 style="font-size:13px;font-weight:800;color:white">✏️ Screen Editor</h4>
-        <button onclick="toggleAdminPanel()" style="background:rgba(255,255,255,0.2);border:none;border-radius:8px;color:white;cursor:pointer;font-size:14px;padding:2px 7px">✕</button>
+        <button onclick="tvAdminPanel()" style="background:rgba(255,255,255,0.2);border:none;border-radius:8px;color:white;cursor:pointer;font-size:14px;padding:2px 7px">✕</button>
     </div>
     <div style="padding:12px">
         <div id="tapMsg" style="font-size:10px;font-weight:700;padding:5px 8px;border-radius:6px;margin-bottom:6px;display:none"></div>
-        <!-- Tabs -->
         <div style="display:flex;gap:5px;margin-bottom:10px">
-            <button class="tap-tab on" id="tabPosts" onclick="tapSwitch('Posts',this)" style="flex:1;padding:6px;border-radius:8px;border:1.5px solid #e8eaf0;cursor:pointer;font-size:10px;font-weight:800;text-align:center;background:white;transition:0.15s;font-family:'DM Sans',sans-serif;color:#1a1a2e">📢 Posts</button>
-            <button class="tap-tab" id="tabMusic" onclick="tapSwitch('Music',this)" style="flex:1;padding:6px;border-radius:8px;border:1.5px solid #e8eaf0;cursor:pointer;font-size:10px;font-weight:800;text-align:center;background:white;transition:0.15s;font-family:'DM Sans',sans-serif;color:#1a1a2e">🎵 Music</button>
+            <button id="tTab1" onclick="tSwitch(1)" style="flex:1;padding:6px;border-radius:8px;border:1.5px solid #5b5ef4;cursor:pointer;font-size:10px;font-weight:800;background:linear-gradient(135deg,#5b5ef4,#8b5cf6);color:white;font-family:'DM Sans',sans-serif">📢 Posts</button>
+            <button id="tTab2" onclick="tSwitch(2)" style="flex:1;padding:6px;border-radius:8px;border:1.5px solid #e8eaf0;cursor:pointer;font-size:10px;font-weight:800;background:white;color:#1a1a2e;font-family:'DM Sans',sans-serif">🎵 Music</button>
+            <button id="tTab3" onclick="tSwitch(3)" style="flex:1;padding:6px;border-radius:8px;border:1.5px solid #e8eaf0;cursor:pointer;font-size:10px;font-weight:800;background:white;color:#1a1a2e;font-family:'DM Sans',sans-serif">🎬 Video</button>
         </div>
-        <!-- Posts panel -->
-        <div id="tapPosts">
+        <!-- Posts -->
+        <div id="tPanel1">
             <div style="display:flex;gap:5px;margin-bottom:7px">
-                <button class="tap-type-btn on" id="typeTxt" onclick="tapSetType('text',this)" style="flex:1;padding:5px;border-radius:7px;border:1.5px solid #e8eaf0;cursor:pointer;font-size:10px;font-weight:700;background:white;font-family:'DM Sans',sans-serif">📝 Text</button>
-                <button class="tap-type-btn" id="typeImg" onclick="tapSetType('image',this)" style="flex:1;padding:5px;border-radius:7px;border:1.5px solid #e8eaf0;cursor:pointer;font-size:10px;font-weight:700;background:white;font-family:'DM Sans',sans-serif">🖼️ Image</button>
+                <button id="tTypeTxt" onclick="tType('text')" style="flex:1;padding:5px;border-radius:7px;border:1.5px solid #5b5ef4;background:linear-gradient(135deg,#5b5ef4,#8b5cf6);color:white;cursor:pointer;font-size:10px;font-weight:700;font-family:'DM Sans',sans-serif">📝 Text</button>
+                <button id="tTypeImg" onclick="tType('image')" style="flex:1;padding:5px;border-radius:7px;border:1.5px solid #e8eaf0;background:white;cursor:pointer;font-size:10px;font-weight:700;font-family:'DM Sans',sans-serif">🖼️ Image</button>
             </div>
-            <input type="hidden" id="tapPostType" value="text">
-            <input id="tapTitle" type="text" placeholder="Title" style="width:100%;padding:7px 10px;border:1.5px solid #e8eaf0;border-radius:8px;font-size:11px;font-family:'DM Sans',sans-serif;margin-bottom:7px;outline:none;box-sizing:border-box">
-            <textarea id="tapContent" rows="2" placeholder="Content..." style="width:100%;padding:7px 10px;border:1.5px solid #e8eaf0;border-radius:8px;font-size:11px;font-family:'DM Sans',sans-serif;margin-bottom:7px;outline:none;box-sizing:border-box;resize:none"></textarea>
-            <div id="tapImgField" style="display:none;margin-bottom:7px">
-                <input id="tapImage" type="file" accept="image/*" style="width:100%;padding:7px;border:1.5px dashed #5b5ef4;border-radius:8px;font-size:10px;background:#f8f8ff;cursor:pointer;box-sizing:border-box">
+            <input type="hidden" id="tPostType" value="text">
+            <input class="tap-inp" type="text" id="tTitle" placeholder="Title">
+            <textarea class="tap-inp" id="tContent" rows="2" placeholder="Content..." style="resize:none"></textarea>
+            <div id="tImgField" style="display:none;margin-bottom:7px">
+                <input type="file" id="tImage" accept="image/*" style="width:100%;padding:7px;border:1.5px dashed #5b5ef4;border-radius:8px;font-size:10px;background:#f8f8ff;cursor:pointer;box-sizing:border-box">
                 <small style="font-size:9px;color:#888;display:block;margin-top:2px">✅ GIF bhi chalega!</small>
             </div>
-            <input id="tapAff" type="url" placeholder="🔗 Affiliate URL (optional)" style="width:100%;padding:7px 10px;border:1.5px solid #e8eaf0;border-radius:8px;font-size:11px;font-family:'DM Sans',sans-serif;margin-bottom:7px;outline:none;box-sizing:border-box">
-            <button onclick="tapAddPost()" style="width:100%;padding:8px;background:linear-gradient(135deg,#5b5ef4,#8b5cf6);color:white;border:none;border-radius:8px;font-size:11px;font-weight:800;cursor:pointer;font-family:'DM Sans',sans-serif;margin-bottom:8px">➕ Add Post</button>
-            <div id="tapPostList"></div>
+            <input class="tap-inp" type="url" id="tAff" placeholder="🔗 Affiliate URL (optional)">
+            <button class="tap-btn-main" onclick="tAddPost()">➕ Add Post</button>
+            <div id="tPostList"></div>
         </div>
-        <!-- Music panel -->
-        <div id="tapMusic" style="display:none">
-            <input id="tapSongTitle" type="text" placeholder="Song title" style="width:100%;padding:7px 10px;border:1.5px solid #e8eaf0;border-radius:8px;font-size:11px;font-family:'DM Sans',sans-serif;margin-bottom:7px;outline:none;box-sizing:border-box">
-            <input id="tapSongArtist" type="text" placeholder="Artist name" style="width:100%;padding:7px 10px;border:1.5px solid #e8eaf0;border-radius:8px;font-size:11px;font-family:'DM Sans',sans-serif;margin-bottom:7px;outline:none;box-sizing:border-box">
-            <input id="tapSongFile" type="file" accept="audio/*,.mp3,.wav" style="width:100%;padding:7px;border:1.5px dashed #5b5ef4;border-radius:8px;font-size:10px;background:#f8f8ff;cursor:pointer;box-sizing:border-box;margin-bottom:5px">
+        <!-- Music -->
+        <div id="tPanel2" style="display:none">
+            <input class="tap-inp" type="text" id="tSongTitle" placeholder="Song title">
+            <input class="tap-inp" type="text" id="tSongArtist" placeholder="Artist name">
+            <input type="file" id="tSongFile" accept="audio/*,.mp3,.wav" style="width:100%;padding:7px;border:1.5px dashed #5b5ef4;border-radius:8px;font-size:10px;background:#f8f8ff;cursor:pointer;box-sizing:border-box;margin-bottom:5px">
             <small style="font-size:9px;color:#888;display:block;margin-bottom:8px">MP3/WAV — Max 10MB</small>
-            <button onclick="tapUploadTrack()" style="width:100%;padding:8px;background:linear-gradient(135deg,#5b5ef4,#8b5cf6);color:white;border:none;border-radius:8px;font-size:11px;font-weight:800;cursor:pointer;font-family:'DM Sans',sans-serif;margin-bottom:8px">🎵 Upload Song</button>
-            <div id="tapTrackList"></div>
+            <button class="tap-btn-main" onclick="tUploadSong()">🎵 Upload Song</button>
+            <div id="tSongList"></div>
+        </div>
+        <!-- Video -->
+        <div id="tPanel3" style="display:none">
+            <input class="tap-inp" type="text" id="tVideoTitle" placeholder="Video title">
+            <input class="tap-inp" type="text" id="tVideoDesc" placeholder="Description (optional)">
+            <input type="file" id="tVideoFile" accept="video/*,.mp4,.webm,.mov" style="width:100%;padding:7px;border:1.5px dashed #5b5ef4;border-radius:8px;font-size:10px;background:#f8f8ff;cursor:pointer;box-sizing:border-box;margin-bottom:4px">
+            <small style="font-size:9px;color:#888;display:block;margin-bottom:8px">MP4/WebM — Max 10MB</small>
+            <button class="tap-btn-main" onclick="tUploadVideo()">🎬 Upload Video</button>
+            <div id="tVideoList"></div>
         </div>
     </div>
 </div>
 
-<!-- TV Audio -->
 <audio id="tvAudio" preload="metadata"></audio>
 
 <!-- EMAIL MODAL -->
@@ -1043,350 +1027,495 @@ function closeViewer(){document.getElementById('viewerModal').classList.remove('
 document.getElementById('viewerModal').addEventListener('click',e=>{if(e.target===document.getElementById('viewerModal'))closeViewer();});
 document.getElementById('msgInput').addEventListener('keypress',e=>{if(e.key==='Enter'&&!e.target.disabled)sendMsg();});
 
-// ════════════════════════════════════════════════════════
-// FLOATING DRAGGABLE + RESIZABLE LED TV
-// ════════════════════════════════════════════════════════
-let tvPosts=[],tvCur=0,tvTimer=null,tvCollapsed=false;
-let tvTracks=[],tvCurTrack=0,tvPlaying=false,isAdminUser=false;
-let tapOpen=false,tapPostTypeVal='text';
+// ═══════════════════════════════════════════════════════════
+// FLOATING LED TV + REMOTE  —  Full Featured
+// ═══════════════════════════════════════════════════════════
 const tvAudio=document.getElementById('tvAudio');
-const TV_MS=6000;
-
 const ledTv=document.getElementById('ledTv');
 const tvScreen=document.getElementById('tvScreen');
+const TV_MS=6000;
+const SPEEDS=[0.5,0.75,1,1.25,1.5,2];
 
-// ── DRAG ──────────────────────────────────────────────
-(function initDrag(){
-    let dragX=0,dragY=0,startL=0,startT=0,isDragging=false;
+// State
+let tvPosts=[],tvCur=0,tvTimer=null,tvCollapsed=false;
+let tvTracks=[],tvCurTrack=0,tvPlaying=false;
+let tvVideos=[],tvCurVideo=0;
+let tvChannel='posts'; // 'posts'|'video'|'music'
+let isAdmin=false,tapOpen=false,tPostType='text';
+let rVolVal=0.8,rSpdIdx=2,rMuted=false,rHQ=true,rBrightVal=80;
 
-    function getPos(){
+// ── TV DRAG ────────────────────────────────────────────────
+(function(){
+    let drag=false,sx=0,sy=0,sl=0,st=0;
+    function start(e){
+        if(e.target.closest('#tvResize')||e.target.tagName==='BUTTON')return;
+        drag=true; ledTv.style.cursor='grabbing';
         const r=ledTv.getBoundingClientRect();
-        return {left:r.left,top:r.top};
-    }
-
-    function onDown(e){
-        // Ignore resize handle clicks and button clicks
-        if(e.target.closest('#tvResizeHandle')||e.target.tagName==='BUTTON') return;
-        isDragging=true;
-        ledTv.classList.add('dragging');
-        ledTv.style.cursor='grabbing';
-        const pos=getPos();
-        startL=pos.left; startT=pos.top;
-        dragX=e.touches?e.touches[0].clientX:e.clientX;
-        dragY=e.touches?e.touches[0].clientY:e.clientY;
-        // Switch to top/left positioning
-        ledTv.style.right='auto';
-        ledTv.style.bottom='auto';
-        ledTv.style.left=startL+'px';
-        ledTv.style.top=startT+'px';
+        sl=r.left;st=r.top;
+        sx=e.touches?e.touches[0].clientX:e.clientX;
+        sy=e.touches?e.touches[0].clientY:e.clientY;
+        ledTv.style.right='auto';ledTv.style.bottom='auto';
+        ledTv.style.left=sl+'px';ledTv.style.top=st+'px';
         e.preventDefault();
     }
-    function onMove(e){
-        if(!isDragging)return;
+    function move(e){
+        if(!drag)return;
         const cx=e.touches?e.touches[0].clientX:e.clientX;
         const cy=e.touches?e.touches[0].clientY:e.clientY;
-        let nl=startL+(cx-dragX);
-        let nt=startT+(cy-dragY);
-        // Clamp to screen
-        nl=Math.max(0,Math.min(window.innerWidth-ledTv.offsetWidth,nl));
-        nt=Math.max(0,Math.min(window.innerHeight-ledTv.offsetHeight,nt));
-        ledTv.style.left=nl+'px';
-        ledTv.style.top=nt+'px';
+        ledTv.style.left=Math.max(0,Math.min(window.innerWidth-ledTv.offsetWidth,sl+(cx-sx)))+'px';
+        ledTv.style.top=Math.max(0,Math.min(window.innerHeight-ledTv.offsetHeight,st+(cy-sy)))+'px';
         e.preventDefault();
     }
-    function onUp(){
-        if(!isDragging)return;
-        isDragging=false;
-        ledTv.classList.remove('dragging');
-        ledTv.style.cursor='grab';
-        // Save position
-        localStorage.setItem('tvPos',JSON.stringify({left:ledTv.style.left,top:ledTv.style.top}));
-    }
-
-    ledTv.addEventListener('mousedown',onDown,{passive:false});
-    ledTv.addEventListener('touchstart',onDown,{passive:false});
-    window.addEventListener('mousemove',onMove,{passive:false});
-    window.addEventListener('touchmove',onMove,{passive:false});
-    window.addEventListener('mouseup',onUp);
-    window.addEventListener('touchend',onUp);
-
-    // Restore position
-    try{
-        const saved=JSON.parse(localStorage.getItem('tvPos'));
-        if(saved){ledTv.style.right='auto';ledTv.style.bottom='auto';ledTv.style.left=saved.left;ledTv.style.top=saved.top;}
+    function end(){drag=false;ledTv.style.cursor='grab';try{localStorage.setItem('tvPos',JSON.stringify({l:ledTv.style.left,t:ledTv.style.top}));}catch(e){}}
+    ledTv.addEventListener('mousedown',start,{passive:false});
+    ledTv.addEventListener('touchstart',start,{passive:false});
+    window.addEventListener('mousemove',move,{passive:false});
+    window.addEventListener('touchmove',move,{passive:false});
+    window.addEventListener('mouseup',end);window.addEventListener('touchend',end);
+    try{const p=JSON.parse(localStorage.getItem('tvPos'));
+        if(p){
+            // Validate position is on screen
+            const pl=parseInt(p.l),pt=parseInt(p.t);
+            if(pl>=0&&pl<window.innerWidth-50&&pt>=0&&pt<window.innerHeight-50){
+                ledTv.style.right='auto';ledTv.style.bottom='auto';
+                ledTv.style.left=p.l;ledTv.style.top=p.t;
+            }
+        }
     }catch(e){}
 })();
 
-// ── RESIZE ────────────────────────────────────────────
-(function initResize(){
-    const handle=document.getElementById('tvResizeHandle');
-    const sizeLabel=document.getElementById('tvSizeLabel');
-    let resizing=false,startX=0,startW=0;
-    const MIN_W=90,MAX_W=280;
-
-    handle.addEventListener('mousedown',e=>{
-        resizing=true; startX=e.clientX; startW=ledTv.offsetWidth;
-        sizeLabel.style.opacity='1';
-        e.preventDefault(); e.stopPropagation();
-    });
-    handle.addEventListener('touchstart',e=>{
-        resizing=true; startX=e.touches[0].clientX; startW=ledTv.offsetWidth;
-        sizeLabel.style.opacity='1';
-        e.preventDefault(); e.stopPropagation();
-    },{passive:false});
-
+// ── TV RESIZE ──────────────────────────────────────────────
+(function(){
+    const h=document.getElementById('tvResize');
+    const lb=document.getElementById('tvSizeLabel');
+    let resizing=false,sx=0,sw=0;
+    h.addEventListener('mousedown',e=>{resizing=true;sx=e.clientX;sw=ledTv.offsetWidth;lb.style.opacity='1';e.preventDefault();e.stopPropagation();});
+    h.addEventListener('touchstart',e=>{resizing=true;sx=e.touches[0].clientX;sw=ledTv.offsetWidth;lb.style.opacity='1';e.preventDefault();e.stopPropagation();},{passive:false});
     window.addEventListener('mousemove',e=>{
         if(!resizing)return;
-        let nw=startW+(e.clientX-startX);
-        nw=Math.max(MIN_W,Math.min(MAX_W,nw));
+        const nw=Math.max(90,Math.min(280,sw+(e.clientX-sx)));
         ledTv.style.width=nw+'px';
-        // Screen height = 65% of width (16:10 ratio)
-        const sh=Math.round(nw*0.65);
+        const sh=Math.round(nw*0.64);
         tvScreen.style.height=sh+'px';
-        sizeLabel.textContent=nw+'×'+sh+'px';
-        localStorage.setItem('tvSize',JSON.stringify({w:nw,sh}));
+        lb.textContent=nw+'×'+sh;
+        try{localStorage.setItem('tvSize',JSON.stringify({w:nw,sh}));}catch(e){}
     });
     window.addEventListener('touchmove',e=>{
         if(!resizing)return;
-        let nw=startW+(e.touches[0].clientX-startX);
-        nw=Math.max(MIN_W,Math.min(MAX_W,nw));
-        ledTv.style.width=nw+'px';
-        const sh=Math.round(nw*0.65);
-        tvScreen.style.height=sh+'px';
-        sizeLabel.textContent=nw+'×'+sh+'px';
+        const nw=Math.max(90,Math.min(280,sw+(e.touches[0].clientX-sx)));
+        ledTv.style.width=nw+'px';tvScreen.style.height=Math.round(nw*0.64)+'px';
     },{passive:false});
-    window.addEventListener('mouseup',()=>{if(resizing){resizing=false;sizeLabel.style.opacity='0';}});
-    window.addEventListener('touchend',()=>{if(resizing){resizing=false;sizeLabel.style.opacity='0';}});
-
-    // Restore size
-    try{
-        const saved=JSON.parse(localStorage.getItem('tvSize'));
-        if(saved){ledTv.style.width=saved.w+'px';tvScreen.style.height=saved.sh+'px';}
-    }catch(e){}
+    window.addEventListener('mouseup',()=>{if(resizing){resizing=false;lb.style.opacity='0';}});
+    window.addEventListener('touchend',()=>{if(resizing){resizing=false;lb.style.opacity='0';}});
+    try{const s=JSON.parse(localStorage.getItem('tvSize'));if(s){ledTv.style.width=s.w+'px';tvScreen.style.height=s.sh+'px';}}catch(e){}
 })();
 
-// ── COLLAPSE ──────────────────────────────────────────
-function tvToggleCollapse(e){
+// ── REMOTE DRAG ────────────────────────────────────────────
+(function(){
+    const rem=document.getElementById('tvRemote');
+    let drag=false,sx=0,sy=0,sl=0,st=0;
+    function start(e){
+        if(e.target.closest('#remoteResize'))return;
+        drag=true;rem.style.cursor='grabbing';
+        const r=rem.getBoundingClientRect();sl=r.left;st=r.top;
+        sx=e.touches?e.touches[0].clientX:e.clientX;
+        sy=e.touches?e.touches[0].clientY:e.clientY;
+        rem.style.right='auto';rem.style.bottom='auto';rem.style.left=sl+'px';rem.style.top=st+'px';
+        e.preventDefault();
+    }
+    function move(e){
+        if(!drag)return;
+        const cx=e.touches?e.touches[0].clientX:e.clientX;
+        const cy=e.touches?e.touches[0].clientY:e.clientY;
+        rem.style.left=Math.max(0,Math.min(window.innerWidth-rem.offsetWidth,sl+(cx-sx)))+'px';
+        rem.style.top=Math.max(0,Math.min(window.innerHeight-rem.offsetHeight,st+(cy-sy)))+'px';
+        e.preventDefault();
+    }
+    function end(){drag=false;rem.style.cursor='grab';}
+    rem.addEventListener('mousedown',start,{passive:false});
+    rem.addEventListener('touchstart',start,{passive:false});
+    window.addEventListener('mousemove',move,{passive:false});
+    window.addEventListener('touchmove',move,{passive:false});
+    window.addEventListener('mouseup',end);window.addEventListener('touchend',end);
+})();
+
+// ── REMOTE RESIZE ──────────────────────────────────────────
+(function(){
+    const h=document.getElementById('remoteResize');
+    const rem=document.getElementById('tvRemote');
+    let resizing=false,sx=0,sw=0;
+    h.addEventListener('mousedown',e=>{resizing=true;sx=e.clientX;sw=rem.offsetWidth;e.preventDefault();e.stopPropagation();});
+    h.addEventListener('touchstart',e=>{resizing=true;sx=e.touches[0].clientX;sw=rem.offsetWidth;e.preventDefault();e.stopPropagation();},{passive:false});
+    window.addEventListener('mousemove',e=>{if(!resizing)return;rem.style.width=Math.max(52,Math.min(110,sw+(e.clientX-sx)))+'px';});
+    window.addEventListener('touchmove',e=>{if(!resizing)return;rem.style.width=Math.max(52,Math.min(110,sw+(e.touches[0].clientX-sx)))+'px';},{passive:false});
+    window.addEventListener('mouseup',()=>resizing=false);
+    window.addEventListener('touchend',()=>resizing=false);
+})();
+
+// ── REMOTE TOGGLE ──────────────────────────────────────────
+let remVisible=true;
+function tvRemoteToggle(){
+    remVisible=!remVisible;
+    document.getElementById('tvRemote').classList.toggle('hidden',!remVisible);
+    document.getElementById('remoteToggleBtn').textContent=remVisible?'🎮 Hide':'🎮 Remote';
+}
+
+// Position remote near TV
+function posRemote(){
+    const tr=ledTv.getBoundingClientRect();
+    const rem=document.getElementById('tvRemote');
+    const tb=document.getElementById('remoteToggleBtn');
+    let l=tr.left-rem.offsetWidth-8;
+    if(l<4)l=tr.right+8;
+    rem.style.left=l+'px';rem.style.top=tr.top+'px';
+    rem.style.right='auto';rem.style.bottom='auto';
+    tb.style.left=(l+6)+'px';tb.style.top=(tr.bottom-26)+'px';
+    tb.style.right='auto';tb.style.bottom='auto';
+}
+
+// ── COLLAPSE ───────────────────────────────────────────────
+function tvCollapse(e){
     if(e)e.stopPropagation();
     tvCollapsed=!tvCollapsed;
-    const inner=ledTv.querySelector('div');
+    const body=ledTv.querySelector('[style*="background:linear-gradient(180deg,#1c1c30"]');
     if(tvCollapsed){
-        inner.style.height='24px';inner.style.overflow='hidden';
+        ledTv.style.overflow='hidden';
+        tvScreen.style.display='none';
         document.getElementById('tvColBtn').textContent='▲';
         clearTimeout(tvTimer);
     }else{
-        inner.style.height='';inner.style.overflow='';
+        tvScreen.style.display='block';
         document.getElementById('tvColBtn').textContent='▼';
-        if(tvPosts.length>1)tvStartAuto();
+        tvSetChannel(tvChannel);
     }
 }
 
-// ── POSTS ─────────────────────────────────────────────
-async function tvLoadPosts(){
-    try{
-        const r=await fetch('/api/screen/posts');
-        tvPosts=await r.json();
-        tvRender();
-        if(tvPosts.length>1)tvStartAuto();
-    }catch(e){tvEmpty('📺','Posts nahi');}
+// ── CHANNEL ────────────────────────────────────────────────
+const CH_IDS={posts:'chPosts',video:'chVideo',music:'chMusic'};
+function tvSetChannel(ch){
+    tvChannel=ch;
+    Object.entries(CH_IDS).forEach(([c,id])=>{
+        const b=document.getElementById(id);
+        if(b){b.style.background=c===ch?'#5b5ef4':'#1e1e38';b.style.color=c===ch?'white':'#8890a4';}
+    });
+    clearTimeout(tvTimer);
+    if(ch==='posts'){
+        document.getElementById('tvStatus').textContent='📢 Posts';
+        tvRenderPosts(); if(tvPosts.length>1)tvAutoStart();
+    } else if(ch==='video'){
+        document.getElementById('tvStatus').textContent='🎬 Video';
+        tvRenderVideo();
+    } else {
+        document.getElementById('tvStatus').textContent='🎵 Music';
+        tvRenderMusicViz();
+    }
 }
-function tvRender(){
-    const dots=document.getElementById('tvDots');
+
+const CHANNELS=['posts','video','music'];
+function tvChPrev(){const i=CHANNELS.indexOf(tvChannel);tvSetChannel(CHANNELS[(i-1+3)%3]);}
+function tvChNext(){const i=CHANNELS.indexOf(tvChannel);tvSetChannel(CHANNELS[(i+1)%3]);}
+
+// ── POSTS CHANNEL ──────────────────────────────────────────
+async function tvLoadPosts(){
+    try{const r=await fetch('/api/screen/posts');tvPosts=await r.json();tvRenderPosts();if(tvPosts.length>1)tvAutoStart();}
+    catch(e){tvEmpty('📢','Posts nahi');}
+}
+function tvRenderPosts(){
     if(!tvPosts.length){tvEmpty('📢','Koi post nahi');return;}
     tvScreen.innerHTML=tvPosts.map((p,i)=>`
-        <div id="tvp_${i}" style="display:${i===0?'flex':'none'};flex-direction:column;width:100%;height:100%;position:absolute;top:0;left:0;animation:${i===0?'tvsl .35s ease':'none'}">
+        <div id="tvp${i}" style="display:${i===0?'flex':'none'};flex-direction:column;width:100%;height:100%;position:absolute;top:0;left:0;animation:${i===0?'tvsl .35s ease':'none'}">
             ${p.post_type==='image'&&p.image_data
-                ?`<img src="data:${p.image_mime};base64,${p.image_data}" style="width:100%;height:100%;object-fit:cover;display:block">${p.affiliate_url?`<a href="${p.affiliate_url}" target="_blank" style="position:absolute;bottom:4px;left:4px;right:4px;display:block;text-align:center;padding:3px 5px;background:linear-gradient(135deg,#5b5ef4,#8b5cf6);color:white;border-radius:4px;font-size:7px;font-weight:800;text-decoration:none">🔗 Check it out</a>`:''}`
-                :`<div style="width:100%;height:100%;padding:7px 7px 5px;display:flex;flex-direction:column;justify-content:space-between;background:linear-gradient(135deg,#0f0f1a,#1a1a2e)">
-                    <div>
-                        <div style="font-size:9px;font-weight:800;line-height:1.3;background:linear-gradient(135deg,#fff,#c4b5fd);-webkit-background-clip:text;-webkit-text-fill-color:transparent">${p.title}</div>
-                        <div style="font-size:7.5px;color:#8890a4;line-height:1.4;overflow:hidden;display:-webkit-box;-webkit-line-clamp:3;-webkit-box-orient:vertical;margin-top:3px">${(p.content||'').replace(/\n/g,' ')}</div>
-                    </div>
-                    ${p.affiliate_url?`<a href="${p.affiliate_url}" target="_blank" style="display:block;text-align:center;padding:3px 5px;background:linear-gradient(135deg,#5b5ef4,#8b5cf6);color:white;border-radius:4px;font-size:7px;font-weight:800;text-decoration:none;margin-top:4px">🔗 Check it out</a>`:''}
-                </div>`
-            }
+                ?`<img src="data:${p.image_mime};base64,${p.image_data}" style="width:100%;height:100%;object-fit:cover">${p.affiliate_url?`<a href="${p.affiliate_url}" target="_blank" style="position:absolute;bottom:3px;left:3px;right:3px;display:block;text-align:center;padding:3px;background:linear-gradient(135deg,#5b5ef4,#8b5cf6);color:white;border-radius:4px;font-size:7px;font-weight:800;text-decoration:none">🔗 Check it out</a>`:''}`
+                :`<div style="width:100%;height:100%;padding:7px;display:flex;flex-direction:column;justify-content:space-between;background:linear-gradient(135deg,#0f0f1a,#1a1a2e)">
+                    <div><div style="font-size:9px;font-weight:800;background:linear-gradient(135deg,#fff,#c4b5fd);-webkit-background-clip:text;-webkit-text-fill-color:transparent">${p.title}</div>
+                    <div style="font-size:7.5px;color:#8890a4;margin-top:3px;overflow:hidden;display:-webkit-box;-webkit-line-clamp:3;-webkit-box-orient:vertical">${(p.content||'').replace(/\n/g,' ')}</div></div>
+                    ${p.affiliate_url?`<a href="${p.affiliate_url}" target="_blank" style="display:block;text-align:center;padding:3px;background:linear-gradient(135deg,#5b5ef4,#8b5cf6);color:white;border-radius:4px;font-size:7px;font-weight:800;text-decoration:none">🔗 Check it out</a>`:''}
+                </div>`}
         </div>`).join('');
-    dots.innerHTML=tvPosts.map((_,i)=>`<div onclick="tvGo(${i})" style="width:4px;height:4px;border-radius:50%;background:${i===0?'#5b5ef4':'#2a2a4a'};cursor:pointer;transition:0.2s;flex-shrink:0" id="tvd_${i}"></div>`).join('');
-    document.getElementById('tvStatus').textContent='📺 '+tvPosts.length+' posts';
+    document.getElementById('tvDots').innerHTML=tvPosts.map((_,i)=>
+        `<div onclick="tvGo(${i})" style="width:4px;height:4px;border-radius:50%;background:${i===0?'#5b5ef4':'#2a2a4a'};cursor:pointer;flex-shrink:0;transition:0.2s" id="tvd${i}"></div>`).join('');
+    document.getElementById('tvStatus').textContent='📢 '+tvPosts.length+' posts';
+}
+function tvGo(idx){
+    for(let i=0;i<tvPosts.length;i++){
+        const e=document.getElementById('tvp'+i); if(e)e.style.display=i===idx?'flex':'none';
+        const d=document.getElementById('tvd'+i); if(d)d.style.background=i===idx?'#5b5ef4':'#2a2a4a';
+    }
+    tvCur=idx; tvProgReset();
+}
+function tvAutoStart(){tvProgReset();}
+function tvProgReset(){
+    const f=document.getElementById('tvProgFill');
+    f.style.transition='none';f.style.width='0%';clearTimeout(tvTimer);
+    setTimeout(()=>{f.style.transition=`width ${TV_MS}ms linear`;f.style.width='100%';tvTimer=setTimeout(()=>tvGo((tvCur+1)%tvPosts.length),TV_MS);},50);
 }
 function tvEmpty(icon,txt){
     tvScreen.innerHTML=`<div style="width:100%;height:100%;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:3px;background:linear-gradient(135deg,#0f0f1a,#1a1a2e)"><span style="font-size:22px">${icon}</span><p style="font-size:7px;color:#4a4a7a;font-weight:700">${txt}</p></div>`;
     document.getElementById('tvDots').innerHTML='';
 }
-function tvGo(idx){
-    for(let i=0;i<tvPosts.length;i++){
-        const el=document.getElementById('tvp_'+i);
-        if(el)el.style.display=i===idx?'flex':'none';
-        const d=document.getElementById('tvd_'+i);
-        if(d)d.style.background=i===idx?'#5b5ef4':'#2a2a4a';
-    }
-    tvCur=idx;tvResetProg();
-}
-function tvStartAuto(){tvResetProg();}
-function tvResetProg(){
-    const f=document.getElementById('tvProgFill');
-    f.style.transition='none';f.style.width='0%';
-    clearTimeout(tvTimer);
-    setTimeout(()=>{
-        f.style.transition=`width ${TV_MS}ms linear`;f.style.width='100%';
-        tvTimer=setTimeout(()=>tvGo((tvCur+1)%tvPosts.length),TV_MS);
-    },50);
-}
 
-// ── MUSIC ─────────────────────────────────────────────
-async function tvLoadMusic(){
-    try{
-        const r=await fetch('/api/music');
-        tvTracks=await r.json();
-        if(!tvTracks.length){document.getElementById('tvMusicTitle').textContent='No songs';return;}
-        tvLoadTrack(0,false);
-    }catch(e){}
+// ── VIDEO CHANNEL ──────────────────────────────────────────
+async function tvLoadVideos(){
+    try{const r=await fetch('/api/video');tvVideos=await r.json();}catch(e){tvVideos=[];}
 }
-function tvLoadTrack(idx,play=false){
-    if(!tvTracks[idx])return;
-    tvCurTrack=idx;
+function tvRenderVideo(){
+    document.getElementById('tvDots').innerHTML='';
+    if(!tvVideos.length){tvScreen.innerHTML=`<div style="width:100%;height:100%;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:3px;background:#0a0a18"><span style="font-size:22px">🎬</span><p style="font-size:7px;color:#4a4a7a;font-weight:700">Admin se video upload karo</p></div>`;return;}
+    const v=tvVideos[tvCurVideo];
+    tvScreen.innerHTML=`
+        <video id="tvVid" style="width:100%;height:100%;object-fit:contain;background:#000"
+            src="data:${v.mime_type};base64,${v.video_data}" playsinline></video>
+        <div style="position:absolute;bottom:2px;left:3px;right:3px;background:rgba(0,0,0,0.7);border-radius:3px;padding:2px 5px">
+            <div style="font-size:7px;font-weight:800;color:#fff;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${v.title}</div>
+        </div>`;
+    const vel=document.getElementById('tvVid');
+    vel.volume=rVolVal; vel.muted=rMuted; vel.playbackRate=SPEEDS[rSpdIdx];
+    vel.addEventListener('ended',()=>tvGoVid((tvCurVideo+1)%tvVideos.length));
+    document.getElementById('tvDots').innerHTML=tvVideos.map((_,i)=>
+        `<div onclick="tvGoVid(${i})" style="width:4px;height:4px;border-radius:50%;background:${i===tvCurVideo?'#5b5ef4':'#2a2a4a'};cursor:pointer;flex-shrink:0" id="tvvd${i}"></div>`).join('');
+    tvPlaying=false; document.getElementById('tvPlayBtn').textContent='▶';
+}
+function tvGoVid(idx){tvCurVideo=idx;tvRenderVideo();}
+
+// ── MUSIC CHANNEL ──────────────────────────────────────────
+async function tvLoadMusic(){
+    try{const r=await fetch('/api/music');tvTracks=await r.json();if(tvTracks.length)tvLoadTrack(0,false);}catch(e){}
+}
+function tvLoadTrack(idx,play){
+    if(!tvTracks[idx])return; tvCurTrack=idx;
     const t=tvTracks[idx];
     document.getElementById('tvMusicTitle').textContent=t.title;
     tvAudio.src=`data:${t.mime_type};base64,${t.audio_data}`;
-    tvAudio.load();
+    tvAudio.load(); tvAudio.volume=rVolVal; tvAudio.muted=rMuted; tvAudio.playbackRate=SPEEDS[rSpdIdx];
     if(play)tvAudio.play().then(()=>tvSetPlay(true)).catch(()=>{});
     else tvSetPlay(false);
+    if(tvChannel==='music')tvRenderMusicViz();
+}
+function tvRenderMusicViz(){
+    const t=tvTracks[tvCurTrack];
+    tvScreen.innerHTML=`<div style="width:100%;height:100%;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:4px;background:linear-gradient(135deg,#0a0a18,#1a1a2e)">
+        <div style="width:40px;height:40px;border-radius:50%;background:linear-gradient(135deg,#5b5ef4,#8b5cf6);display:flex;align-items:center;justify-content:center;font-size:16px">🎵</div>
+        <div style="font-size:8px;font-weight:800;color:#fff;max-width:90%;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;text-align:center">${t?t.title:'No songs'}</div>
+        <div style="font-size:7px;color:#8890a4">${t?t.artist||'Unknown':''}</div>
+    </div>`;
+    document.getElementById('tvDots').innerHTML='';
 }
 function tvSetPlay(v){tvPlaying=v;document.getElementById('tvPlayBtn').textContent=v?'⏸':'▶';}
-function tvTogglePlay(){if(!tvTracks.length)return;if(tvPlaying){tvAudio.pause();tvSetPlay(false);}else tvAudio.play().then(()=>tvSetPlay(true)).catch(()=>{});}
-function tvPrev(){if(tvTracks.length)tvLoadTrack((tvCurTrack-1+tvTracks.length)%tvTracks.length,tvPlaying);}
-function tvNext(){if(tvTracks.length)tvLoadTrack((tvCurTrack+1)%tvTracks.length,tvPlaying);}
-tvAudio.addEventListener('ended',()=>tvNext());
+tvAudio.addEventListener('ended',()=>{if(tvTracks.length)tvLoadTrack((tvCurTrack+1)%tvTracks.length,true);});
 
-// ── ADMIN PANEL ───────────────────────────────────────
-function toggleAdminPanel(e){
-    if(e)e.stopPropagation();
-    tapOpen=!tapOpen;
-    const panel=document.getElementById('tapWrap');
-    panel.style.opacity=tapOpen?'1':'0';
-    panel.style.pointerEvents=tapOpen?'all':'none';
-    panel.style.transform=tapOpen?'scale(1) translateX(0)':'scale(0.88) translateX(10px)';
-    // Reposition near TV
-    const tvR=ledTv.getBoundingClientRect();
-    const panW=265;
-    let left=tvR.left-panW-8;
-    if(left<8)left=tvR.right+8;
-    panel.style.left=left+'px';
-    panel.style.top=Math.max(8,tvR.top)+'px';
-    panel.style.right='auto';panel.style.bottom='auto';
-    if(tapOpen){tapLoadPosts();tapLoadTracks();}
-}
-document.addEventListener('click',e=>{
-    if(tapOpen&&!e.target.closest('#tapWrap')&&!e.target.closest('#tvEditBtn'))toggleAdminPanel();
-});
-
-function tapSwitch(name,btn){
-    document.getElementById('tapPosts').style.display=name==='Posts'?'block':'none';
-    document.getElementById('tapMusic').style.display=name==='Music'?'block':'none';
-    document.querySelectorAll('.tap-tab').forEach(b=>{b.style.background='white';b.style.color='#1a1a2e';b.style.borderColor='#e8eaf0';});
-    btn.style.background='linear-gradient(135deg,#5b5ef4,#8b5cf6)';btn.style.color='white';btn.style.borderColor='#5b5ef4';
-}
-function tapSetType(type,btn){
-    tapPostTypeVal=type;
-    document.getElementById('tapPostType').value=type;
-    document.querySelectorAll('.tap-type-btn').forEach(b=>{b.style.background='white';b.style.borderColor='#e8eaf0';b.style.color='#1a1a2e';});
-    btn.style.background='linear-gradient(135deg,#5b5ef4,#8b5cf6)';btn.style.color='white';btn.style.borderColor='#5b5ef4';
-    document.getElementById('tapImgField').style.display=type==='image'?'block':'none';
-}
-function tapShowMsg(txt,type){
-    const el=document.getElementById('tapMsg');
-    el.textContent=txt;el.style.cssText=`font-size:10px;font-weight:700;padding:5px 8px;border-radius:6px;margin-bottom:6px;display:block;background:${type==='ok'?'#d4edda':'#f8d7da'};color:${type==='ok'?'#155724':'#721c24'}`;
-    setTimeout(()=>el.style.display='none',3000);
-}
-
-async function tapLoadPosts(){
-    try{
-        const r=await fetch('/api/screen/posts');
-        const posts=await r.json();
-        const c=document.getElementById('tapPostList');
-        if(!posts.length){c.innerHTML='<p style="font-size:10px;color:#aaa;text-align:center;padding:6px">Koi post nahi</p>';return;}
-        c.innerHTML=posts.map(p=>`
-            <div style="display:flex;align-items:center;gap:6px;padding:6px;background:#f8f8fc;border-radius:8px;margin-bottom:5px">
-                ${p.post_type==='image'&&p.image_data?`<img src="data:${p.image_mime};base64,${p.image_data}" style="width:26px;height:26px;border-radius:4px;object-fit:cover;flex-shrink:0">`:`<span style="font-size:16px">${p.post_type==='image'?'🖼️':'📝'}</span>`}
-                <div style="flex:1;min-width:0"><strong style="font-size:10px;color:#1a1a2e;display:block;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">${p.title}</strong><small style="font-size:9px;color:#8890a4">${p.post_type}${p.affiliate_url?' 🔗':''}</small></div>
-                <button onclick="tapDelPost(${p.id})" style="background:none;border:1px solid #fca5a5;border-radius:5px;color:#ef4444;cursor:pointer;font-size:9px;padding:2px 6px;flex-shrink:0">✕</button>
-            </div>`).join('');
-    }catch(e){}
-}
-async function tapAddPost(){
-    const title=document.getElementById('tapTitle').value.trim();
-    if(!title){tapShowMsg('⚠️ Title chahiye!','err');return;}
-    const fd=new FormData();
-    fd.append('title',title);fd.append('post_type',tapPostTypeVal);
-    fd.append('content',document.getElementById('tapContent').value);
-    fd.append('affiliate_url',document.getElementById('tapAff').value);
-    if(tapPostTypeVal==='image'){
-        const img=document.getElementById('tapImage').files[0];
-        if(!img){tapShowMsg('⚠️ Image select karo!','err');return;}
-        if(img.size>6*1024*1024){tapShowMsg('⚠️ Max 6MB!','err');return;}
-        fd.append('image',img);
+// ── UNIFIED CONTROLS ───────────────────────────────────────
+function tvTogglePlay(){
+    if(tvChannel==='video'){
+        const vel=document.getElementById('tvVid'); if(!vel)return;
+        if(tvPlaying){vel.pause();tvSetPlay(false);}else vel.play().then(()=>tvSetPlay(true)).catch(()=>{});
+    } else {
+        if(!tvTracks.length)return;
+        if(tvPlaying){tvAudio.pause();tvSetPlay(false);}else tvAudio.play().then(()=>tvSetPlay(true)).catch(()=>{});
     }
-    try{
-        const r=await fetch('/api/screen/posts',{method:'POST',body:fd});
-        const d=await r.json();
-        if(d.message){tapShowMsg(d.message,'ok');['tapTitle','tapContent','tapAff'].forEach(id=>document.getElementById(id).value='');document.getElementById('tapImage').value='';tapLoadPosts();tvLoadPosts();}
-        else tapShowMsg(d.error||'Error!','err');
-    }catch(e){tapShowMsg('Failed!','err');}
 }
-async function tapDelPost(id){
-    if(!confirm('Remove?'))return;
-    const r=await fetch('/api/screen/posts/'+id,{method:'DELETE'});
-    const d=await r.json();tapShowMsg(d.message||d.error,d.message?'ok':'err');tapLoadPosts();tvLoadPosts();
+function tvPrev(){
+    if(tvChannel==='video')tvGoVid((tvCurVideo-1+Math.max(1,tvVideos.length))%Math.max(1,tvVideos.length));
+    else if(tvChannel==='posts')tvGo((tvCur-1+Math.max(1,tvPosts.length))%Math.max(1,tvPosts.length));
+    else if(tvTracks.length)tvLoadTrack((tvCurTrack-1+tvTracks.length)%tvTracks.length,tvPlaying);
+}
+function tvNext(){
+    if(tvChannel==='video')tvGoVid((tvCurVideo+1)%Math.max(1,tvVideos.length));
+    else if(tvChannel==='posts')tvGo((tvCur+1)%Math.max(1,tvPosts.length));
+    else if(tvTracks.length)tvLoadTrack((tvCurTrack+1)%tvTracks.length,tvPlaying);
 }
 
-async function tapLoadTracks(){
-    try{
-        const r=await fetch('/api/music');
-        const tracks=await r.json();
-        const c=document.getElementById('tapTrackList');
-        if(!tracks.length){c.innerHTML='<p style="font-size:10px;color:#aaa;text-align:center;padding:6px">Koi gaana nahi</p>';return;}
-        c.innerHTML=tracks.map(t=>`
-            <div style="display:flex;align-items:center;gap:6px;padding:6px;background:#f8f8fc;border-radius:8px;margin-bottom:5px">
-                <span style="font-size:16px">🎵</span>
-                <div style="flex:1;min-width:0"><strong style="font-size:10px;color:#1a1a2e;display:block;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">${t.title}</strong><small style="font-size:9px;color:#8890a4">${t.artist||'Unknown'}</small></div>
-                <button onclick="tapDelTrack(${t.id})" style="background:none;border:1px solid #fca5a5;border-radius:5px;color:#ef4444;cursor:pointer;font-size:9px;padding:2px 6px;flex-shrink:0">✕</button>
-            </div>`).join('');
-    }catch(e){}
+// ── REMOTE CONTROLS ────────────────────────────────────────
+function rVol(delta){
+    rVolVal=Math.max(0,Math.min(1,rVolVal+delta));
+    tvAudio.volume=rVolVal; const vel=document.getElementById('tvVid'); if(vel)vel.volume=rVolVal;
+    document.getElementById('rVolDisp').textContent=Math.round(rVolVal*100)+'%';
 }
-async function tapUploadTrack(){
-    const file=document.getElementById('tapSongFile').files[0];
-    if(!file){tapShowMsg('⚠️ File select karo!','err');return;}
-    if(file.size>10*1024*1024){tapShowMsg('⚠️ Max 10MB!','err');return;}
+function rMute(){
+    rMuted=!rMuted; tvAudio.muted=rMuted; const vel=document.getElementById('tvVid'); if(vel)vel.muted=rMuted;
+    const btn=document.getElementById('rMuteBtn');
+    btn.classList.toggle('on',rMuted);
+    btn.innerHTML=rMuted?'<span>🔇</span>Muted':'<span>🔇</span>Mute';
+    document.getElementById('rVolDisp').textContent=rMuted?'🔇':Math.round(rVolVal*100)+'%';
+}
+function rSpeed(dir){
+    rSpdIdx=Math.max(0,Math.min(SPEEDS.length-1,rSpdIdx+dir));
+    const s=SPEEDS[rSpdIdx]; tvAudio.playbackRate=s;
+    const vel=document.getElementById('tvVid'); if(vel)vel.playbackRate=s;
+    document.getElementById('rSpdDisp').textContent=s+'x';
+}
+function rQuality(){
+    rHQ=!rHQ;
+    document.getElementById('rQualBtn').innerHTML=rHQ?'<span>📺</span>HQ':'<span>📺</span>SD';
+    document.getElementById('rQualBtn').classList.toggle('on',rHQ);
+    tvScreen.style.filter=rHQ?'none':'blur(0.4px) contrast(0.85) saturate(0.7)';
+}
+function rBright(e){
+    const tr=document.getElementById('rBrightTrack');
+    const r=tr.getBoundingClientRect();
+    rBrightVal=Math.max(20,Math.min(100,Math.round(((e.clientX-r.left)/r.width)*100)));
+    document.getElementById('rBrightFill').style.width=rBrightVal+'%';
+    tvScreen.style.filter=`brightness(${rBrightVal/100})`;
+}
+
+// ── ADMIN PANEL ────────────────────────────────────────────
+let tapOpen2=false;
+function tvAdminPanel(e){
+    if(e)e.stopPropagation();
+    tapOpen2=!tapOpen2;
+    const p=document.getElementById('tapWrap');
+    p.classList.toggle('show',tapOpen2);
+    const tr=ledTv.getBoundingClientRect();
+    let l=tr.left-270; if(l<8)l=tr.right+8;
+    p.style.left=l+'px'; p.style.top=Math.max(8,tr.top)+'px';
+    p.style.right='auto'; p.style.bottom='auto';
+    if(tapOpen2){tLoadPosts();tLoadSongs();tLoadVideos();}
+}
+document.addEventListener('click',e=>{if(tapOpen2&&!e.target.closest('#tapWrap')&&!e.target.closest('#tvEditBtn'))tvAdminPanel();});
+
+function tSwitch(n){
+    [1,2,3].forEach(i=>{
+        document.getElementById('tPanel'+i).style.display=i===n?'block':'none';
+        const b=document.getElementById('tTab'+i);
+        b.style.background=i===n?'linear-gradient(135deg,#5b5ef4,#8b5cf6)':'white';
+        b.style.color=i===n?'white':'#1a1a2e';
+        b.style.borderColor=i===n?'#5b5ef4':'#e8eaf0';
+    });
+}
+function tType(type){
+    tPostType=type;
+    ['Txt','Img'].forEach(t=>{
+        const b=document.getElementById('tType'+t);
+        const isOn=(t==='Txt'&&type==='text')||(t==='Img'&&type==='image');
+        b.style.background=isOn?'linear-gradient(135deg,#5b5ef4,#8b5cf6)':'white';
+        b.style.color=isOn?'white':'#1a1a2e'; b.style.borderColor=isOn?'#5b5ef4':'#e8eaf0';
+    });
+    document.getElementById('tImgField').style.display=type==='image'?'block':'none';
+}
+function tMsg(txt,ok){
+    const e=document.getElementById('tapMsg');
+    e.textContent=txt; e.style.cssText=`font-size:10px;font-weight:700;padding:5px 8px;border-radius:6px;margin-bottom:6px;display:block;background:${ok?'#d4edda':'#f8d7da'};color:${ok?'#155724':'#721c24'}`;
+    setTimeout(()=>e.style.display='none',3000);
+}
+
+async function tLoadPosts(){
+    try{const r=await fetch('/api/screen/posts');const posts=await r.json();
+    document.getElementById('tPostList').innerHTML=posts.length?posts.map(p=>`
+        <div class="tap-item"><span style="font-size:18px">${p.post_type==='image'?'🖼️':'📝'}</span>
+        <div style="flex:1;min-width:0"><strong style="font-size:10px;display:block;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${p.title}</strong><small style="font-size:9px;color:#888">${p.post_type}</small></div>
+        <button class="tap-del" onclick="tDelPost(${p.id})">✕</button></div>`).join(''):'<p style="font-size:10px;color:#aaa;text-align:center;padding:6px">Koi post nahi</p>';}catch(e){}
+}
+async function tAddPost(){
+    const title=document.getElementById('tTitle').value.trim();
+    if(!title){tMsg('⚠️ Title chahiye!',false);return;}
     const fd=new FormData();
-    fd.append('audio',file);
-    fd.append('title',document.getElementById('tapSongTitle').value.trim()||file.name.replace(/\.[^/.]+$/,''));
-    fd.append('artist',document.getElementById('tapSongArtist').value.trim());
-    tapShowMsg('Uploading...','ok');
-    try{
-        const r=await fetch('/api/music',{method:'POST',body:fd});
-        const d=await r.json();
-        if(d.message){tapShowMsg(d.message,'ok');['tapSongTitle','tapSongArtist'].forEach(id=>document.getElementById(id).value='');document.getElementById('tapSongFile').value='';tapLoadTracks();tvLoadMusic();}
-        else tapShowMsg(d.error||'Error!','err');
-    }catch(e){tapShowMsg('Upload failed!','err');}
+    fd.append('title',title);fd.append('post_type',tPostType);
+    fd.append('content',document.getElementById('tContent').value);
+    fd.append('affiliate_url',document.getElementById('tAff').value);
+    if(tPostType==='image'){const img=document.getElementById('tImage').files[0];if(!img){tMsg('⚠️ Image select karo!',false);return;}fd.append('image',img);}
+    try{const r=await fetch('/api/screen/posts',{method:'POST',body:fd});const d=await r.json();
+    if(d.message){tMsg(d.message,true);['tTitle','tContent','tAff'].forEach(id=>document.getElementById(id).value='');document.getElementById('tImage').value='';tLoadPosts();tvLoadPosts();}
+    else tMsg(d.error||'Error!',false);}catch(e){tMsg('Failed!',false);}
 }
-async function tapDelTrack(id){
-    if(!confirm('Remove?'))return;
-    const r=await fetch('/api/music/'+id,{method:'DELETE'});
-    const d=await r.json();tapShowMsg(d.message||d.error,d.message?'ok':'err');tapLoadTracks();tvLoadMusic();
-}
+async function tDelPost(id){if(!confirm('Remove?'))return;const r=await fetch('/api/screen/posts/'+id,{method:'DELETE'});const d=await r.json();tMsg(d.message||d.error,!!d.message);tLoadPosts();tvLoadPosts();}
 
-// Called from DOMContentLoaded
+async function tLoadSongs(){
+    try{const r=await fetch('/api/music');const tracks=await r.json();
+    document.getElementById('tSongList').innerHTML=tracks.length?tracks.map(t=>`
+        <div class="tap-item"><span style="font-size:18px">🎵</span>
+        <div style="flex:1;min-width:0"><strong style="font-size:10px;display:block;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${t.title}</strong><small style="font-size:9px;color:#888">${t.artist||'Unknown'}</small></div>
+        <button class="tap-del" onclick="tDelSong(${t.id})">✕</button></div>`).join(''):'<p style="font-size:10px;color:#aaa;text-align:center;padding:6px">Koi song nahi</p>';}catch(e){}
+}
+async function tUploadSong(){
+    const file=document.getElementById('tSongFile').files[0];
+    if(!file){tMsg('⚠️ File select karo!',false);return;}
+    if(file.size>10*1024*1024){tMsg('⚠️ Max 10MB!',false);return;}
+    const fd=new FormData();fd.append('audio',file);
+    fd.append('title',document.getElementById('tSongTitle').value.trim()||file.name.replace(/\.[^/.]+$/,''));
+    fd.append('artist',document.getElementById('tSongArtist').value.trim());
+    tMsg('Uploading...',true);
+    try{const r=await fetch('/api/music',{method:'POST',body:fd});const d=await r.json();
+    if(d.message){tMsg(d.message,true);['tSongTitle','tSongArtist'].forEach(id=>document.getElementById(id).value='');document.getElementById('tSongFile').value='';tLoadSongs();tvLoadMusic();}
+    else tMsg(d.error||'Error!',false);}catch(e){tMsg('Failed!',false);}
+}
+async function tDelSong(id){if(!confirm('Remove?'))return;const r=await fetch('/api/music/'+id,{method:'DELETE'});const d=await r.json();tMsg(d.message||d.error,!!d.message);tLoadSongs();tvLoadMusic();}
+
+async function tLoadVideos(){
+    try{const r=await fetch('/api/video');const vids=await r.json();
+    document.getElementById('tVideoList').innerHTML=vids.length?vids.map(v=>`
+        <div class="tap-item"><span style="font-size:18px">🎬</span>
+        <div style="flex:1;min-width:0"><strong style="font-size:10px;display:block;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${v.title}</strong><small style="font-size:9px;color:#888">${v.description||'Video'}</small></div>
+        <button class="tap-del" onclick="tDelVideo(${v.id})">✕</button></div>`).join(''):'<p style="font-size:10px;color:#aaa;text-align:center;padding:6px">Koi video nahi</p>';}catch(e){}
+}
+async function tUploadVideo(){
+    const file=document.getElementById('tVideoFile').files[0];
+    if(!file){tMsg('⚠️ Video select karo!',false);return;}
+    if(file.size>10*1024*1024){tMsg('⚠️ Max 10MB!',false);return;}
+    const fd=new FormData();fd.append('video',file);
+    fd.append('title',document.getElementById('tVideoTitle').value.trim()||file.name.replace(/\.[^/.]+$/,''));
+    fd.append('description',document.getElementById('tVideoDesc').value.trim());
+    tMsg('Uploading...',true);
+    try{const r=await fetch('/api/video',{method:'POST',body:fd});const d=await r.json();
+    if(d.message){tMsg(d.message,true);['tVideoTitle','tVideoDesc'].forEach(id=>document.getElementById(id).value='');document.getElementById('tVideoFile').value='';tLoadVideos();tvLoadVideos();}
+    else tMsg(d.error||'Error!',false);}catch(e){tMsg('Failed!',false);}
+}
+async function tDelVideo(id){if(!confirm('Remove?'))return;const r=await fetch('/api/video/'+id,{method:'DELETE'});const d=await r.json();tMsg(d.message||d.error,!!d.message);tLoadVideos();tvLoadVideos();}
+
+// ── BUILT-IN CONTROL FUNCTIONS ─────────────────────────────
+function tvMuteToggle(){
+    rMuted=!rMuted; tvAudio.muted=rMuted;
+    const vel=document.getElementById('tvVid'); if(vel)vel.muted=rMuted;
+    document.getElementById('tvMuteBtn').textContent=rMuted?'🔇':'🔊';
+}
+function tvVolChange(delta){
+    rVolVal=Math.max(0,Math.min(1,rVolVal+delta));
+    tvAudio.volume=rVolVal; const vel=document.getElementById('tvVid'); if(vel)vel.volume=rVolVal;
+    document.getElementById('tvVolDisp').textContent=Math.round(rVolVal*100)+'%';
+}
+function tvSpeedChange(dir){
+    rSpdIdx=Math.max(0,Math.min(SPEEDS.length-1,rSpdIdx+dir));
+    const s=SPEEDS[rSpdIdx]; tvAudio.playbackRate=s;
+    const vel=document.getElementById('tvVid'); if(vel)vel.playbackRate=s;
+    document.getElementById('tvSpdDisp').textContent=s+'x';
+}
+function tvQualToggle(){
+    rHQ=!rHQ;
+    document.getElementById('tvQualBtn').textContent=rHQ?'📺HQ':'📺SD';
+    tvScreen.style.filter=rHQ?'none':'blur(0.4px) contrast(0.85) saturate(0.7)';
+}
+function tvBrightSet(e){
+    const tr=document.getElementById('tvBrightTrack');
+    const r=tr.getBoundingClientRect();
+    const pct=Math.max(20,Math.min(100,Math.round(((e.clientX-r.left)/r.width)*100)));
+    document.getElementById('tvBrightFill').style.width=pct+'%';
+    tvScreen.style.filter=`brightness(${pct/100})`;
+}
+// Aliases for old remote functions (backward compat)
+function rVol(d){tvVolChange(d);}
+function rMute(){tvMuteToggle();}
+function rSpeed(d){tvSpeedChange(d);}
+function rQuality(){tvQualToggle();}
+function rBright(e){tvBrightSet(e);}
+
+// ── SWIPE GESTURE on TV Screen ─────────────────────────────
+(function(){
+    let sx=0,moved=false;
+    tvScreen.addEventListener('touchstart',e=>{sx=e.touches[0].clientX;moved=false;},{passive:true});
+    tvScreen.addEventListener('touchmove',e=>{if(Math.abs(e.touches[0].clientX-sx)>10)moved=true;},{passive:true});
+    tvScreen.addEventListener('touchend',e=>{
+        if(!moved)return;
+        const dx=e.changedTouches[0].clientX-sx;
+        if(dx<-35)tvNext();       // ← swipe left = next
+        else if(dx>35)tvPrev();   // → swipe right = prev
+    },{passive:true});
+})();
+
+// ── INIT ───────────────────────────────────────────────────
 function initTV(adminFlag){
-    isAdminUser=adminFlag;
+    isAdmin=adminFlag;
     if(adminFlag)document.getElementById('tvEditBtn').style.display='block';
-    tvLoadPosts();tvLoadMusic();
+    tvLoadPosts(); tvLoadMusic(); tvLoadVideos();
+    setTimeout(posRemote,400);
 }
-
-// Add keyframe for TV slide animation
-const tvStyle=document.createElement('style');
-tvStyle.textContent='@keyframes tvsl{0%{opacity:0;transform:translateX(20px)}100%{opacity:1;transform:translateX(0)}}';
-document.head.appendChild(tvStyle);
-
 </script>
 </body>
 </html>
