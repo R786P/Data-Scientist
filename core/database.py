@@ -91,7 +91,52 @@ class VideoTrack(Base):
     description = Column(Text, nullable=True)
     video_data  = Column(Text)       # base64 MP4/WebM
     mime_type   = Column(String, default="video/mp4")
-    thumbnail   = Column(Text, nullable=True)   # base64 thumbnail image
+    thumbnail   = Column(Text, nullable=True)
     thumb_mime  = Column(String, nullable=True)
     is_active   = Column(Boolean, default=True)
     created_at  = Column(DateTime, default=datetime.utcnow)
+
+class ChatMessage(Base):
+    """Live chat messages."""
+    __tablename__ = "chat_messages"
+    id         = Column(Integer, primary_key=True, index=True)
+    username   = Column(String)
+    message    = Column(Text)
+    is_admin   = Column(Boolean, default=False)
+    created_at = Column(DateTime, default=datetime.utcnow)
+
+class PostAnalytics(Base):
+    """Track views per screen post."""
+    __tablename__ = "post_analytics"
+    id         = Column(Integer, primary_key=True, index=True)
+    post_id    = Column(Integer, index=True)
+    views      = Column(Integer, default=0)
+    clicks     = Column(Integer, default=0)
+    date       = Column(String)  # YYYY-MM-DD
+
+class ScheduledPost(Base):
+    """Posts scheduled to go live at a specific time."""
+    __tablename__ = "scheduled_posts"
+    id            = Column(Integer, primary_key=True, index=True)
+    title         = Column(String)
+    content       = Column(Text, nullable=True)
+    image_data    = Column(Text, nullable=True)
+    image_mime    = Column(String, nullable=True)
+    affiliate_url = Column(String, nullable=True)
+    post_type     = Column(String, default="text")
+    scheduled_at  = Column(DateTime)
+    is_published  = Column(Boolean, default=False)
+    created_at    = Column(DateTime, default=datetime.utcnow)
+
+class PushSubscription(Base):
+    """Web push notification subscriptions."""
+    __tablename__ = "push_subscriptions"
+    id         = Column(Integer, primary_key=True, index=True)
+    user_id    = Column(Integer, index=True)
+    endpoint   = Column(Text)
+    p256dh     = Column(Text)
+    auth       = Column(Text)
+    created_at = Column(DateTime, default=datetime.utcnow)
+
+# Create all tables
+Base.metadata.create_all(bind=engine)#80FF00
