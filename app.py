@@ -17,7 +17,8 @@ from werkzeug.security import check_password_hash, generate_password_hash
 import razorpay
 
 from core.database import (engine, Base, SessionLocal, UserQuery,
-                            AffiliateLink, QueryCount, ScreenPost, MusicTrack, VideoTrack)
+                            AffiliateLink, QueryCount, ScreenPost, MusicTrack,
+                            VideoTrack, ChatMessage, PostAnalytics, ScheduledPost, PushSubscription)
 from core.auth import (User, create_default_admin,
                        create_session_token, validate_session_token,
                        invalidate_session, get_user_plan, set_user_plan)
@@ -831,6 +832,341 @@ def get_stats():
 @app.route('/health')
 def health():
     return jsonify({"status": "healthy", "version": "3.0.0"}), 200
+
+# ═══════════════════════════════════════════════════════════════
+# YOUTUBE STREAM (yt-dlp)
+# ═══════════════════════════════════════════════════════════════
+@app.route('/api/yt-stream', methods=['POST'])
+@login_required
+def get_yt_stream():
+    """Extract direct stream URL from YouTube link using yt-dlp."""
+    try:
+        import yt_dlp
+        data = request.get_json()
+        url  = data.get('url', '').strip()
+        if not url:
+            return jsonify({'error': 'URL required!'}), 400
+        if 'youtube.com' not in url and 'youtu.be' not in url:
+            return jsonify({'error': 'Valid YouTube URL daalo!'}), 400
+
+        ydl_opts = {
+            'format': 'best[ext=mp4]/best',
+            'quiet': True,
+            'no_warnings': True,
+            'extract_flat': False,
+        }
+        with yt_dlp.YoutubeDL(ydl_opts) as ydl:
+            info = ydl.extract_info(url, download=False)
+            stream_url = info.get('url') or (info.get('formats', [{}])[-1].get('url'))
+            title      = info.get('title', 'YouTube Video')
+            thumbnail  = info.get('thumbnail', '')
+            duration   = info.get('duration', 0)
+
+        if not stream_url:
+            return jsonify({'error': 'Stream URL extract nahi hui!'}), 500
+
+        return jsonify({
+            'stream_url': stream_url,
+            'title': title,
+            'thumbnail': thumbnail,
+            'duration': duration
+        })
+    except ImportError:
+        return jsonify({'error': 'yt-dlp install nahi hai! requirements.txt check karo.'}), 500
+    except Exception as e:
+        return jsonify({'error': f'Error: {str(e)[:100]}'}), 500
+
+# ═══════════════════════════════════════════════════════════════
+# LIVE CHAT
+# ═══════════════════════════════════════════════════════════════
+@app.route('/api/chat/messages')
+@login_required
+def get_chat_messages():
+    db = SessionLocal()
+    try:
+        msgs = db.query(ChatMessage).order_by(ChatMessage.created_at.desc()).limit(50).all()
+        return jsonify([{
+            'id': m.id,
+            'username': m.username,
+            'message': m.message,
+            'is_admin': m.is_admin,
+            'time': m.created_at.strftime('%H:%M')
+        } for m in reversed(msgs)])
+    finally:
+        db.close()
+
+@app.route('/api/chat/messages', methods=['POST'])
+@login_required
+def send_chat_message():
+    db = SessionLocal()
+    try:
+        data = request.get_json()
+        msg = data.get('message', '').strip()
+        if not msg or len(msg) > 500:
+            return jsonify({'error': 'Invalid message'}), 400
+        from core.auth import get_user_by_id
+        user = get_user_by_id(current_user.id)
+        chat = ChatMessage(
+            username=current_user.username,
+            message=msg,
+            is_admin=current_user.is_admin
+        )
+        db.add(chat)
+        db.commit()
+        return jsonify({'message': '✅ Sent!', 'id': chat.id})
+    except Exception as e:
+        db.rollback()
+        return jsonify({'error': str(e)}), 500
+    finally:
+        db.close()
+
+@app.route('/api/chat/messages/<int:msg_id>', methods=['DELETE'])
+@login_required
+@admin_required
+def delete_chat_message(msg_id):
+    db = SessionLocal()
+    try:
+        m = db.query(ChatMessage).filter_by(id=msg_id).first()
+        if m:
+            db.delete(m)
+            db.commit()
+            return jsonify({'message': '✅ Deleted!'})
+        return jsonify({'error': 'Not found'}), 404
+    finally:
+        db.close()
+
+# ═══════════════════════════════════════════════════════════════
+# POST ANALYTICS
+# ═══════════════════════════════════════════════════════════════
+@app.route('/api/analytics/view/<int:post_id>', methods=['POST'])
+@login_required
+def track_post_view(post_id):
+    db = SessionLocal()
+    try:
+        today = datetime.utcnow().strftime('%Y-%m-%d')
+        rec = db.query(PostAnalytics).filter_by(post_id=post_id, date=today).first()
+        if rec:
+            rec.views += 1
+        else:
+            rec = PostAnalytics(post_id=post_id, views=1, clicks=0, date=today)
+            db.add(rec)
+        db.commit()
+        return jsonify({'ok': True})
+    except Exception as e:
+        db.rollback()
+        return jsonify({'error': str(e)}), 500
+    finally:
+        db.close()
+
+@app.route('/api/analytics/click/<int:post_id>', methods=['POST'])
+@login_required
+def track_post_click(post_id):
+    db = SessionLocal()
+    try:
+        today = datetime.utcnow().strftime('%Y-%m-%d')
+        rec = db.query(PostAnalytics).filter_by(post_id=post_id, date=today).first()
+        if rec:
+            rec.clicks += 1
+        else:
+            rec = PostAnalytics(post_id=post_id, views=0, clicks=1, date=today)
+            db.add(rec)
+        db.commit()
+        return jsonify({'ok': True})
+    except Exception as e:
+        db.rollback()
+        return jsonify({'error': str(e)}), 500
+    finally:
+        db.close()
+
+@app.route('/api/analytics')
+@login_required
+@admin_required
+def get_analytics():
+    db = SessionLocal()
+    try:
+        posts = db.query(ScreenPost).filter_by(is_active=True).all()
+        result = []
+        for p in posts:
+            recs = db.query(PostAnalytics).filter_by(post_id=p.id).all()
+            total_views  = sum(r.views for r in recs)
+            total_clicks = sum(r.clicks for r in recs)
+            result.append({
+                'post_id': p.id,
+                'title': p.title,
+                'views': total_views,
+                'clicks': total_clicks,
+                'ctr': round(total_clicks/total_views*100, 1) if total_views else 0
+            })
+        result.sort(key=lambda x: x['views'], reverse=True)
+        return jsonify(result)
+    finally:
+        db.close()
+
+# ═══════════════════════════════════════════════════════════════
+# SCHEDULED POSTS
+# ═══════════════════════════════════════════════════════════════
+@app.route('/api/scheduled', methods=['GET'])
+@login_required
+@admin_required
+def get_scheduled():
+    db = SessionLocal()
+    try:
+        posts = db.query(ScheduledPost).filter_by(is_published=False)\
+                  .order_by(ScheduledPost.scheduled_at).all()
+        return jsonify([{
+            'id': p.id,
+            'title': p.title,
+            'content': p.content,
+            'post_type': p.post_type,
+            'scheduled_at': p.scheduled_at.strftime('%Y-%m-%d %H:%M'),
+            'is_published': p.is_published
+        } for p in posts])
+    finally:
+        db.close()
+
+@app.route('/api/scheduled', methods=['POST'])
+@login_required
+@admin_required
+def create_scheduled():
+    import base64
+    db = SessionLocal()
+    try:
+        title        = request.form.get('title', '')
+        content      = request.form.get('content', '')
+        post_type    = request.form.get('post_type', 'text')
+        affiliate_url= request.form.get('affiliate_url', '')
+        scheduled_at = request.form.get('scheduled_at', '')
+        if not title or not scheduled_at:
+            return jsonify({'error': 'Title aur time required!'}), 400
+        from datetime import datetime as dt
+        sched_time = dt.strptime(scheduled_at, '%Y-%m-%dT%H:%M')
+        img_data, img_mime = None, None
+        if post_type == 'image' and 'image' in request.files:
+            f = request.files['image']
+            if f and f.filename:
+                img_data = base64.b64encode(f.read()).decode()
+                img_mime = f.content_type or 'image/jpeg'
+        sp = ScheduledPost(
+            title=title, content=content, post_type=post_type,
+            affiliate_url=affiliate_url, scheduled_at=sched_time,
+            image_data=img_data, image_mime=img_mime
+        )
+        db.add(sp); db.commit()
+        return jsonify({'message': f'✅ "{title}" scheduled!', 'id': sp.id})
+    except Exception as e:
+        db.rollback()
+        return jsonify({'error': str(e)}), 500
+    finally:
+        db.close()
+
+@app.route('/api/scheduled/<int:sp_id>', methods=['DELETE'])
+@login_required
+@admin_required
+def delete_scheduled(sp_id):
+    db = SessionLocal()
+    try:
+        sp = db.query(ScheduledPost).filter_by(id=sp_id).first()
+        if sp:
+            db.delete(sp); db.commit()
+            return jsonify({'message': '✅ Removed!'})
+        return jsonify({'error': 'Not found'}), 404
+    finally:
+        db.close()
+
+@app.route('/api/scheduled/publish', methods=['POST'])
+@login_required
+@admin_required
+def publish_due_posts():
+    """Publish scheduled posts whose time has come."""
+    db = SessionLocal()
+    try:
+        now = datetime.utcnow()
+        due = db.query(ScheduledPost).filter(
+            ScheduledPost.scheduled_at <= now,
+            ScheduledPost.is_published == False
+        ).all()
+        published = 0
+        for sp in due:
+            post = ScreenPost(
+                title=sp.title, content=sp.content,
+                post_type=sp.post_type, affiliate_url=sp.affiliate_url,
+                image_data=sp.image_data, image_mime=sp.image_mime,
+                is_active=True
+            )
+            db.add(post)
+            sp.is_published = True
+            published += 1
+        db.commit()
+        return jsonify({'message': f'✅ {published} posts published!'})
+    except Exception as e:
+        db.rollback()
+        return jsonify({'error': str(e)}), 500
+    finally:
+        db.close()
+
+# ═══════════════════════════════════════════════════════════════
+# PUSH NOTIFICATIONS (Web Push via VAPID)
+# ═══════════════════════════════════════════════════════════════
+VAPID_PUBLIC_KEY = os.getenv('VAPID_PUBLIC_KEY', '')
+VAPID_PRIVATE_KEY = os.getenv('VAPID_PRIVATE_KEY', '')
+VAPID_EMAIL = os.getenv('VAPID_EMAIL', 'mailto:admin@dsagent.com')
+
+@app.route('/api/push/vapid-public-key')
+def get_vapid_key():
+    return jsonify({'publicKey': VAPID_PUBLIC_KEY})
+
+@app.route('/api/push/subscribe', methods=['POST'])
+@login_required
+def push_subscribe():
+    db = SessionLocal()
+    try:
+        data = request.get_json()
+        sub = PushSubscription(
+            user_id=current_user.id,
+            endpoint=data['endpoint'],
+            p256dh=data['keys']['p256dh'],
+            auth=data['keys']['auth']
+        )
+        db.add(sub); db.commit()
+        return jsonify({'message': '✅ Subscribed!'})
+    except Exception as e:
+        db.rollback()
+        return jsonify({'error': str(e)}), 500
+    finally:
+        db.close()
+
+@app.route('/api/push/send', methods=['POST'])
+@login_required
+@admin_required
+def send_push():
+    db = SessionLocal()
+    try:
+        data  = request.get_json()
+        title = data.get('title', 'DS Agent')
+        body  = data.get('body', '')
+        subs  = db.query(PushSubscription).all()
+        sent  = 0
+        if VAPID_PRIVATE_KEY:
+            try:
+                from pywebpush import webpush, WebPushException
+                import json
+                for s in subs:
+                    try:
+                        webpush(
+                            subscription_info={'endpoint': s.endpoint, 'keys': {'p256dh': s.p256dh, 'auth': s.auth}},
+                            data=json.dumps({'title': title, 'body': body}),
+                            vapid_private_key=VAPID_PRIVATE_KEY,
+                            vapid_claims={'sub': VAPID_EMAIL}
+                        )
+                        sent += 1
+                    except: pass
+            except ImportError:
+                pass
+        return jsonify({'message': f'✅ {sent}/{len(subs)} notifications sent!'})
+    except Exception as e:
+        return jsonify({'error': str(e)}), 500
+    finally:
+        db.close()
 
 if __name__ == '__main__':
     port = int(os.environ.get('PORT', 10000))
