@@ -850,17 +850,36 @@ def get_yt_stream():
             return jsonify({'error': 'Valid YouTube URL daalo!'}), 400
 
         ydl_opts = {
-            'format': 'best[ext=mp4]/best',
+            'format': 'best[ext=mp4][height<=480]/best[height<=480]/best',
             'quiet': True,
             'no_warnings': True,
             'extract_flat': False,
+            'noplaylist': True,
+            'extractor_args': {
+                'youtube': {
+                    'player_client': ['android', 'web'],
+                    'skip': ['hls', 'dash'],
+                }
+            },
+            'http_headers': {
+                'User-Agent': 'Mozilla/5.0 (Linux; Android 11; Pixel 5) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Mobile Safari/537.36',
+                'Accept-Language': 'en-US,en;q=0.9',
+                'Accept': 'text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8',
+            },
         }
         with yt_dlp.YoutubeDL(ydl_opts) as ydl:
             info = ydl.extract_info(url, download=False)
-            stream_url = info.get('url') or (info.get('formats', [{}])[-1].get('url'))
-            title      = info.get('title', 'YouTube Video')
-            thumbnail  = info.get('thumbnail', '')
-            duration   = info.get('duration', 0)
+            formats = info.get('formats', [])
+            stream_url = None
+            for f in reversed(formats):
+                if f.get('ext') == 'mp4' and f.get('url'):
+                    stream_url = f['url']
+                    break
+            if not stream_url:
+                stream_url = info.get('url') or (formats[-1].get('url') if formats else None)
+            title     = info.get('title', 'YouTube Video')
+            thumbnail = info.get('thumbnail', '')
+            duration  = info.get('duration', 0)
 
         if not stream_url:
             return jsonify({'error': 'Stream URL extract nahi hui!'}), 500
