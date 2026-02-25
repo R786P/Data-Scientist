@@ -1,0 +1,1743 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>DS Agent</title>
+    <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@300;400;500;600;700&family=Sora:wght@600;700;800&display=swap" rel="stylesheet">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/lottie-web/5.12.2/lottie.min.js"></script>
+    <style>
+        :root {
+            --p: #5b5ef4;
+            --p2: #8b5cf6;
+            --acc: #06d6a0;
+            --bg: #f6f7fb;
+            --surface: #ffffff;
+            --text: #1a1a2e;
+            --muted: #8890a4;
+            --border: #e8eaf0;
+            --radius: 18px;
+        }
+        * { margin:0; padding:0; box-sizing:border-box; -webkit-tap-highlight-color:transparent; }
+        body { font-family:'DM Sans',sans-serif; background:var(--bg); min-height:100vh; overflow-x:hidden; }
+
+        .overlay { display:none; position:fixed; inset:0; background:rgba(0,0,0,0.4); z-index:400; backdrop-filter:blur(2px); }
+        .overlay.show { display:block; }
+
+        .drawer {
+            position:fixed; top:0; left:0; bottom:0; width:280px;
+            background:var(--surface); z-index:500;
+            transform:translateX(-100%); transition:transform 0.3s cubic-bezier(0.4,0,0.2,1);
+            display:flex; flex-direction:column; box-shadow:4px 0 30px rgba(0,0,0,0.12);
+        }
+        .drawer.open { transform:translateX(0); }
+        .drawer-header { padding:20px 20px 16px; border-bottom:1px solid var(--border); display:flex; align-items:center; gap:12px; }
+        .drawer-avatar { width:42px; height:42px; border-radius:50%; background:linear-gradient(135deg,var(--p),var(--p2)); display:flex; align-items:center; justify-content:center; color:white; font-weight:700; font-size:16px; flex-shrink:0; }
+        .drawer-user h4 { font-size:15px; font-weight:700; color:var(--text); }
+        .drawer-user span { font-size:11px; color:var(--muted); font-weight:500; }
+        .plan-pill { display:inline-block; padding:2px 8px; border-radius:20px; font-size:10px; font-weight:700; margin-left:4px; }
+        .plan-pill.free { background:#f0f0f0; color:#888; }
+        .plan-pill.pro { background:linear-gradient(135deg,var(--p),var(--p2)); color:white; }
+        .drawer-section { padding:12px 12px 4px; }
+        .drawer-section-label { font-size:10px; font-weight:700; color:var(--muted); text-transform:uppercase; letter-spacing:1.2px; padding:0 8px; margin-bottom:6px; }
+        .drawer-item { display:flex; align-items:center; gap:12px; padding:11px 12px; border-radius:12px; cursor:pointer; text-decoration:none; color:var(--text); font-size:14px; font-weight:500; transition:0.15s; }
+        .drawer-item:hover { background:#f4f4f8; }
+        .drawer-item.active { background:linear-gradient(135deg,#eef0ff,#f0e8ff); color:var(--p); font-weight:700; }
+        .drawer-item .di-icon { font-size:18px; width:28px; text-align:center; }
+        .drawer-item .di-badge { margin-left:auto; font-size:9px; font-weight:800; background:linear-gradient(135deg,var(--p),var(--p2)); color:white; padding:2px 7px; border-radius:8px; }
+        .drawer-footer { margin-top:auto; padding:16px 12px; border-top:1px solid var(--border); }
+        .drawer-footer a { display:flex; align-items:center; gap:10px; padding:10px 12px; border-radius:12px; color:var(--muted); font-size:13px; font-weight:600; text-decoration:none; transition:0.15s; }
+        .drawer-footer a:hover { background:#fef0f0; color:#e74c3c; }
+
+        .topbar { position:sticky; top:0; z-index:200; display:flex; align-items:center; justify-content:space-between; padding:14px 18px; background:rgba(246,247,251,0.9); backdrop-filter:blur(12px); border-bottom:1px solid transparent; }
+        .menu-btn { width:38px; height:38px; border:none; background:var(--surface); border-radius:12px; display:flex; align-items:center; justify-content:center; cursor:pointer; box-shadow:0 2px 8px rgba(0,0,0,0.08); font-size:18px; transition:0.15s; }
+        .menu-btn:hover { background:#eef0ff; }
+        .topbar-title { font-family:'Sora',sans-serif; font-size:16px; font-weight:700; color:var(--text); }
+        .topbar-right { display:flex; align-items:center; gap:8px; }
+        .top-avatar { width:34px; height:34px; border-radius:50%; background:linear-gradient(135deg,var(--p),var(--p2)); display:flex; align-items:center; justify-content:center; color:white; font-weight:700; font-size:13px; cursor:pointer; }
+
+        .main { display:flex; flex-direction:column; align-items:center; min-height:calc(100vh - 66px); padding:0 0 140px; }
+        .center-section { display:flex; flex-direction:column; align-items:center; padding:30px 20px 0; width:100%; max-width:600px; text-align:center; }
+
+        .mascot-wrap { position:relative; margin-bottom:10px; cursor:pointer; }
+        #lottie-bot { width:120px; height:120px; }
+        .speech-bubble { position:absolute; bottom:100%; left:50%; transform:translateX(-50%); background:var(--surface); border-radius:14px; padding:8px 14px; font-size:12px; font-weight:600; color:var(--text); white-space:nowrap; box-shadow:0 4px 20px rgba(0,0,0,0.1); border:1px solid var(--border); opacity:0; pointer-events:none; margin-bottom:8px; transition:all 0.3s cubic-bezier(0.34,1.56,0.64,1); transform:translateX(-50%) scale(0.85); }
+        .speech-bubble::after { content:''; position:absolute; top:100%; left:50%; transform:translateX(-50%); border:7px solid transparent; border-top-color:var(--surface); }
+        .speech-bubble.show { opacity:1; transform:translateX(-50%) scale(1); }
+
+        .welcome-small { font-size:14px; color:var(--muted); font-weight:500; margin-bottom:4px; }
+        .welcome-name { font-family:'Sora',sans-serif; font-size:28px; font-weight:800; background:linear-gradient(135deg,var(--p),var(--p2)); -webkit-background-clip:text; -webkit-text-fill-color:transparent; margin-bottom:6px; }
+        .welcome-sub { font-size:14px; color:var(--muted); font-weight:500; margin-bottom:24px; }
+
+        .upload-zone { width:100%; border:2px dashed #d0d4e8; border-radius:16px; padding:18px; text-align:center; cursor:pointer; background:var(--surface); transition:0.2s; margin-bottom:16px; }
+        .upload-zone:hover { border-color:var(--p); background:#f8f8ff; }
+        .upload-zone p { color:var(--p); font-size:14px; font-weight:600; margin-bottom:2px; }
+        .upload-zone small { color:var(--muted); font-size:12px; }
+        .upload-zone.synced { border-color:var(--acc); border-style:solid; background:#f0fdf8; }
+        .upload-zone.synced p { color:#059669; }
+
+        .reaction-row { display:flex; align-items:flex-end; gap:8px; width:100%; max-width:600px; padding:0 16px; margin-bottom:12px; }
+        .r-char { font-size:30px; flex-shrink:0; line-height:1; }
+        .r-bubble { background:var(--surface); border-radius:16px 16px 16px 4px; padding:10px 14px; font-size:13px; font-weight:500; color:var(--text); box-shadow:0 2px 12px rgba(0,0,0,0.06); border:1px solid var(--border); max-width:85%; position:relative; line-height:1.5; white-space:pre-wrap; word-wrap:break-word; }
+        .r-bubble.user { background:linear-gradient(135deg,var(--p),var(--p2)); color:white; border-radius:16px 16px 4px 16px; border:none; margin-left:auto; }
+        .r-bubble.ai-mode { background:linear-gradient(135deg,#f0f0ff,#f5f0ff); }
+        .reaction-row.user-row { flex-direction:row-reverse; }
+        .r-actions { position:absolute; top:4px; right:6px; display:flex; gap:2px; opacity:0; transition:0.2s; }
+        .r-bubble:hover .r-actions { opacity:1; }
+        .r-action-btn { background:rgba(0,0,0,0.08); border:none; border-radius:4px; padding:2px 5px; cursor:pointer; font-size:10px; }
+
+        .typing-dots span { height:6px; width:6px; background:var(--p); border-radius:50%; display:inline-block; margin:0 2px; animation:tdot 1.4s infinite; }
+        .typing-dots span:nth-child(2){animation-delay:0.2s}
+        .typing-dots span:nth-child(3){animation-delay:0.4s}
+        @keyframes tdot{0%,60%,100%{transform:translateY(0)}30%{transform:translateY(-5px)}}
+
+        .chat-area { width:100%; max-width:600px; display:flex; flex-direction:column; gap:0; padding-bottom:4px; overflow-y:auto; max-height:340px; }
+
+        .ai-toggle-row { display:flex; align-items:center; justify-content:center; gap:8px; padding:6px 0; margin-bottom:4px; }
+        .ai-toggle-row span { font-size:11px; color:var(--muted); font-weight:600; }
+        .toggle-sw { position:relative; width:42px; height:22px; }
+        .toggle-sw input { opacity:0; width:0; height:0; }
+        .toggle-sl { position:absolute; cursor:pointer; inset:0; background:#d0d4e8; border-radius:22px; transition:0.3s; }
+        .toggle-sl:before { position:absolute; content:""; height:16px; width:16px; left:3px; bottom:3px; background:white; border-radius:50%; transition:0.3s; }
+        input:checked+.toggle-sl { background:linear-gradient(135deg,var(--p),var(--p2)); }
+        input:checked+.toggle-sl:before { transform:translateX(20px); }
+        .ai-on-badge { background:linear-gradient(135deg,var(--p),var(--p2)); color:white; padding:2px 8px; border-radius:8px; font-size:10px; font-weight:800; display:none; }
+        .ai-on-badge.on { display:inline-block; }
+
+        .input-bar { position:fixed; bottom:0; left:0; right:0; background:var(--bg); padding:10px 16px 16px; border-top:1px solid var(--border); z-index:300; }
+        .input-wrap { display:flex; align-items:center; gap:8px; background:var(--surface); border-radius:16px; padding:8px 10px 8px 14px; box-shadow:0 2px 16px rgba(0,0,0,0.1); border:1px solid var(--border); }
+        .input-wrap input { flex:1; border:none; outline:none; font-size:15px; font-family:'DM Sans',sans-serif; background:transparent; color:var(--text); font-weight:500; }
+        .input-wrap input::placeholder { color:#b0b8cc; }
+        .input-wrap input:disabled { cursor:not-allowed; opacity:0.5; }
+        .input-btn { width:38px; height:38px; border:none; border-radius:12px; cursor:pointer; display:flex; align-items:center; justify-content:center; font-size:16px; transition:0.15s; flex-shrink:0; background:transparent; }
+        .input-btn:hover { background:#f0f0f8; }
+        .plus-btn { background:#f0f0f8; color:var(--p); font-size:20px; font-weight:300; }
+        .plus-btn:hover { background:#e8e8ff; }
+        .voice-btn.listening { background:linear-gradient(135deg,#ef4444,#f97316); color:white; animation:pulse-v 1s infinite; }
+        @keyframes pulse-v { 0%,100%{box-shadow:0 0 0 0 rgba(239,68,68,0.4)}50%{box-shadow:0 0 0 8px rgba(239,68,68,0)}}
+        .send-btn { background:linear-gradient(135deg,var(--p),var(--p2)); color:white; }
+        .send-btn:hover { opacity:0.9; transform:scale(1.05); }
+        .send-btn:disabled { background:#d0d4e8; cursor:not-allowed; transform:none; }
+        .voice-status { font-size:11px; color:var(--p); font-weight:600; text-align:center; margin-top:4px; height:14px; }
+
+        .plus-menu { position:fixed; bottom:80px; left:16px; right:16px; background:var(--surface); border-radius:20px; box-shadow:0 -4px 30px rgba(0,0,0,0.12); border:1px solid var(--border); padding:16px; z-index:400; transform:translateY(20px) scale(0.95); opacity:0; pointer-events:none; transition:all 0.25s cubic-bezier(0.34,1.56,0.64,1); }
+        .plus-menu.show { transform:translateY(0) scale(1); opacity:1; pointer-events:all; }
+        .plus-menu-title { font-size:11px; font-weight:700; color:var(--muted); text-transform:uppercase; letter-spacing:1px; margin-bottom:12px; }
+        .pm-grid { display:grid; grid-template-columns:repeat(4,1fr); gap:8px; }
+        .pm-item { display:flex; flex-direction:column; align-items:center; gap:5px; padding:12px 6px; border-radius:14px; cursor:pointer; background:#f8f9fc; border:1px solid var(--border); transition:0.15s; }
+        .pm-item:hover { background:#eef0ff; border-color:var(--p); }
+        .pm-item .pm-icon { font-size:22px; }
+        .pm-item .pm-label { font-size:10px; font-weight:700; color:var(--text); text-align:center; line-height:1.2; }
+        .pm-item .pm-pro { font-size:8px; color:var(--p); font-weight:800; }
+        .pm-voice-row { display:flex; gap:8px; margin-top:10px; padding-top:10px; border-top:1px solid var(--border); align-items:center; }
+        .pm-voice-row label { font-size:12px; font-weight:700; color:var(--text); flex-shrink:0; }
+        .gender-btn { padding:5px 14px; border-radius:20px; border:2px solid var(--border); cursor:pointer; font-size:12px; font-weight:700; background:white; transition:0.15s; font-family:'DM Sans',sans-serif; }
+        .gender-btn.active { border-color:var(--p); background:linear-gradient(135deg,var(--p),var(--p2)); color:white; }
+        .speed-wrap { display:flex; align-items:center; gap:6px; margin-left:auto; }
+        .speed-wrap label { font-size:10px; color:var(--muted); font-weight:600; }
+        .speed-wrap input { width:70px; accent-color:var(--p); }
+
+        .speaking-row { display:none; justify-content:center; gap:3px; align-items:center; padding:4px 0; }
+        .speaking-row.on { display:flex; }
+        .sp-bar { width:3px; height:14px; background:var(--p); border-radius:2px; }
+        .sp-bar:nth-child(1){animation:sw .6s ease infinite 0s}
+        .sp-bar:nth-child(2){animation:sw .6s ease infinite .1s}
+        .sp-bar:nth-child(3){animation:sw .6s ease infinite .2s}
+        .sp-bar:nth-child(4){animation:sw .6s ease infinite .3s}
+        .sp-bar:nth-child(5){animation:sw .6s ease infinite .4s}
+        @keyframes sw{0%,100%{transform:scaleY(1)}50%{transform:scaleY(1.8)}}
+
+        .sess-overlay { display:none; position:fixed; inset:0; background:rgba(0,0,0,0.7); justify-content:center; align-items:center; z-index:9000; }
+        .sess-overlay.show { display:flex; }
+        .sess-card { background:white; border-radius:20px; padding:28px; text-align:center; max-width:300px; width:90%; }
+        .sess-card h3 { color:#ef4444; font-size:18px; font-weight:800; margin-bottom:8px; }
+        .sess-card p { color:var(--muted); font-size:13px; margin-bottom:18px; }
+        .sess-card a { display:block; padding:12px; background:linear-gradient(135deg,var(--p),var(--p2)); color:white; border-radius:12px; text-decoration:none; font-weight:700; }
+
+        .aff-overlay { display:none; position:fixed; inset:0; background:rgba(0,0,0,0.55); justify-content:center; align-items:center; z-index:8000; backdrop-filter:blur(3px); }
+        .aff-overlay.show { display:flex; }
+        .aff-card { background:white; border-radius:22px; padding:26px 22px; width:90%; max-width:360px; text-align:center; animation:pop .4s cubic-bezier(0.34,1.56,0.64,1); }
+        @keyframes pop { 0%{transform:scale(0.7);opacity:0}100%{transform:scale(1);opacity:1} }
+        .aff-sponsor { font-size:10px; color:#aaa; font-weight:700; text-transform:uppercase; letter-spacing:1px; margin-bottom:8px; }
+        .aff-card h3 { font-family:'Sora',sans-serif; font-size:18px; font-weight:700; color:var(--text); margin-bottom:6px; }
+        .aff-card p { font-size:13px; color:var(--muted); margin-bottom:16px; }
+        .aff-visit { display:block; padding:12px; background:linear-gradient(135deg,var(--p),var(--p2)); color:white; border-radius:12px; text-decoration:none; font-weight:700; font-size:14px; margin-bottom:8px; }
+        .aff-skip { background:none; border:none; cursor:pointer; color:var(--muted); font-size:12px; font-weight:600; font-family:'DM Sans',sans-serif; padding:4px; }
+
+        .dl-section { margin-top:10px; padding-top:10px; border-top:1px solid var(--border); display:none; }
+        .dl-section.show { display:block; }
+        .dl-title { font-size:11px; font-weight:700; color:var(--muted); text-transform:uppercase; letter-spacing:1px; margin-bottom:8px; }
+        .dl-btns { display:flex; flex-wrap:wrap; gap:6px; }
+        .dl-btn { padding:6px 12px; border-radius:10px; border:1px solid var(--border); background:white; font-size:11px; font-weight:700; cursor:pointer; font-family:'DM Sans',sans-serif; color:var(--text); transition:0.15s; display:flex; align-items:center; gap:4px; }
+        .dl-btn:hover { background:#eef0ff; border-color:var(--p); color:var(--p); }
+        .dl-btn:disabled { opacity:0.4; cursor:not-allowed; }
+        .email-dl-btn { width:100%; padding:10px; background:linear-gradient(135deg,#059669,#34d399); color:white; border:none; border-radius:10px; font-size:13px; font-weight:700; cursor:pointer; font-family:'DM Sans',sans-serif; margin-top:8px; }
+
+        .modal { display:none; position:fixed; inset:0; background:rgba(0,0,0,0.5); justify-content:center; align-items:center; z-index:7000; }
+        .modal.show { display:flex; }
+        .modal-card { background:white; border-radius:20px; padding:24px; width:90%; max-width:360px; }
+        .modal-card h3 { font-size:17px; font-weight:800; color:var(--text); margin-bottom:14px; }
+        .modal-card input { width:100%; padding:11px 14px; border:2px solid var(--border); border-radius:12px; font-size:14px; font-family:'DM Sans',sans-serif; outline:none; margin-bottom:12px; }
+        .modal-card input:focus { border-color:var(--p); }
+        .modal-btns { display:flex; gap:8px; }
+        .modal-btns button { flex:1; padding:10px; border:none; border-radius:10px; cursor:pointer; font-weight:700; font-family:'DM Sans',sans-serif; }
+        .m-send { background:linear-gradient(135deg,var(--p),var(--p2)); color:white; }
+        .m-cancel { background:#f0f0f0; color:var(--text); }
+
+        .viewer-modal { display:none; position:fixed; inset:0; background:rgba(0,0,0,0.88); justify-content:center; align-items:center; z-index:9000; }
+        .viewer-modal.show { display:flex; }
+        .viewer-content { background:white; border-radius:20px; padding:18px; width:96%; max-width:740px; max-height:88vh; overflow:auto; position:relative; }
+        .viewer-content img { max-width:100%; border-radius:10px; }
+        .viewer-content iframe { width:100%; height:460px; border:none; }
+        .v-close { position:absolute; top:10px; right:14px; font-size:26px; cursor:pointer; color:var(--p); font-weight:900; line-height:1; }
+
+        .query-bar { display:none; align-items:center; gap:8px; background:var(--surface); border-radius:12px; padding:8px 14px; margin:8px 16px 0; box-shadow:0 1px 6px rgba(0,0,0,0.06); }
+        .query-bar.show { display:flex; }
+        .qb-text { font-size:11px; font-weight:700; color:var(--muted); white-space:nowrap; }
+        .qb-prog { flex:1; height:5px; background:#eee; border-radius:4px; overflow:hidden; }
+        .qb-fill { height:100%; background:linear-gradient(90deg,var(--p),var(--p2)); border-radius:4px; transition:0.5s; }
+        .qb-link { font-size:11px; color:var(--p); font-weight:800; text-decoration:none; white-space:nowrap; }
+
+        .loader { border:3px solid #eee; border-top:3px solid var(--p); border-radius:50%; width:16px; height:16px; animation:spin .8s linear infinite; display:inline-block; vertical-align:middle; }
+        @keyframes spin{to{transform:rotate(360deg)}}
+        @keyframes tvsl{0%{opacity:0;transform:translateX(18px)}100%{opacity:1;transform:translateX(0)}}
+        @keyframes blink{0%,100%{opacity:1}50%{opacity:0}}
+
+        .led-tv{position:fixed;top:80px;right:12px;width:145px;z-index:500;cursor:grab;user-select:none;-webkit-user-select:none;box-shadow:0 6px 24px rgba(91,94,244,0.35)}
+        .led-tv:active{cursor:grabbing}
+
+        .tv-remote{position:fixed;top:80px;right:170px;width:64px;z-index:499;cursor:grab;user-select:none;-webkit-user-select:none;box-shadow:0 4px 14px rgba(0,0,0,0.4);transition:opacity 0.2s}
+        .tv-remote.hidden{opacity:0;pointer-events:none}
+        .remote-body{background:linear-gradient(170deg,#1a1a2e,#0d0d1a);border-radius:14px 14px 22px 22px;border:2px solid #2a2a4a;box-shadow:inset 0 0 12px rgba(91,94,244,0.1),0 0 0 1px #3a3a5a;padding:8px 6px 14px;display:flex;flex-direction:column;gap:5px;align-items:center;position:relative}
+        .r-brand{font-size:6px;font-weight:800;color:#5b5ef4;letter-spacing:1.5px}
+        .r-power{width:20px;height:20px;border-radius:50%;background:linear-gradient(135deg,#ef4444,#dc2626);border:none;cursor:pointer;display:flex;align-items:center;justify-content:center;font-size:10px;color:white;box-shadow:0 0 8px rgba(239,68,68,0.4);transition:0.15s}
+        .r-power:hover{transform:scale(1.1)}
+        .r-power:active{transform:scale(0.9)}
+        .r-div{width:46px;height:1px;background:#2a2a4a}
+        .r-dpad{display:grid;grid-template-columns:repeat(3,18px);grid-template-rows:repeat(3,16px);gap:2px}
+        .dp{background:#1e1e38;border:1px solid #3a3a5a;border-radius:4px;cursor:pointer;color:#8890a4;font-size:9px;display:flex;align-items:center;justify-content:center;transition:0.15s}
+        .dp:hover{background:#2a2a4a;color:#fff}
+        .dp:active{background:#5b5ef4;color:#fff;transform:scale(0.88)}
+        .dp.mid{background:linear-gradient(135deg,#5b5ef4,#8b5cf6);color:white;border-radius:50%;border-color:#5b5ef4;font-size:7px}
+        .dp.empty{background:transparent;border:none;pointer-events:none}
+        .r-row{display:flex;align-items:center;gap:3px;width:50px}
+        .r-sm-btn{background:#1e1e38;border:1px solid #3a3a5a;border-radius:5px;cursor:pointer;color:#8890a4;width:16px;height:16px;display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:900;transition:0.15s;flex-shrink:0;line-height:1}
+        .r-sm-btn:hover{background:#2a2a4a;color:#fff}
+        .r-sm-btn:active{background:#5b5ef4;color:#fff;transform:scale(0.9)}
+        .r-disp{flex:1;text-align:center;font-size:7.5px;font-weight:800;background:#0f0f1a;border-radius:4px;padding:2px 0}
+        .r-grid2{display:grid;grid-template-columns:1fr 1fr;gap:3px;width:50px}
+        .r-gbtn{background:#1e1e38;border:1px solid #3a3a5a;border-radius:6px;cursor:pointer;color:#8890a4;font-size:6.5px;font-weight:700;padding:4px 2px;text-align:center;transition:0.15s;font-family:'DM Sans',sans-serif;line-height:1.4}
+        .r-gbtn:hover{background:#2a2a4a;color:#fff}
+        .r-gbtn:active{transform:scale(0.9)}
+        .r-gbtn.on{background:linear-gradient(135deg,#5b5ef4,#8b5cf6);color:white;border-color:#5b5ef4}
+        .r-gbtn span{display:block;font-size:11px;margin-bottom:1px}
+        .r-bright-lbl{font-size:6px;color:#4a4a7a;font-weight:700;align-self:flex-start;width:50px}
+        .r-bright-track{width:50px;height:5px;background:#1a1a3a;border-radius:3px;cursor:pointer;overflow:hidden}
+        .r-bright-fill{height:100%;background:linear-gradient(90deg,#f59e0b,#fbbf24);border-radius:3px;width:80%;pointer-events:none}
+        .r-resize{position:absolute;bottom:3px;right:3px;width:13px;height:13px;cursor:se-resize;display:flex;align-items:center;justify-content:center}
+        .remote-toggle{position:fixed;z-index:498;background:#1a1a2e;border:1.5px solid #3a3a5a;border-radius:8px;cursor:pointer;color:#8890a4;font-size:9px;padding:3px 8px;font-weight:700;box-shadow:0 2px 8px rgba(0,0,0,0.3);transition:0.2s;font-family:'DM Sans',sans-serif}
+        .remote-toggle:hover{color:#fff;border-color:#5b5ef4}
+
+        .tap-wrap{position:fixed;width:265px;background:white;border-radius:16px;box-shadow:0 8px 32px rgba(0,0,0,0.18);border:1px solid #e8eaf0;z-index:601;opacity:0;pointer-events:none;transform:scale(0.88);transition:all 0.25s cubic-bezier(0.34,1.56,0.64,1);max-height:72vh;overflow-y:auto}
+        .tap-wrap.show{opacity:1;pointer-events:all;transform:scale(1)}
+        .tap-inp{width:100%;padding:7px 10px;border:1.5px solid #e8eaf0;border-radius:8px;font-size:11px;font-family:'DM Sans',sans-serif;margin-bottom:7px;outline:none;box-sizing:border-box}
+        .tap-inp:focus{border-color:#5b5ef4}
+        .tap-btn-main{width:100%;padding:8px;background:linear-gradient(135deg,#5b5ef4,#8b5cf6);color:white;border:none;border-radius:8px;font-size:11px;font-weight:800;cursor:pointer;font-family:'DM Sans',sans-serif;margin-bottom:8px}
+        .tap-item{display:flex;align-items:center;gap:6px;padding:6px;background:#f8f8fc;border-radius:8px;margin-bottom:5px}
+        .tap-del{background:none;border:1px solid #fca5a5;border-radius:5px;color:#ef4444;cursor:pointer;font-size:9px;padding:2px 6px;flex-shrink:0}
+
+        /* ══ LIVE CHAT — FIXED ══ */
+        .chat-bubble{position:fixed;bottom:76px;left:16px;z-index:499;width:42px;height:42px;border-radius:50%;background:linear-gradient(135deg,#5b5ef4,#8b5cf6);border:none;cursor:pointer;display:flex;align-items:center;justify-content:center;font-size:20px;box-shadow:0 4px 16px rgba(91,94,244,0.4);transition:0.2s}
+        .chat-bubble:hover{transform:scale(1.1)}
+        .chat-badge{position:absolute;top:-3px;right:-3px;background:#ef4444;color:white;font-size:8px;font-weight:800;width:16px;height:16px;border-radius:50%;display:none;align-items:center;justify-content:center}
+
+        /* ✅ CHAT PANEL FIX - bottom:auto, opacity transition */
+        .chat-panel{position:fixed;bottom:auto;left:16px;top:auto;width:280px;height:380px;background:white;border-radius:18px;box-shadow:0 8px 32px rgba(0,0,0,0.18);border:1px solid #e8eaf0;z-index:600;display:none;flex-direction:column;touch-action:none;opacity:0;transition:opacity 0.2s;}
+
+        .chat-header{padding:12px 14px;background:linear-gradient(135deg,#5b5ef4,#8b5cf6);border-radius:17px 17px 0 0;display:flex;align-items:center;justify-content:space-between;cursor:grab;user-select:none;-webkit-user-select:none;touch-action:none}
+        .chat-header:active{cursor:grabbing}
+        .chat-msgs{flex:1;overflow-y:auto;padding:10px;display:flex;flex-direction:column;gap:6px}
+        .chat-msg{max-width:80%;padding:6px 10px;border-radius:12px;font-size:11px;line-height:1.4;word-break:break-word}
+        .chat-msg.me{align-self:flex-end;background:linear-gradient(135deg,#5b5ef4,#8b5cf6);color:white;border-radius:12px 12px 2px 12px}
+        .chat-msg.other{align-self:flex-start;background:#f0f0f8;color:#1a1a2e;border-radius:12px 12px 12px 2px}
+        .chat-msg.admin-msg{background:linear-gradient(135deg,#f59e0b,#f97316);color:white}
+        .chat-input-row{padding:8px;border-top:1px solid #e8eaf0;display:flex;gap:6px}
+        .chat-inp{flex:1;padding:7px 10px;border:1.5px solid #e8eaf0;border-radius:20px;font-size:12px;font-family:'DM Sans',sans-serif;outline:none}
+        .chat-inp:focus{border-color:#5b5ef4}
+        .chat-send{background:linear-gradient(135deg,#5b5ef4,#8b5cf6);border:none;border-radius:50%;width:34px;height:34px;cursor:pointer;color:white;font-size:16px;display:flex;align-items:center;justify-content:center;flex-shrink:0}
+
+        .analytics-panel{position:fixed;top:80px;left:50%;transform:translateX(-50%) scale(0.9);width:320px;max-height:80vh;overflow-y:auto;background:white;border-radius:18px;box-shadow:0 8px 32px rgba(0,0,0,0.18);border:1px solid #e8eaf0;z-index:600;opacity:0;pointer-events:none;transition:all 0.25s cubic-bezier(0.34,1.56,0.64,1)}
+        .analytics-panel.show{opacity:1;pointer-events:all;transform:translateX(-50%) scale(1)}
+        .stat-card{background:#f8f8fc;border-radius:10px;padding:10px 12px;display:flex;align-items:center;justify-content:space-between;margin-bottom:6px}
+
+        /* ══ ERROR CARTOON ══ */
+.err-cartoon-overlay{position:fixed;inset:0;background:rgba(0,0,0,0.6);z-index:8500;display:flex;align-items:center;justify-content:center;backdrop-filter:blur(3px);opacity:0;transition:opacity 0.3s;}
+.err-cartoon-overlay.show{opacity:1;}
+.err-cartoon-card{background:white;border-radius:28px;padding:24px 20px;width:88%;max-width:320px;text-align:center;transform:scale(0.5) translateY(60px);transition:transform 0.45s cubic-bezier(0.34,1.56,0.64,1);position:relative;overflow:hidden;}
+.err-cartoon-overlay.show .err-cartoon-card{transform:scale(1) translateY(0);}
+.err-cartoon-char{font-size:72px;display:block;animation:charBob 0.6s ease infinite alternate;line-height:1;margin-bottom:8px;}
+@keyframes charBob{0%{transform:translateY(0) rotate(-5deg)}100%{transform:translateY(-8px) rotate(5deg)}}
+@keyframes charShake{0%,100%{transform:rotate(0)}20%{transform:rotate(-12deg)}40%{transform:rotate(12deg)}60%{transform:rotate(-8deg)}80%{transform:rotate(8deg)}}
+@keyframes charDance{0%{transform:translateY(0) scale(1)}25%{transform:translateY(-12px) scale(1.1) rotate(-8deg)}50%{transform:translateY(0) scale(1)}75%{transform:translateY(-8px) scale(1.05) rotate(8deg)}100%{transform:translateY(0) scale(1)}}
+@keyframes charClap{0%,100%{transform:scale(1)}30%{transform:scale(1.2) rotate(-5deg)}60%{transform:scale(0.95) rotate(5deg)}}
+@keyframes confettiFall{0%{transform:translateY(-20px) rotate(0);opacity:1}100%{transform:translateY(80px) rotate(360deg);opacity:0}}
+.err-speech{background:linear-gradient(135deg,#fff3e0,#ffe0b2);border:2px solid #ffcc80;border-radius:16px;padding:10px 14px;font-size:13px;font-weight:700;color:#e65100;margin-bottom:14px;line-height:1.5;position:relative;}
+.err-speech::before{content:'';position:absolute;top:-10px;left:50%;transform:translateX(-50%);border:6px solid transparent;border-bottom-color:#ffcc80;}
+.err-tv-btn{width:100%;padding:12px;background:linear-gradient(135deg,#5b5ef4,#8b5cf6);color:white;border:none;border-radius:14px;font-size:14px;font-weight:800;cursor:pointer;font-family:'DM Sans',sans-serif;margin-bottom:8px;letter-spacing:0.3px;}
+.err-tv-btn:hover{opacity:0.9;transform:scale(1.02);}
+.err-skip{background:none;border:none;cursor:pointer;color:#aaa;font-size:12px;font-weight:600;font-family:'DM Sans',sans-serif;padding:4px;}
+.confetti-piece{position:absolute;width:8px;height:8px;border-radius:2px;animation:confettiFall 1s ease forwards;}
+
+.thanks-cartoon-overlay{position:fixed;inset:0;background:rgba(0,0,0,0.55);z-index:8500;display:flex;align-items:center;justify-content:center;backdrop-filter:blur(2px);opacity:0;transition:opacity 0.3s;pointer-events:none;}
+.thanks-cartoon-overlay.show{opacity:1;pointer-events:all;}
+.thanks-cartoon-card{background:white;border-radius:28px;padding:22px 20px;width:88%;max-width:300px;text-align:center;transform:scale(0.5);transition:transform 0.45s cubic-bezier(0.34,1.56,0.64,1);}
+.thanks-cartoon-overlay.show .thanks-cartoon-card{transform:scale(1);}
+
+.notif-toast{position:fixed;top:70px;left:50%;transform:translateX(-50%) translateY(-100px);background:#1a1a2e;color:white;padding:10px 18px;border-radius:12px;font-size:12px;font-weight:700;z-index:9999;transition:transform 0.3s cubic-bezier(0.34,1.56,0.64,1);box-shadow:0 4px 16px rgba(0,0,0,0.3);max-width:280px;text-align:center}
+        .notif-toast.show{transform:translateX(-50%) translateY(0)}
+    </style>
+</head>
+<body>
+
+<div class="sess-overlay" id="sessOverlay">
+    <div class="sess-card">
+        <h3>🔒 Session Expire!</h3>
+        <p>Aapka account kisi aur device pe login hua. Please dobara login karo.</p>
+        <a href="/login">🔑 Login Again</a>
+    </div>
+</div>
+
+<div class="aff-overlay" id="affOverlay">
+    <div class="aff-card">
+        <div class="aff-sponsor">📢 Sponsored</div>
+        <h3 id="affTitle">Partner Offer</h3>
+        <p id="affDesc">Check out this amazing tool!</p>
+        <a href="#" id="affLink" class="aff-visit" target="_blank" rel="noopener" onclick="proceedDl()">Visit Partner →</a>
+        <button class="aff-skip" onclick="proceedDl()">Skip & Download</button>
+    </div>
+</div>
+
+<div class="overlay" id="overlay" onclick="closeDrawer()"></div>
+
+<div class="drawer" id="drawer">
+    <div class="drawer-header">
+        <div class="drawer-avatar" id="drawerAvatar">?</div>
+        <div class="drawer-user">
+            <h4 id="drawerName">Loading...</h4>
+            <span id="drawerSub">Free plan <span class="plan-pill free" id="drawerPill">Free</span></span>
+        </div>
+    </div>
+    <div class="drawer-section">
+        <div class="drawer-section-label">Main</div>
+        <a class="drawer-item active" href="/"><span class="di-icon">🏠</span> Home</a>
+        <a class="drawer-item" href="/dashboard"><span class="di-icon">📊</span> Dashboard<span class="di-badge">Pro</span></a>
+        <a class="drawer-item" href="/pricing"><span class="di-icon">⭐</span> Upgrade to Pro</a>
+    </div>
+    <div class="drawer-section" id="adminSection" style="display:none">
+        <div class="drawer-section-label">Admin</div>
+        <a class="drawer-item" href="/admin"><span class="di-icon">🛡️</span> Admin Panel</a>
+        <a class="drawer-item" onclick="openDrawerAffiliate()"><span class="di-icon">🔗</span> Affiliate Links</a>
+        <a class="drawer-item" onclick="openDrawerUsers()"><span class="di-icon">👥</span> Manage Users</a>
+    </div>
+    <div class="drawer-section">
+        <div class="drawer-section-label">Quick Commands</div>
+        <div class="drawer-item" onclick="quickCmd('dashboard')"><span class="di-icon">📈</span> Show Dashboard</div>
+        <div class="drawer-item" onclick="quickCmd('kpi')"><span class="di-icon">🎯</span> KPI Cards</div>
+        <div class="drawer-item" onclick="quickCmd('top 5')"><span class="di-icon">🏆</span> Top 5</div>
+        <div class="drawer-item" onclick="quickCmd('average')"><span class="di-icon">🔢</span> Average</div>
+        <div class="drawer-item" onclick="quickCmd('bar chart')"><span class="di-icon">📉</span> Bar Chart</div>
+    </div>
+    <div class="drawer-footer"><a href="/logout">🚪 Logout</a></div>
+</div>
+
+<div class="topbar">
+    <button class="menu-btn" onclick="openDrawer()">☰</button>
+    <span class="topbar-title">🤖 DS Agent</span>
+    <div class="topbar-right">
+        <div class="top-avatar" id="topAvatar" onclick="openDrawer()">?</div>
+    </div>
+</div>
+
+<div class="query-bar" id="queryBar">
+    <span class="qb-text" id="qbText">0/10</span>
+    <div class="qb-prog"><div class="qb-fill" id="qbFill" style="width:0%"></div></div>
+    <a href="/pricing" class="qb-link">⭐ Upgrade</a>
+</div>
+
+<div class="main">
+    <div class="center-section">
+        <div class="mascot-wrap" onclick="mascotTap()">
+            <div class="speech-bubble" id="bubble">Namaste! 👋</div>
+            <div id="lottie-bot"></div>
+        </div>
+        <div class="speaking-row" id="speakRow">
+            <div class="sp-bar"></div><div class="sp-bar"></div>
+            <div class="sp-bar"></div><div class="sp-bar"></div><div class="sp-bar"></div>
+        </div>
+        <div class="welcome-small">नमस्ते,</div>
+        <div class="welcome-name" id="wName">...</div>
+        <div class="welcome-sub" id="wSub">कहाँ से शुरुआत करें?</div>
+        <div class="upload-zone" id="uploadZone" onclick="document.getElementById('fileIn').click()">
+            <p id="uploadTxt">📁 CSV / Excel Upload करें</p>
+            <small>Click to select file</small>
+            <input type="file" id="fileIn" accept=".csv,.xlsx" style="display:none" onchange="uploadFile(this)">
+        </div>
+        <div class="ai-toggle-row">
+            <span>⚡ Command</span>
+            <label class="toggle-sw">
+                <input type="checkbox" id="aiToggle" onchange="toggleAI(this)">
+                <span class="toggle-sl"></span>
+            </label>
+            <span>🤖 AI Chat</span>
+            <span class="ai-on-badge" id="aiBadge">ON</span>
+        </div>
+    </div>
+    <div class="chat-area" id="chatArea"></div>
+</div>
+
+<div class="plus-menu" id="plusMenu">
+    <div class="plus-menu-title">🛠 Tools & Downloads</div>
+    <div class="pm-grid">
+        <div class="pm-item" onclick="quickCmd('dashboard');closePlus()"><span class="pm-icon">📊</span><span class="pm-label">Dashboard</span><span class="pm-pro">Pro</span></div>
+        <div class="pm-item" onclick="quickCmd('kpi');closePlus()"><span class="pm-icon">📈</span><span class="pm-label">KPI Cards</span></div>
+        <div class="pm-item" onclick="quickCmd('top 5');closePlus()"><span class="pm-icon">🏆</span><span class="pm-label">Top 5</span></div>
+        <div class="pm-item" onclick="quickCmd('bar chart');closePlus()"><span class="pm-icon">📉</span><span class="pm-label">Bar Chart</span></div>
+        <div class="pm-item" onclick="quickCmd('export excel');closePlus()"><span class="pm-icon">📄</span><span class="pm-label">Excel</span><span class="pm-pro">Pro</span></div>
+        <div class="pm-item" onclick="quickCmd('export csv');closePlus()"><span class="pm-icon">📋</span><span class="pm-label">CSV</span></div>
+        <div class="pm-item" onclick="quickCmd('export html');closePlus()"><span class="pm-icon">🌐</span><span class="pm-label">HTML</span></div>
+        <div class="pm-item" onclick="quickCmd('average');closePlus()"><span class="pm-icon">🔢</span><span class="pm-label">Average</span></div>
+    </div>
+    <div class="pm-voice-row">
+        <label>🔊</label>
+        <button class="gender-btn active" id="btnF" onclick="setGender('female')">👩 Female</button>
+        <button class="gender-btn" id="btnM" onclick="setGender('male')">👨 Male</button>
+        <div class="speed-wrap">
+            <label>Speed</label>
+            <input type="range" id="spd" min="0.5" max="1.8" step="0.1" value="0.95" oninput="document.getElementById('spdVal').textContent=this.value+'x'">
+            <span id="spdVal" style="font-size:10px;font-weight:700;color:var(--p)">0.95x</span>
+        </div>
+    </div>
+    <div class="dl-section" id="dlSection">
+        <div class="dl-title">📥 Downloads</div>
+        <div class="dl-btns">
+            <button class="dl-btn" id="dlPlot" onclick="triggerDl('plot')" disabled>📊 Plot</button>
+            <button class="dl-btn" id="dlDash" onclick="triggerDl('dashboard')" disabled>📈 Dashboard</button>
+            <button class="dl-btn" id="dlExcel" onclick="triggerDl('excel')" disabled>📄 Excel</button>
+            <button class="dl-btn" id="dlCSV" onclick="triggerDl('csv')" disabled>📋 CSV</button>
+            <button class="dl-btn" id="dlHTML" onclick="triggerDl('html')" disabled>🌐 HTML</button>
+            <button class="dl-btn" onclick="dlAllReports()">📝 All Reports</button>
+        </div>
+        <button class="email-dl-btn" onclick="document.getElementById('emailModal').classList.add('show');closePlus()">📧 Email Reports</button>
+    </div>
+</div>
+
+<div class="input-bar">
+    <div class="input-wrap">
+        <button class="input-btn plus-btn" onclick="togglePlus()">+</button>
+        <input type="text" id="msgInput" placeholder="Pehle file upload karo..." disabled>
+        <button class="input-btn voice-btn" id="voiceBtn" onclick="toggleVoice()">🎤</button>
+        <button class="input-btn send-btn" id="sendBtn" onclick="sendMsg()" disabled>➤</button>
+    </div>
+    <div class="voice-status" id="vStatus"></div>
+</div>
+
+<!-- ════ FLOATING LED TV ════ -->
+<div id="ledTv" class="led-tv">
+    <div id="tvSizeLabel" style="position:absolute;top:-22px;left:50%;transform:translateX(-50%);background:rgba(91,94,244,0.9);color:white;font-size:9px;font-weight:800;padding:2px 8px;border-radius:6px;white-space:nowrap;pointer-events:none;opacity:0;transition:opacity 0.2s;z-index:10"></div>
+    <div style="background:linear-gradient(180deg,#1c1c30,#0f0f1a);border-radius:10px 10px 6px 6px;border:2.5px solid #2a2a4a;box-shadow:0 0 0 1px #3a3a5a,inset 0 0 12px rgba(91,94,244,0.1);overflow:hidden;position:relative">
+        <div style="position:absolute;inset:0;pointer-events:none;z-index:20;background:repeating-linear-gradient(0deg,transparent,transparent 2px,rgba(0,0,0,0.06) 2px,rgba(0,0,0,0.06) 4px);border-radius:8px"></div>
+        <div id="tvScreen" style="width:100%;height:90px;background:#000;overflow:hidden;position:relative">
+            <div style="width:100%;height:100%;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:3px;background:linear-gradient(135deg,#0f0f1a,#1a1a2e)">
+                <span style="font-size:22px">📺</span>
+                <p style="font-size:7px;color:#4a4a7a;font-weight:700">Loading...</p>
+            </div>
+        </div>
+        <div style="background:#0d0d1f;padding:2px 5px;display:flex;align-items:center;gap:3px">
+            <div id="tvDots" style="display:flex;gap:2px"></div>
+            <div style="flex:1;height:2px;background:#1a1a3a;border-radius:2px;overflow:hidden">
+                <div id="tvProgFill" style="height:100%;background:linear-gradient(90deg,#5b5ef4,#8b5cf6);border-radius:2px;width:0%;transition:width linear"></div>
+            </div>
+        </div>
+        <div style="background:#0a0a18;padding:3px 5px;display:flex;align-items:center;justify-content:space-between;border-top:1px solid #1a1a3a">
+            <button onclick="tvMenuToggle(event)" style="background:#1e1e38;border:1px solid #3a3a5a;border-radius:5px;color:#8890a4;cursor:pointer;font-size:11px;padding:3px 7px;line-height:1;font-family:'DM Sans',sans-serif">☰</button>
+            <span id="tvStatus" style="font-size:6.5px;font-weight:800;color:#8890a4">📢 Posts</span>
+            <div style="display:flex;gap:2px">
+                <button id="tvMuteBtn" onclick="tvMuteToggle()" style="background:#1e1e38;border:1px solid #3a3a5a;border-radius:4px;color:#8890a4;cursor:pointer;font-size:10px;padding:2px 5px;line-height:1">🔊</button>
+                <button id="tvEditBtn" onclick="tvAdminPanel(event)" style="display:none;background:#1e1e38;border:1px solid #3a3a5a;border-radius:4px;color:#5b5ef4;cursor:pointer;font-size:10px;padding:2px 5px;line-height:1">✏️</button>
+                <button onclick="tvCollapse(event)" id="tvColBtn" style="background:#1e1e38;border:1px solid #3a3a5a;border-radius:4px;color:#4a4a7a;cursor:pointer;font-size:9px;padding:2px 5px;line-height:1">▼</button>
+            </div>
+        </div>
+        <div id="tvMenu" style="display:none;position:absolute;bottom:28px;left:0;right:0;background:#0d0d1f;border-top:1px solid #2a2a4a;z-index:25;padding:6px 5px">
+            <div style="display:flex;align-items:center;gap:4px;margin-bottom:5px;padding:3px 4px;background:#1a1a2e;border-radius:5px">
+                <div style="width:14px;height:14px;border-radius:3px;background:linear-gradient(135deg,#5b5ef4,#8b5cf6);display:flex;align-items:center;justify-content:center;font-size:7px;flex-shrink:0">🎵</div>
+                <div id="tvMusicTitle" style="flex:1;font-size:6.5px;font-weight:800;color:#e0e0ff;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">No songs</div>
+            </div>
+            <div style="font-size:6px;color:#4a4a7a;font-weight:700;margin-bottom:3px;padding-left:2px">CHANNELS</div>
+            <div style="display:flex;gap:2px;margin-bottom:5px">
+                <button id="chPosts" onclick="tvSetChannel('posts');tvMenuToggle()" style="flex:1;background:#5b5ef4;border:none;border-radius:4px;color:white;cursor:pointer;font-size:6px;font-weight:800;padding:4px 1px;line-height:1.3;font-family:'DM Sans',sans-serif">📢<br>Posts</button>
+                <button id="chVideo" onclick="tvSetChannel('video');tvMenuToggle()" style="flex:1;background:#1e1e38;border:none;border-radius:4px;color:#8890a4;cursor:pointer;font-size:6px;font-weight:800;padding:4px 1px;line-height:1.3;font-family:'DM Sans',sans-serif">🎬<br>Video</button>
+                <button id="chMusic" onclick="tvSetChannel('music');tvMenuToggle()" style="flex:1;background:#1e1e38;border:none;border-radius:4px;color:#8890a4;cursor:pointer;font-size:6px;font-weight:800;padding:4px 1px;line-height:1.3;font-family:'DM Sans',sans-serif">🎵<br>Music</button>
+                <button id="chLive" onclick="tvSetChannel('live');tvMenuToggle()" style="flex:1;background:#1e1e38;border:none;border-radius:4px;color:#8890a4;cursor:pointer;font-size:6px;font-weight:800;padding:4px 1px;line-height:1.3;font-family:'DM Sans',sans-serif;position:relative">📡<br>Live<span id="chLiveDot" style="position:absolute;top:2px;right:2px;width:4px;height:4px;border-radius:50%;background:#ef4444;display:none;animation:blink 1s infinite"></span></button>
+                <button id="chBrowser" onclick="tvSetChannel('browser');tvMenuToggle()" style="flex:1;background:#1e1e38;border:none;border-radius:4px;color:#8890a4;cursor:pointer;font-size:6px;font-weight:800;padding:4px 1px;line-height:1.3;font-family:'DM Sans',sans-serif">🐍<br>PyNB</button>
+                <button id="chYouTube" onclick="tvSetChannel('youtube');tvMenuToggle()" style="flex:1;background:#1e1e38;border:none;border-radius:4px;color:#8890a4;cursor:pointer;font-size:6px;font-weight:800;padding:4px 1px;line-height:1.3;font-family:'DM Sans',sans-serif">▶<br>YT</button>
+            </div>
+            <div style="font-size:6px;color:#4a4a7a;font-weight:700;margin-bottom:3px;padding-left:2px">REMOTE</div>
+            <div style="display:flex;gap:2px;margin-bottom:3px">
+                <button onclick="tvPrev()" style="flex:1;background:#1e1e38;border:1px solid #3a3a5a;border-radius:4px;color:#8890a4;cursor:pointer;font-size:12px;padding:4px 0;line-height:1">⏮</button>
+                <button id="tvPlayBtn" onclick="tvTogglePlay()" style="flex:2;background:linear-gradient(135deg,#5b5ef4,#8b5cf6);border:none;border-radius:5px;color:white;cursor:pointer;font-size:14px;padding:4px 0;line-height:1">▶</button>
+                <button onclick="tvNext()" style="flex:1;background:#1e1e38;border:1px solid #3a3a5a;border-radius:4px;color:#8890a4;cursor:pointer;font-size:12px;padding:4px 0;line-height:1">⏭</button>
+            </div>
+            <div style="display:flex;gap:2px;margin-bottom:3px">
+                <button onclick="tvVolChange(-0.1)" style="background:#1e1e38;border:1px solid #3a3a5a;border-radius:4px;color:#8890a4;cursor:pointer;font-size:12px;width:20px;height:18px;line-height:1">−</button>
+                <div id="tvVolDisp" style="width:26px;text-align:center;font-size:7px;font-weight:800;color:#5b5ef4;background:#0f0f1a;border-radius:4px;padding:3px 0">80%</div>
+                <button onclick="tvVolChange(0.1)" style="background:#1e1e38;border:1px solid #3a3a5a;border-radius:4px;color:#8890a4;cursor:pointer;font-size:12px;width:20px;height:18px;line-height:1">+</button>
+                <div style="width:1px;background:#2a2a4a;flex-shrink:0"></div>
+                <button onclick="tvSpeedChange(-1)" style="background:#1e1e38;border:1px solid #3a3a5a;border-radius:4px;color:#8890a4;cursor:pointer;font-size:9px;width:18px;height:18px;line-height:1;font-weight:900">−</button>
+                <div id="tvSpdDisp" style="width:22px;text-align:center;font-size:7px;font-weight:800;color:#06d6a0;background:#0f0f1a;border-radius:4px;padding:3px 0">1x</div>
+                <button onclick="tvSpeedChange(1)" style="background:#1e1e38;border:1px solid #3a3a5a;border-radius:4px;color:#8890a4;cursor:pointer;font-size:9px;width:18px;height:18px;line-height:1;font-weight:900">+</button>
+                <div style="width:1px;background:#2a2a4a;flex-shrink:0"></div>
+                <button id="tvQualBtn" onclick="tvQualToggle()" style="flex:1;background:#1e1e38;border:1px solid #3a3a5a;border-radius:4px;color:#8890a4;cursor:pointer;font-size:6px;font-weight:800;padding:3px 2px;line-height:1">📺HQ</button>
+            </div>
+            <div style="display:flex;align-items:center;gap:3px">
+                <span style="font-size:7px;color:#4a4a7a;flex-shrink:0">🔆</span>
+                <div id="tvBrightTrack" onclick="tvBrightSet(event)" style="flex:1;height:5px;background:#1a1a3a;border-radius:3px;cursor:pointer;overflow:hidden">
+                    <div id="tvBrightFill" style="height:100%;background:linear-gradient(90deg,#f59e0b,#fbbf24);width:80%;border-radius:3px;pointer-events:none"></div>
+                </div>
+            </div>
+        </div>
+        <div id="tvToolbar" style="background:#030308;padding:2px 6px;display:flex;align-items:center;justify-content:center;cursor:grab">
+            <span style="font-size:8px;color:#2a2a4a;letter-spacing:3px">⠿⠿⠿</span>
+        </div>
+        <div id="tvResize" style="position:absolute;bottom:0;right:0;width:18px;height:18px;cursor:se-resize;z-index:30;display:flex;align-items:center;justify-content:center">
+            <svg width="10" height="10" viewBox="0 0 10 10"><path d="M1 9L9 1M5 9L9 5" stroke="#5b5ef4" stroke-width="2" stroke-linecap="round"/></svg>
+        </div>
+    </div>
+    <div style="width:16px;height:5px;background:#1a1a2e;margin:0 auto"></div>
+    <div style="width:44px;height:4px;background:#1a1a2e;margin:0 auto;border-radius:0 0 4px 4px"></div>
+</div>
+
+<!-- ════ ADMIN EDITOR PANEL ════ -->
+<div class="tap-wrap" id="tapWrap">
+    <div style="padding:11px 14px;background:linear-gradient(135deg,#5b5ef4,#8b5cf6);border-radius:15px 15px 0 0;display:flex;align-items:center;justify-content:space-between">
+        <h4 style="font-size:13px;font-weight:800;color:white">✏️ Screen Editor</h4>
+        <button onclick="tvAdminPanel()" style="background:rgba(255,255,255,0.2);border:none;border-radius:8px;color:white;cursor:pointer;font-size:14px;padding:2px 7px">✕</button>
+    </div>
+    <div style="padding:12px">
+        <div id="tapMsg" style="font-size:10px;font-weight:700;padding:5px 8px;border-radius:6px;margin-bottom:6px;display:none"></div>
+        <div style="display:grid;grid-template-columns:repeat(4,1fr);gap:4px;margin-bottom:10px;">
+            <button id="tTab1" onclick="tSwitch(1)" style="padding:6px 2px;border-radius:8px;border:1.5px solid #5b5ef4;cursor:pointer;font-size:9px;font-weight:800;background:linear-gradient(135deg,#5b5ef4,#8b5cf6);color:white;font-family:'DM Sans',sans-serif;text-align:center">📢 Posts</button>
+            <button id="tTab2" onclick="tSwitch(2)" style="padding:6px 2px;border-radius:8px;border:1.5px solid #e8eaf0;cursor:pointer;font-size:9px;font-weight:800;background:white;color:#1a1a2e;font-family:'DM Sans',sans-serif;text-align:center">🎵 Music</button>
+            <button id="tTab3" onclick="tSwitch(3)" style="padding:6px 2px;border-radius:8px;border:1.5px solid #e8eaf0;cursor:pointer;font-size:9px;font-weight:800;background:white;color:#1a1a2e;font-family:'DM Sans',sans-serif;text-align:center">🎬 Video</button>
+            <button id="tTab4" onclick="tSwitch(4)" style="padding:6px 2px;border-radius:8px;border:1.5px solid #e8eaf0;cursor:pointer;font-size:9px;font-weight:800;background:white;color:#1a1a2e;font-family:'DM Sans',sans-serif;text-align:center">📡 Live</button>
+            <button id="tTab5" onclick="tSwitch(5)" style="padding:6px 2px;border-radius:8px;border:1.5px solid #e8eaf0;cursor:pointer;font-size:9px;font-weight:800;background:white;color:#1a1a2e;font-family:'DM Sans',sans-serif;text-align:center">⏰ Sched</button>
+            <button id="tTab6" onclick="tSwitch(6)" style="padding:6px 2px;border-radius:8px;border:1.5px solid #e8eaf0;cursor:pointer;font-size:9px;font-weight:800;background:white;color:#1a1a2e;font-family:'DM Sans',sans-serif;text-align:center">🔔 Notify</button>
+            <button id="tTab7" onclick="tSwitch(7)" style="padding:6px 2px;border-radius:8px;border:1.5px solid #e8eaf0;cursor:pointer;font-size:9px;font-weight:800;background:white;color:#1a1a2e;font-family:'DM Sans',sans-serif;text-align:center">🐍 PyNB</button>
+            <button id="tTab8" onclick="tSwitch(8)" style="padding:6px 2px;border-radius:8px;border:1.5px solid #e8eaf0;cursor:pointer;font-size:9px;font-weight:800;background:white;color:#1a1a2e;font-family:'DM Sans',sans-serif;text-align:center">▶ YT</button>
+        </div>
+        <div id="tPanel1">
+            <div style="display:flex;gap:5px;margin-bottom:7px">
+                <button id="tTypeTxt" onclick="tType('text')" style="flex:1;padding:5px;border-radius:7px;border:1.5px solid #5b5ef4;background:linear-gradient(135deg,#5b5ef4,#8b5cf6);color:white;cursor:pointer;font-size:10px;font-weight:700;font-family:'DM Sans',sans-serif">📝 Text</button>
+                <button id="tTypeImg" onclick="tType('image')" style="flex:1;padding:5px;border-radius:7px;border:1.5px solid #e8eaf0;background:white;cursor:pointer;font-size:10px;font-weight:700;font-family:'DM Sans',sans-serif">🖼️ Image</button>
+            </div>
+            <input type="hidden" id="tPostType" value="text">
+            <input class="tap-inp" type="text" id="tTitle" placeholder="Title">
+            <textarea class="tap-inp" id="tContent" rows="2" placeholder="Content..." style="resize:none"></textarea>
+            <div id="tImgField" style="display:none;margin-bottom:7px">
+                <input type="file" id="tImage" accept="image/*" style="width:100%;padding:7px;border:1.5px dashed #5b5ef4;border-radius:8px;font-size:10px;background:#f8f8ff;cursor:pointer;box-sizing:border-box">
+                <small style="font-size:9px;color:#888;display:block;margin-top:2px">✅ GIF bhi chalega!</small>
+            </div>
+            <input class="tap-inp" type="url" id="tAff" placeholder="🔗 Affiliate URL (optional)">
+            <button class="tap-btn-main" onclick="tAddPost()">➕ Add Post</button>
+            <div id="tPostList"></div>
+        </div>
+        <div id="tPanel2" style="display:none">
+            <input class="tap-inp" type="text" id="tSongTitle" placeholder="Song title">
+            <input class="tap-inp" type="text" id="tSongArtist" placeholder="Artist name">
+            <input type="file" id="tSongFile" accept="audio/*,.mp3,.wav" style="width:100%;padding:7px;border:1.5px dashed #5b5ef4;border-radius:8px;font-size:10px;background:#f8f8ff;cursor:pointer;box-sizing:border-box;margin-bottom:5px">
+            <small style="font-size:9px;color:#888;display:block;margin-bottom:8px">MP3/WAV — Max 10MB</small>
+            <button class="tap-btn-main" onclick="tUploadSong()">🎵 Upload Song</button>
+            <div id="tSongList"></div>
+        </div>
+        <div id="tPanel3" style="display:none">
+            <input class="tap-inp" type="text" id="tVideoTitle" placeholder="Video title">
+            <input class="tap-inp" type="text" id="tVideoDesc" placeholder="Description (optional)">
+            <input type="file" id="tVideoFile" accept="video/*,.mp4,.webm,.mov" style="width:100%;padding:7px;border:1.5px dashed #5b5ef4;border-radius:8px;font-size:10px;background:#f8f8ff;cursor:pointer;box-sizing:border-box;margin-bottom:4px">
+            <small style="font-size:9px;color:#888;display:block;margin-bottom:8px">MP4/WebM — Max 10MB</small>
+            <button class="tap-btn-main" onclick="tUploadVideo()">🎬 Upload Video</button>
+            <div id="tVideoList"></div>
+        </div>
+        <div id="tPanel4" style="display:none">
+            <div style="background:#f0fff4;border:1.5px solid #a7f3d0;border-radius:8px;padding:8px 10px;margin-bottom:10px">
+                <p style="font-size:10px;font-weight:700;color:#065f46;margin-bottom:3px">📡 Live / Custom URL kaise daale?</p>
+                <p style="font-size:9px;color:#555;line-height:1.6">✅ Direct MP4 link: <b>https://example.com/video.mp4</b><br>✅ Archive.org videos<br>✅ Any direct .mp4 / .webm / .m3u8 URL</p>
+            </div>
+            <input class="tap-inp" type="text" id="tLiveTitle" placeholder="Channel naam (e.g. DD National)">
+            <input class="tap-inp" type="url" id="tLiveUrl" placeholder="https://... (direct MP4/stream URL)">
+            <button class="tap-btn-main" onclick="tSaveLive()">📡 Save Channel</button>
+            <div id="tLiveList"></div>
+        </div>
+        <div id="tPanel5" style="display:none">
+            <div style="background:#fff8e1;border:1.5px solid #ffd54f;border-radius:8px;padding:8px 10px;margin-bottom:10px">
+                <p style="font-size:10px;font-weight:700;color:#e65100">⏰ Post ko future mein schedule karo!</p>
+                <p style="font-size:9px;color:#555">Time set karo → automatic publish hoga</p>
+            </div>
+            <input class="tap-inp" type="text" id="tSchTitle" placeholder="Post title">
+            <textarea class="tap-inp" id="tSchContent" rows="2" placeholder="Content..." style="resize:none"></textarea>
+            <label style="font-size:10px;color:#888;font-weight:700;display:block;margin-bottom:4px">📅 Publish Time:</label>
+            <input class="tap-inp" type="datetime-local" id="tSchTime">
+            <input class="tap-inp" type="url" id="tSchAff" placeholder="🔗 Affiliate URL (optional)">
+            <button class="tap-btn-main" onclick="tSchedulePost()">⏰ Schedule Post</button>
+            <button style="width:100%;padding:7px;background:#f0fff4;border:1.5px solid #06d6a0;border-radius:8px;font-size:11px;font-weight:800;cursor:pointer;font-family:'DM Sans',sans-serif;margin-bottom:8px;color:#065f46" onclick="tPublishDue()">🚀 Publish Due Posts Now</button>
+            <div id="tSchList"></div>
+        </div>
+        <div id="tPanel6" style="display:none">
+            <div style="background:#f3f0ff;border:1.5px solid #c4b5fd;border-radius:8px;padding:8px 10px;margin-bottom:10px">
+                <p style="font-size:10px;font-weight:700;color:#5b21b6">🔔 Sabhi users ko notification bhejo!</p>
+                <p style="font-size:9px;color:#555">Users ne allow kiya hoga toh milegi</p>
+            </div>
+            <input class="tap-inp" type="text" id="tNotifTitle" placeholder="Notification title">
+            <textarea class="tap-inp" id="tNotifBody" rows="2" placeholder="Message..." style="resize:none"></textarea>
+            <button class="tap-btn-main" onclick="tSendNotif()">🔔 Send Notification</button>
+            <div id="tNotifMsg" style="font-size:10px;font-weight:700;padding:5px 8px;border-radius:6px;margin-top:6px;display:none"></div>
+        </div>
+        <div id="tPanel7" style="display:none">
+            <div style="background:#e8f4fd;border:1.5px solid #90cdf4;border-radius:8px;padding:8px 10px;margin-bottom:10px">
+                <p style="font-size:10px;font-weight:700;color:#065f46;margin-bottom:3px">🐍 Python Notebook — TV pe code likho!</p>
+                <p style="font-size:9px;color:#555;line-height:1.5">✅ pandas, numpy ready<br>✅ Data analysis snippets<br>✅ DS Agent commands mein help</p>
+            </div>
+            <div style="background:#f8f8fc;border-radius:8px;padding:8px;margin-bottom:8px">
+                <div style="font-size:9px;color:#888;margin-bottom:3px">Current URL:</div>
+                <div id="tBrowserUrlDisplay" style="font-size:10px;font-weight:700;color:#5b5ef4;word-break:break-all">Koi URL set nahi</div>
+            </div>
+            <input class="tap-inp" type="url" id="tBrowserUrl" placeholder="https://example.com">
+            <button class="tap-btn-main" onclick="tSaveBrowserUrl()">🌐 Set URL</button>
+            <button style="width:100%;padding:7px;background:#fff5f5;border:1.5px solid #fc8181;border-radius:8px;font-size:11px;font-weight:800;cursor:pointer;font-family:'DM Sans',sans-serif;color:#c53030" onclick="tClearBrowserUrl()">🗑️ URL Hata Do</button>
+        </div>
+        <div id="tPanel8" style="display:none">
+            <div style="background:#fff0f0;border:1.5px solid #ffcdd2;border-radius:8px;padding:8px 10px;margin-bottom:10px">
+                <p style="font-size:10px;font-weight:700;color:#c62828;margin-bottom:3px">▶ YouTube TV Player</p>
+                <p style="font-size:9px;color:#555;line-height:1.5">Admin ek default video set kare<br>+ User bhi apna URL daal sake</p>
+            </div>
+            <div style="background:#f8f8fc;border-radius:8px;padding:8px;margin-bottom:8px">
+                <div style="font-size:9px;color:#888;margin-bottom:3px">Default Video:</div>
+                <div id="tYtDefaultDisplay" style="font-size:10px;font-weight:700;color:#ff0000;word-break:break-all">Koi default set nahi</div>
+            </div>
+            <input class="tap-inp" type="url" id="tYtDefaultUrl" placeholder="https://youtube.com/watch?v=...">
+            <button class="tap-btn-main" onclick="tSaveYtDefault()" style="background:linear-gradient(135deg,#ff0000,#cc0000)">▶ Set Default Video</button>
+            <button style="width:100%;padding:7px;background:#fff5f5;border:1.5px solid #fc8181;border-radius:8px;font-size:11px;font-weight:800;cursor:pointer;font-family:'DM Sans',sans-serif;color:#c53030;margin-top:5px" onclick="tClearYtDefault()">🗑️ Default Hata Do</button>
+        </div>
+    </div>
+</div>
+
+<!-- ════ LIVE CHAT ════ -->
+<div class="notif-toast" id="notifToast">🔔 Notification</div>
+
+<button class="chat-bubble" id="chatBubble" onclick="toggleChat()">
+    💬
+    <div class="chat-badge" id="chatBadge">0</div>
+</button>
+
+<div class="chat-panel" id="chatPanel">
+    <div class="chat-header" id="chatHeader">
+        <div style="display:flex;align-items:center;gap:8px">
+            <span style="font-size:16px">💬</span>
+            <div>
+                <div style="font-size:13px;font-weight:800;color:white">Live Chat</div>
+                <div style="font-size:9px;color:rgba(255,255,255,0.7)" id="chatOnline">● Online</div>
+            </div>
+        </div>
+        <div style="display:flex;gap:6px;align-items:center">
+            <button onclick="toggleAnalytics()" id="analyticsBtn" style="display:none;background:rgba(255,255,255,0.2);border:none;border-radius:8px;color:white;cursor:pointer;font-size:11px;padding:4px 8px;font-weight:700">📊</button>
+            <button onclick="toggleChat()" style="background:rgba(255,255,255,0.2);border:none;border-radius:8px;color:white;cursor:pointer;font-size:14px;padding:2px 7px">✕</button>
+        </div>
+    </div>
+    <div class="chat-msgs" id="chatMsgs">
+        <div style="text-align:center;color:#aaa;font-size:11px;padding:20px">Loading chat...</div>
+    </div>
+    <div class="chat-input-row">
+        <input class="chat-inp" id="chatInp" placeholder="Message likho..." onkeypress="if(event.key==='Enter')sendChat()">
+        <button class="chat-send" onclick="sendChat()">➤</button>
+    </div>
+</div>
+
+<div class="analytics-panel" id="analyticsPanel">
+    <div style="padding:14px 16px;background:linear-gradient(135deg,#5b5ef4,#8b5cf6);border-radius:17px 17px 0 0;display:flex;align-items:center;justify-content:space-between">
+        <h4 style="font-size:14px;font-weight:800;color:white">📊 Post Analytics</h4>
+        <button onclick="toggleAnalytics()" style="background:rgba(255,255,255,0.2);border:none;border-radius:8px;color:white;cursor:pointer;font-size:14px;padding:2px 7px">✕</button>
+    </div>
+    <div style="padding:14px" id="analyticsContent">
+        <div style="text-align:center;color:#aaa;font-size:12px;padding:20px">Loading...</div>
+    </div>
+</div>
+
+<audio id="tvAudio" preload="metadata"></audio>
+
+<div class="modal" id="emailModal">
+    <div class="modal-card">
+        <h3>📧 Send Report</h3>
+        <input type="email" id="emailInput" placeholder="Client ka email">
+        <div class="modal-btns">
+            <button class="m-send" onclick="sendReport()">Send</button>
+            <button class="m-cancel" onclick="document.getElementById('emailModal').classList.remove('show')">Cancel</button>
+        </div>
+    </div>
+</div>
+
+<div class="viewer-modal" id="viewerModal">
+    <div class="viewer-content">
+        <span class="v-close" onclick="closeViewer()">&times;</span>
+        <div id="viewerBox"></div>
+    </div>
+</div>
+
+<script>
+let fileReady=false,processing=false,aiMode=false;
+let history=[],plotR=false,dashR=false,excelR=false,csvR=false,htmlR=false;
+let recog=null,listening=false,voiceGender='female';
+let affiliates=[],pendingDl=null,bubbleTimer=null;
+let plan='free';
+
+const RX={
+    success:{e:'🎉',l:'Woohoo!',a:'celebrate'},happy:{e:'😊',l:'Nice!',a:''},
+    excited:{e:'🤩',l:'Amazing!',a:'celebrate'},thinking:{e:'🤔',l:'Hmm...',a:'think'},
+    data:{e:'📊',l:'Data!',a:''},error:{e:'😅',l:'Oops!',a:'shake'},
+    chart:{e:'📈',l:'Chart!',a:'celebrate'},save:{e:'💾',l:'Saved!',a:''},
+    hi:{e:'👋',l:'Hello!',a:''},tip:{e:'💡',l:'Tip!',a:''},
+    pro:{e:'⭐',l:'Pro!',a:''}
+};
+function getRx(t){
+    const s=t.toLowerCase();
+    if(s.includes('✅')||s.includes('success')||s.includes('saved'))return RX.success;
+    if(s.includes('⭐')||s.includes('pro plan')||s.includes('upgrade'))return RX.pro;
+    if(s.includes('dashboard'))return RX.chart;
+    if(s.includes('❌')||s.includes('error')||s.includes('⚠️'))return RX.error;
+    if(s.includes('chart')||s.includes('plot')||s.includes('graph'))return RX.chart;
+    if(s.includes('excel')||s.includes('csv')||s.includes('export'))return RX.save;
+    if(s.includes('total')||s.includes('average')||s.includes('📊'))return RX.data;
+    if(s.includes('💡'))return RX.tip;
+    if(s.includes('hello')||s.includes('namaste')||s.includes('hi'))return RX.hi;
+    return RX.happy;
+}
+
+function initMascot(){
+    lottie.loadAnimation({container:document.getElementById('lottie-bot'),renderer:'svg',loop:true,autoplay:true,
+        path:'https://assets9.lottiefiles.com/packages/lf20_qp1q7mct.json'
+    }).addEventListener('data_failed',()=>{
+        document.getElementById('lottie-bot').innerHTML='<div style="font-size:80px;text-align:center;line-height:120px;animation:bob 2s ease-in-out infinite">🤖</div>';
+        const s=document.createElement('style');s.textContent='@keyframes bob{0%,100%{transform:translateY(0)}50%{transform:translateY(-12px)}}';document.head.appendChild(s);
+    });
+    setTimeout(()=>bubble('Data upload karo! 🚀'),1500);
+}
+function bubble(text){
+    const b=document.getElementById('bubble');
+    b.textContent=text;b.classList.add('show');
+    clearTimeout(bubbleTimer);
+    bubbleTimer=setTimeout(()=>b.classList.remove('show'),3000);
+}
+function mascotTap(){
+    const msgs=['Kya analysis karni hai? 🤔','Mera naam DS Agent hai! 😄','Dashboard try karo! 📊','AI Mode try karo 🧠','Main ready hoon! 💪'];
+    bubble(msgs[Math.floor(Math.random()*msgs.length)]);
+}
+
+function openDrawer(){document.getElementById('drawer').classList.add('open');document.getElementById('overlay').classList.add('show');}
+function closeDrawer(){document.getElementById('drawer').classList.remove('open');document.getElementById('overlay').classList.remove('show');}
+function openDrawerAffiliate(){closeDrawer();window.location.href='/admin';}
+function openDrawerUsers(){closeDrawer();window.location.href='/admin';}
+
+let plusOpen=false;
+function togglePlus(){plusOpen=!plusOpen;document.getElementById('plusMenu').classList.toggle('show',plusOpen);}
+function closePlus(){plusOpen=false;document.getElementById('plusMenu').classList.remove('show');}
+document.addEventListener('click',e=>{if(plusOpen&&!e.target.closest('#plusMenu')&&!e.target.closest('.plus-btn'))closePlus();});
+
+function setGender(g){
+    voiceGender=g;
+    document.getElementById('btnF').className='gender-btn'+(g==='female'?' active':'');
+    document.getElementById('btnM').className='gender-btn'+(g==='male'?' active':'');
+    speak(g==='female'?'Main hun aapki female assistant!':'Main hun aapka male assistant!');
+}
+
+function speak(text){
+    if(!window.speechSynthesis)return;
+    window.speechSynthesis.cancel();
+    const clean=text.replace(/[^\x00-\x7F\u0900-\u097F\s]/g,'').replace(/\*\*/g,'').trim().substring(0,300);
+    if(!clean)return;
+    const u=new SpeechSynthesisUtterance(clean);
+    u.lang='hi-IN';u.rate=parseFloat(document.getElementById('spd').value);
+    u.pitch=voiceGender==='female'?1.4:0.7;u.volume=1;
+    const vs=window.speechSynthesis.getVoices();
+    const hi=vs.filter(v=>v.lang.includes('hi')||v.lang.includes('IN'));
+    if(hi.length)u.voice=voiceGender==='female'?(hi.find(v=>v.name.toLowerCase().includes('female'))||hi[0]):(hi.find(v=>v.name.toLowerCase().includes('male'))||hi[hi.length-1]);
+    u.onstart=()=>document.getElementById('speakRow').classList.add('on');
+    u.onend=()=>document.getElementById('speakRow').classList.remove('on');
+    window.speechSynthesis.speak(u);
+}
+if(window.speechSynthesis)window.speechSynthesis.onvoiceschanged=()=>window.speechSynthesis.getVoices();
+
+function initVoice(){
+    const SR=window.SpeechRecognition||window.webkitSpeechRecognition;
+    if(!SR){document.getElementById('voiceBtn').style.opacity='0.4';return;}
+    recog=new SR();recog.lang='hi-IN';recog.continuous=false;recog.interimResults=true;
+    recog.onstart=()=>{listening=true;document.getElementById('voiceBtn').classList.add('listening');document.getElementById('vStatus').textContent='🎤 Sun raha hoon...';bubble('Bol do! 👂');};
+    recog.onresult=e=>{let t='';for(let i=e.resultIndex;i<e.results.length;i++)t+=e.results[i][0].transcript;document.getElementById('msgInput').value=t;document.getElementById('vStatus').textContent='📝 '+t;};
+    recog.onend=()=>{listening=false;document.getElementById('voiceBtn').classList.remove('listening');document.getElementById('vStatus').textContent='';const v=document.getElementById('msgInput').value.trim();if(v&&fileReady)setTimeout(sendMsg,500);};
+    recog.onerror=()=>{listening=false;document.getElementById('voiceBtn').classList.remove('listening');document.getElementById('vStatus').textContent='⚠️ Try again';setTimeout(()=>document.getElementById('vStatus').textContent='',2000);};
+}
+function toggleVoice(){if(!recog){alert('Chrome mein try karo!');return;}if(listening)recog.stop();else recog.start();}
+
+window.addEventListener('DOMContentLoaded',()=>{
+    initMascot();initVoice();initChatDrag();
+    fetch('/get_username').then(r=>r.json()).then(d=>{
+        const name=d.username||'User';plan=d.plan||'free';
+        document.getElementById('wName').textContent=name.toUpperCase()+'! 👋';
+        document.getElementById('wSub').textContent=plan==='pro'?'Pro Plan Active ⭐':'कहाँ से शुरुआत करें?';
+        document.getElementById('drawerName').textContent=name;
+        document.getElementById('drawerSub').innerHTML=`${plan==='pro'?'Pro plan':'Free plan'} <span class="plan-pill ${plan}">${plan==='pro'?'⭐ Pro':'Free'}</span>`;
+        document.getElementById('drawerAvatar').textContent=name.charAt(0).toUpperCase();
+        document.getElementById('drawerPill').textContent=plan==='pro'?'⭐ Pro':'Free';
+        document.getElementById('drawerPill').className='plan-pill '+plan;
+        document.getElementById('topAvatar').textContent=name.charAt(0).toUpperCase();
+        if(d.is_admin){document.getElementById('adminSection').style.display='block';initTV(true);}
+        else{initTV(false);}
+        if(plan==='free'){
+            const qb=document.getElementById('queryBar');qb.classList.add('show');
+            const used=d.queries_used||0,lim=d.queries_limit||10;
+            document.getElementById('qbText').textContent=`${used}/${lim} queries`;
+            document.getElementById('qbFill').style.width=(used/lim*100)+'%';
+        }
+        setTimeout(()=>bubble('Namaste '+name+'! 😄'),2000);
+    }).catch(()=>{
+        document.getElementById('wName').textContent='USER! 👋';
+        document.getElementById('drawerAvatar').textContent='U';
+        document.getElementById('topAvatar').textContent='U';
+    });
+    fetch('/affiliate_links').then(r=>r.json()).then(d=>affiliates=d).catch(()=>{});
+});
+
+function toggleAI(cb){
+    if(cb.checked&&plan!=='pro'){cb.checked=false;addMsg('⭐ AI Chat Mode sirf Pro plan mein!\n\nUpgrade karo: /pricing','bot');window.location.href='/pricing';return;}
+    aiMode=cb.checked;
+    document.getElementById('aiBadge').className='ai-on-badge'+(aiMode?' on':'');
+    document.getElementById('msgInput').placeholder=aiMode?'Seedha Hinglish mein puch lo...':"Type command or question...";
+    addMsg(aiMode?'🤖 AI Chat Mode ON! Kuch bhi puch lo!':'⚡ Command Mode ON!','bot');
+    bubble(aiMode?'AI Mode ON! 🧠':'Command Mode ⚡');
+}
+
+function addMsg(text,sender){
+    const area=document.getElementById('chatArea');
+    const row=document.createElement('div');
+    row.className='reaction-row'+(sender.includes('bot')?'':' user-row');
+    if(sender.includes('bot')){
+        const rx=getRx(text);
+        const ch=document.createElement('span');
+        ch.className='r-char';ch.textContent=rx.e;
+        if(rx.a==='celebrate')ch.style.animation='bob 0.6s ease 3';
+        if(rx.a==='shake'){ch.style.animation='shake 0.4s ease 3';}
+        row.appendChild(ch);
+        bubble(rx.e+' '+rx.l);
+        setTimeout(()=>{if(aiMode&&text.length<200)speak(text);},300);
+        history.push({t:'bot',text,ts:new Date().toLocaleString()});
+    }else{history.push({t:'user',text,ts:new Date().toLocaleString()});}
+    const bub=document.createElement('div');
+    bub.className='r-bubble '+(sender.includes('bot')?(sender.includes('ai-mode')?'ai-mode':''):'user');
+    bub.innerText=text;
+    if(sender.includes('bot')){
+        const acts=document.createElement('div');acts.className='r-actions';
+        const d=document.createElement('button');d.className='r-action-btn';d.textContent='💾';d.onclick=()=>dlSingle(text);
+        const s=document.createElement('button');s.className='r-action-btn';s.textContent='🔊';s.onclick=()=>speak(text);
+        acts.appendChild(d);acts.appendChild(s);bub.appendChild(acts);
+    }
+    row.appendChild(bub);
+    area.appendChild(row);
+    area.scrollTop=area.scrollHeight;
+}
+
+function showTyping(){
+    const area=document.getElementById('chatArea');
+    const row=document.createElement('div');row.className='reaction-row';row.id='typingRow';
+    const ch=document.createElement('span');ch.className='r-char';ch.textContent='🤔';
+    const bub=document.createElement('div');bub.className='r-bubble';
+    bub.innerHTML='<div class="typing-dots"><span></span><span></span><span></span></div>';
+    row.appendChild(ch);row.appendChild(bub);
+    area.appendChild(row);area.scrollTop=area.scrollHeight;
+    bubble('Soch raha hoon... 🤔');
+}
+function removeTyping(){const el=document.getElementById('typingRow');if(el)el.remove();}
+function setInput(e){document.getElementById('msgInput').disabled=!e;document.getElementById('sendBtn').disabled=!e;}
+function quickCmd(cmd){closeDrawer();document.getElementById('msgInput').value=cmd;sendMsg();}
+function handleSessExp(){document.getElementById('sessOverlay').classList.add('show');}
+
+function uploadFile(input){
+    if(!input.files[0])return;
+    const fd=new FormData();fd.append('file',input.files[0]);
+    document.getElementById('uploadTxt').innerHTML='<div class="loader"></div> Syncing...';
+    setInput(false);bubble('Upload ho rahi hai... ⏳');
+    fetch('/upload',{method:'POST',body:fd})
+    .then(r=>{if(r.status===401)return r.json().then(d=>{if(d.error==='SESSION_EXPIRED')handleSessExp();throw new Error('sess');});return r.json();})
+    .then(d=>{
+        addMsg('✅ '+d.message,'bot');
+        const z=document.getElementById('uploadZone');
+        z.classList.add('synced');
+        document.getElementById('uploadTxt').textContent='✅ Synced: '+input.files[0].name;
+        fileReady=true;setInput(true);
+        document.getElementById('msgInput').placeholder='Kuch bhi puch lo...';
+        bubble('File ready! Shuru karo! 🎉');
+    })
+    .catch(e=>{if(e.message==='sess')return;addMsg('❌ Upload failed!','bot');document.getElementById('uploadTxt').textContent='📁 Try Again';setInput(true);bubble('Upload fail 😅');});
+}
+
+function sendMsg(){
+    const inp=document.getElementById('msgInput');
+    const msg=inp.value.trim();
+    if(!msg||processing)return;
+    if(!fileReady){addMsg('⚠️ Pehle file upload karo!','bot');return;}
+    addMsg(msg,'user');inp.value='';processing=true;setInput(false);showTyping();
+    fetch('/chat',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({message:msg,ai_mode:aiMode})})
+    .then(r=>{if(r.status===401)return r.json().then(d=>{if(d.error==='SESSION_EXPIRED')handleSessExp();throw new Error('sess');});return r.json();})
+    .then(d=>{
+        removeTyping();
+        addMsg(d.response,aiMode?'bot ai-mode':'bot');
+        if(d.limit_reached)bubble('Query limit! Upgrade karo ⭐');
+        const ml=msg.toLowerCase();
+        if(['plot','chart','graph','bar','hist'].some(t=>ml.includes(t))||d.response.toLowerCase().includes('plot saved')){setTimeout(()=>{plotR=true;document.getElementById('dlPlot').disabled=false;showDlSection();},1500);}
+        if(ml.includes('dashboard')){setTimeout(()=>{dashR=true;document.getElementById('dlDash').disabled=false;showDlSection();},2500);}
+        if(['excel','xlsx'].some(t=>ml.includes(t))){setTimeout(()=>{excelR=true;document.getElementById('dlExcel').disabled=false;showDlSection();},1500);}
+        if(ml.includes('csv')){setTimeout(()=>{csvR=true;document.getElementById('dlCSV').disabled=false;showDlSection();},1500);}
+        if(ml.includes('html')){setTimeout(()=>{htmlR=true;document.getElementById('dlHTML').disabled=false;showDlSection();},1500);}
+        const resp=d.response||'';
+        const isErr=resp.includes('❌')||resp.toLowerCase().includes('error')||resp.includes('⚠️')||resp.toLowerCase().includes('failed');
+        if(isErr){showErrorCartoon(msg,resp);}
+        processing=false;setInput(true);
+    })
+    .catch(e=>{if(e.message==='sess')return;removeTyping();addMsg('⚠️ Server slow hai.','bot');bubble('Connection issue 😅');processing=false;setInput(true);});
+}
+
+function showDlSection(){document.getElementById('dlSection').classList.add('show');}
+
+function triggerDl(type){
+    closePlus();
+    if(affiliates.length){
+        const link=affiliates[Math.floor(Math.random()*affiliates.length)];
+        document.getElementById('affTitle').textContent=link.title;
+        document.getElementById('affDesc').textContent=link.description||'Check out our partner!';
+        document.getElementById('affLink').href=link.url;
+        pendingDl=type;
+        document.getElementById('affOverlay').classList.add('show');
+    }else{doDl(type);}
+}
+function proceedDl(){document.getElementById('affOverlay').classList.remove('show');if(pendingDl){doDl(pendingDl);pendingDl=null;}}
+function doDl(type){
+    const m={
+        plot:{r:plotR,url:'/plot.png',name:'plot_'+Date.now()+'.png',msg:'Pehle chart banao!'},
+        dashboard:{r:dashR,url:'/dashboard.png',name:'dashboard_'+Date.now()+'.png',msg:'Pehle dashboard banao!'},
+        excel:{r:excelR,url:'/download/excel',name:'report_'+Date.now()+'.xlsx',msg:'"export excel" command do!'},
+        csv:{r:csvR,url:'/download/csv',name:'data_'+Date.now()+'.csv',msg:'"export csv" command do!'},
+        html:{r:htmlR,url:'/download/html',name:'report_'+Date.now()+'.html',msg:'"export html" command do!'}
+    };
+    const item=m[type];if(!item)return;
+    if(!item.r){alert(item.msg);return;}
+    const a=document.createElement('a');a.href=item.url+'?t='+Date.now();a.download=item.name;document.body.appendChild(a);a.click();document.body.removeChild(a);
+}
+function dlSingle(text){const blob=new Blob([text],{type:'text/plain'});const url=URL.createObjectURL(blob);const a=document.createElement('a');a.href=url;a.download='response_'+Date.now()+'.txt';document.body.appendChild(a);a.click();document.body.removeChild(a);URL.revokeObjectURL(url);}
+function dlAllReports(){if(!history.length){alert('No history!');return;}let c='🤖 DS Agent Report\n'+'='.repeat(40)+'\n'+new Date().toLocaleString()+'\n\n';history.forEach(m=>{c+=`[${m.ts}] ${m.t==='user'?'👤 You':'🤖 Bot'}:\n${m.text}\n\n`+'-'.repeat(40)+'\n\n';});const blob=new Blob([c],{type:'text/plain'});const url=URL.createObjectURL(blob);const a=document.createElement('a');a.href=url;a.download='report_'+Date.now()+'.txt';document.body.appendChild(a);a.click();document.body.removeChild(a);URL.revokeObjectURL(url);}
+function sendReport(){const email=document.getElementById('emailInput').value;if(!email){alert('Email enter karo');return;}fetch('/send_report',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({email})}).then(r=>r.json()).then(d=>{alert(d.message||d.error);if(d.message)document.getElementById('emailModal').classList.remove('show');}).catch(()=>alert('Error'));}
+function closeViewer(){document.getElementById('viewerModal').classList.remove('show');document.getElementById('viewerBox').innerHTML='';}
+document.getElementById('viewerModal').addEventListener('click',e=>{if(e.target===document.getElementById('viewerModal'))closeViewer();});
+document.getElementById('msgInput').addEventListener('keypress',e=>{if(e.key==='Enter'&&!e.target.disabled)sendMsg();});
+
+// ═══════════════════════════════════════════
+// FLOATING LED TV
+// ═══════════════════════════════════════════
+const tvAudio=document.getElementById('tvAudio');
+const ledTv=document.getElementById('ledTv');
+const tvScreen=document.getElementById('tvScreen');
+const TV_MS=6000;
+const SPEEDS=[0.5,0.75,1,1.25,1.5,2];
+
+let tvPosts=[],tvCur=0,tvTimer=null,tvCollapsed=false;
+let tvTracks=[],tvCurTrack=0,tvPlaying=false;
+let tvVideos=[],tvCurVideo=0;
+let tvChannel='posts';
+let isAdmin=false,tapOpen=false,tPostType='text';
+let rVolVal=0.8,rSpdIdx=2,rMuted=false,rHQ=true,rBrightVal=80;
+
+(function(){
+    let drag=false,sx=0,sy=0,sl=0,st=0;
+    function start(e){
+        if(e.target.closest('#tvResize')||e.target.tagName==='BUTTON')return;
+        drag=true;ledTv.style.cursor='grabbing';
+        const r=ledTv.getBoundingClientRect();sl=r.left;st=r.top;
+        sx=e.touches?e.touches[0].clientX:e.clientX;sy=e.touches?e.touches[0].clientY:e.clientY;
+        ledTv.style.right='auto';ledTv.style.bottom='auto';ledTv.style.left=sl+'px';ledTv.style.top=st+'px';
+        e.preventDefault();
+    }
+    function move(e){
+        if(!drag)return;
+        const cx=e.touches?e.touches[0].clientX:e.clientX;const cy=e.touches?e.touches[0].clientY:e.clientY;
+        ledTv.style.left=Math.max(0,Math.min(window.innerWidth-ledTv.offsetWidth,sl+(cx-sx)))+'px';
+        ledTv.style.top=Math.max(0,Math.min(window.innerHeight-ledTv.offsetHeight,st+(cy-sy)))+'px';
+        e.preventDefault();
+    }
+    function end(){drag=false;ledTv.style.cursor='grab';try{localStorage.setItem('tvPos',JSON.stringify({l:ledTv.style.left,t:ledTv.style.top}));}catch(e){}}
+    ledTv.addEventListener('mousedown',start,{passive:false});ledTv.addEventListener('touchstart',start,{passive:false});
+    window.addEventListener('mousemove',move,{passive:false});window.addEventListener('touchmove',move,{passive:false});
+    window.addEventListener('mouseup',end);window.addEventListener('touchend',end);
+    try{const p=JSON.parse(localStorage.getItem('tvPos'));if(p){const pl=parseInt(p.l),pt=parseInt(p.t);if(pl>=0&&pl<window.innerWidth-50&&pt>=0&&pt<window.innerHeight-50){ledTv.style.right='auto';ledTv.style.bottom='auto';ledTv.style.left=p.l;ledTv.style.top=p.t;}}}catch(e){}
+})();
+
+(function(){
+    const h=document.getElementById('tvResize');const lb=document.getElementById('tvSizeLabel');
+    let resizing=false,sx=0,sw=0;
+    h.addEventListener('mousedown',e=>{resizing=true;sx=e.clientX;sw=ledTv.offsetWidth;lb.style.opacity='1';e.preventDefault();e.stopPropagation();});
+    h.addEventListener('touchstart',e=>{resizing=true;sx=e.touches[0].clientX;sw=ledTv.offsetWidth;lb.style.opacity='1';e.preventDefault();e.stopPropagation();},{passive:false});
+    window.addEventListener('mousemove',e=>{if(!resizing)return;const nw=Math.max(90,Math.min(280,sw+(e.clientX-sx)));ledTv.style.width=nw+'px';const sh=Math.round(nw*0.64);tvScreen.style.height=sh+'px';lb.textContent=nw+'×'+sh;try{localStorage.setItem('tvSize',JSON.stringify({w:nw,sh}));}catch(e){}});
+    window.addEventListener('touchmove',e=>{if(!resizing)return;const nw=Math.max(90,Math.min(280,sw+(e.touches[0].clientX-sx)));ledTv.style.width=nw+'px';tvScreen.style.height=Math.round(nw*0.64)+'px';},{passive:false});
+    window.addEventListener('mouseup',()=>{if(resizing){resizing=false;lb.style.opacity='0';}});
+    window.addEventListener('touchend',()=>{if(resizing){resizing=false;lb.style.opacity='0';}});
+    try{const s=JSON.parse(localStorage.getItem('tvSize'));if(s){ledTv.style.width=s.w+'px';tvScreen.style.height=s.sh+'px';}}catch(e){}
+})();
+
+let remVisible=true;
+function tvRemoteToggle(){remVisible=!remVisible;}
+function posRemote(){}
+
+function tvCollapse(e){
+    if(e)e.stopPropagation();
+    tvCollapsed=!tvCollapsed;
+    if(tvCollapsed){ledTv.style.overflow='hidden';tvScreen.style.display='none';document.getElementById('tvColBtn').textContent='▲';clearTimeout(tvTimer);}
+    else{tvScreen.style.display='block';document.getElementById('tvColBtn').textContent='▼';tvSetChannel(tvChannel);}
+}
+
+const CH_IDS={posts:'chPosts',video:'chVideo',music:'chMusic',live:'chLive',browser:'chBrowser',youtube:'chYouTube'};
+function tvSetChannel(ch){
+    tvChannel=ch;
+    Object.entries(CH_IDS).forEach(([c,id])=>{const b=document.getElementById(id);if(b){b.style.background=c===ch?'#5b5ef4':'#1e1e38';b.style.color=c===ch?'white':'#8890a4';}});
+    clearTimeout(tvTimer);
+    if(ch==='posts'){document.getElementById('tvStatus').textContent='📢 Posts';tvRenderPosts();if(tvPosts.length>1)tvAutoStart();}
+    else if(ch==='video'){document.getElementById('tvStatus').textContent='🎬 Video';tvRenderVideo();}
+    else if(ch==='live'){document.getElementById('tvStatus').textContent='📡 Live';tvRenderLive();}
+    else if(ch==='browser'){document.getElementById('tvStatus').textContent='🐍 Python';tvRenderBrowser();}
+    else if(ch==='youtube'){document.getElementById('tvStatus').textContent='▶ YouTube';tvRenderYouTube();}
+    else{document.getElementById('tvStatus').textContent='🎵 Music';tvRenderMusicViz();}
+}
+
+async function tvLoadPosts(){try{const r=await fetch('/api/screen/posts');tvPosts=await r.json();tvRenderPosts();if(tvPosts.length>1)tvAutoStart();}catch(e){tvEmpty('📢','Posts nahi');}}
+function tvRenderPosts(){
+    if(!tvPosts.length){tvEmpty('📢','Koi post nahi');return;}
+    tvScreen.innerHTML=tvPosts.map((p,i)=>`<div id="tvp${i}" style="display:${i===0?'flex':'none'};flex-direction:column;width:100%;height:100%;position:absolute;top:0;left:0;animation:${i===0?'tvsl .35s ease':'none'}">${p.post_type==='image'&&p.image_data?`<img src="data:${p.image_mime};base64,${p.image_data}" style="width:100%;height:100%;object-fit:cover">${p.affiliate_url?`<a href="${p.affiliate_url}" target="_blank" style="position:absolute;bottom:3px;left:3px;right:3px;display:block;text-align:center;padding:3px;background:linear-gradient(135deg,#5b5ef4,#8b5cf6);color:white;border-radius:4px;font-size:7px;font-weight:800;text-decoration:none">🔗 Check it out</a>`:''}`:`<div style="width:100%;height:100%;padding:7px;display:flex;flex-direction:column;justify-content:space-between;background:linear-gradient(135deg,#0f0f1a,#1a1a2e)"><div><div style="font-size:9px;font-weight:800;background:linear-gradient(135deg,#fff,#c4b5fd);-webkit-background-clip:text;-webkit-text-fill-color:transparent">${p.title}</div><div style="font-size:7.5px;color:#8890a4;margin-top:3px;overflow:hidden;display:-webkit-box;-webkit-line-clamp:3;-webkit-box-orient:vertical">${(p.content||'').replace(/\n/g,' ')}</div></div>${p.affiliate_url?`<a href="${p.affiliate_url}" target="_blank" style="display:block;text-align:center;padding:3px;background:linear-gradient(135deg,#5b5ef4,#8b5cf6);color:white;border-radius:4px;font-size:7px;font-weight:800;text-decoration:none">🔗 Check it out</a>`:''}</div>`}</div>`).join('');
+    document.getElementById('tvDots').innerHTML=tvPosts.map((_,i)=>`<div onclick="tvGo(${i})" style="width:4px;height:4px;border-radius:50%;background:${i===0?'#5b5ef4':'#2a2a4a'};cursor:pointer;flex-shrink:0;transition:0.2s" id="tvd${i}"></div>`).join('');
+    document.getElementById('tvStatus').textContent='📢 '+tvPosts.length+' posts';
+}
+function tvGo(idx){for(let i=0;i<tvPosts.length;i++){const e=document.getElementById('tvp'+i);if(e)e.style.display=i===idx?'flex':'none';const d=document.getElementById('tvd'+i);if(d)d.style.background=i===idx?'#5b5ef4':'#2a2a4a';}tvCur=idx;tvProgReset();}
+function tvAutoStart(){tvProgReset();}
+function tvProgReset(){const f=document.getElementById('tvProgFill');f.style.transition='none';f.style.width='0%';clearTimeout(tvTimer);setTimeout(()=>{f.style.transition=`width ${TV_MS}ms linear`;f.style.width='100%';tvTimer=setTimeout(()=>tvGo((tvCur+1)%tvPosts.length),TV_MS);},50);}
+function tvEmpty(icon,txt){tvScreen.innerHTML=`<div style="width:100%;height:100%;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:3px;background:linear-gradient(135deg,#0f0f1a,#1a1a2e)"><span style="font-size:22px">${icon}</span><p style="font-size:7px;color:#4a4a7a;font-weight:700">${txt}</p></div>`;document.getElementById('tvDots').innerHTML='';}
+
+async function tvLoadVideos(){try{const r=await fetch('/api/video');tvVideos=await r.json();}catch(e){tvVideos=[];}}
+function tvRenderVideo(){
+    document.getElementById('tvDots').innerHTML='';
+    if(!tvVideos.length){tvScreen.innerHTML=`<div style="width:100%;height:100%;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:3px;background:#0a0a18"><span style="font-size:22px">🎬</span><p style="font-size:7px;color:#4a4a7a;font-weight:700">Admin se video upload karo</p></div>`;return;}
+    const v=tvVideos[tvCurVideo];
+    tvScreen.innerHTML=`<video id="tvVid" style="width:100%;height:100%;object-fit:contain;background:#000" src="data:${v.mime_type};base64,${v.video_data}" playsinline></video><div style="position:absolute;bottom:2px;left:3px;right:3px;background:rgba(0,0,0,0.7);border-radius:3px;padding:2px 5px"><div style="font-size:7px;font-weight:800;color:#fff;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${v.title}</div></div>`;
+    const vel=document.getElementById('tvVid');vel.volume=rVolVal;vel.muted=rMuted;vel.playbackRate=SPEEDS[rSpdIdx];vel.addEventListener('ended',()=>tvGoVid((tvCurVideo+1)%tvVideos.length));
+    document.getElementById('tvDots').innerHTML=tvVideos.map((_,i)=>`<div onclick="tvGoVid(${i})" style="width:4px;height:4px;border-radius:50%;background:${i===tvCurVideo?'#5b5ef4':'#2a2a4a'};cursor:pointer;flex-shrink:0" id="tvvd${i}"></div>`).join('');
+    tvPlaying=false;document.getElementById('tvPlayBtn').textContent='▶';
+}
+function tvGoVid(idx){tvCurVideo=idx;tvRenderVideo();}
+
+async function tvLoadMusic(){try{const r=await fetch('/api/music');tvTracks=await r.json();if(tvTracks.length)tvLoadTrack(0,false);}catch(e){}}
+function tvLoadTrack(idx,play){
+    if(!tvTracks[idx])return;tvCurTrack=idx;
+    const t=tvTracks[idx];
+    document.getElementById('tvMusicTitle').textContent=t.title;
+    tvAudio.src=`data:${t.mime_type};base64,${t.audio_data}`;
+    tvAudio.load();tvAudio.volume=rVolVal;tvAudio.muted=rMuted;tvAudio.playbackRate=SPEEDS[rSpdIdx];
+    if(play)tvAudio.play().then(()=>tvSetPlay(true)).catch(()=>{});else tvSetPlay(false);
+    if(tvChannel==='music')tvRenderMusicViz();
+}
+function tvRenderMusicViz(){
+    const t=tvTracks[tvCurTrack];
+    tvScreen.innerHTML=`<div style="width:100%;height:100%;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:4px;background:linear-gradient(135deg,#0a0a18,#1a1a2e)"><div style="width:40px;height:40px;border-radius:50%;background:linear-gradient(135deg,#5b5ef4,#8b5cf6);display:flex;align-items:center;justify-content:center;font-size:16px">🎵</div><div style="font-size:8px;font-weight:800;color:#fff;max-width:90%;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;text-align:center">${t?t.title:'No songs'}</div><div style="font-size:7px;color:#8890a4">${t?t.artist||'Unknown':''}</div></div>`;
+    document.getElementById('tvDots').innerHTML='';
+}
+function tvSetPlay(v){tvPlaying=v;document.getElementById('tvPlayBtn').textContent=v?'⏸':'▶';}
+tvAudio.addEventListener('ended',()=>{if(tvTracks.length)tvLoadTrack((tvCurTrack+1)%tvTracks.length,true);});
+
+function tvTogglePlay(){
+    if(tvChannel==='video'){const vel=document.getElementById('tvVid');if(!vel)return;if(tvPlaying){vel.pause();tvSetPlay(false);}else vel.play().then(()=>tvSetPlay(true)).catch(()=>{});}
+    else if(tvChannel==='live'){const vel=document.getElementById('tvLiveEl');if(!vel)return;if(tvPlaying){vel.pause();tvSetPlay(false);}else vel.play().then(()=>tvSetPlay(true)).catch(()=>{});}
+    else{if(!tvTracks.length)return;if(tvPlaying){tvAudio.pause();tvSetPlay(false);}else tvAudio.play().then(()=>tvSetPlay(true)).catch(()=>{});}
+}
+function tvPrev(){
+    if(tvChannel==='video')tvGoVid((tvCurVideo-1+Math.max(1,tvVideos.length))%Math.max(1,tvVideos.length));
+    else if(tvChannel==='live')tvGoLive((tvCurLive-1+Math.max(1,tvLiveLinks.length))%Math.max(1,tvLiveLinks.length));
+    else if(tvChannel==='posts')tvGo((tvCur-1+Math.max(1,tvPosts.length))%Math.max(1,tvPosts.length));
+    else if(tvTracks.length)tvLoadTrack((tvCurTrack-1+tvTracks.length)%tvTracks.length,tvPlaying);
+}
+function tvNext(){
+    if(tvChannel==='video')tvGoVid((tvCurVideo+1)%Math.max(1,tvVideos.length));
+    else if(tvChannel==='live')tvGoLive((tvCurLive+1)%Math.max(1,tvLiveLinks.length));
+    else if(tvChannel==='posts')tvGo((tvCur+1)%Math.max(1,tvPosts.length));
+    else if(tvTracks.length)tvLoadTrack((tvCurTrack+1)%tvTracks.length,tvPlaying);
+}
+
+let tapOpen2=false;
+function tvAdminPanel(e){
+    if(e)e.stopPropagation();
+    tapOpen2=!tapOpen2;
+    const p=document.getElementById('tapWrap');p.classList.toggle('show',tapOpen2);
+    const tr=ledTv.getBoundingClientRect();let l=tr.left-270;if(l<8)l=tr.right+8;
+    p.style.left=l+'px';p.style.top=Math.max(8,tr.top)+'px';p.style.right='auto';p.style.bottom='auto';
+    if(tapOpen2){tLoadPosts();tLoadSongs();tLoadVideos();}
+}
+document.addEventListener('click',e=>{if(tapOpen2&&!e.target.closest('#tapWrap')&&!e.target.closest('#tvEditBtn'))tvAdminPanel();});
+
+function tSwitch(n){
+    [1,2,3,4,5,6,7,8].forEach(i=>{
+        const p=document.getElementById('tPanel'+i);if(p)p.style.display=i===n?'block':'none';
+        const b=document.getElementById('tTab'+i);if(b){b.style.background=i===n?'linear-gradient(135deg,#5b5ef4,#8b5cf6)':'white';b.style.color=i===n?'white':'#1a1a2e';b.style.borderColor=i===n?'#5b5ef4':'#e8eaf0';}
+    });
+    if(n===4)tLoadLiveList();if(n===5)tLoadSchList();
+    if(n===7){const s=localStorage.getItem('tvBrowserUrl')||'Koi URL set nahi';document.getElementById('tBrowserUrlDisplay').textContent=s;}
+    if(n===8){const s=localStorage.getItem('ytDefaultUrl')||'Koi default set nahi';document.getElementById('tYtDefaultDisplay').textContent=s;}
+}
+
+function showToast(msg,dur=3000){const t=document.getElementById('notifToast');t.textContent=msg;t.classList.add('show');setTimeout(()=>t.classList.remove('show'),dur);}
+
+async function initPushNotif(){
+    if(!('Notification' in window)||!('serviceWorker' in navigator))return;
+    try{
+        const r=await fetch('/api/push/vapid-public-key');const {publicKey}=await r.json();if(!publicKey)return;
+        const perm=await Notification.requestPermission();if(perm!=='granted')return;
+        const reg=await navigator.serviceWorker.ready;
+        const sub=await reg.pushManager.subscribe({userVisibleOnly:true,applicationServerKey:urlBase64ToUint8Array(publicKey)});
+        await fetch('/api/push/subscribe',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(sub)});
+    }catch(e){}
+}
+function urlBase64ToUint8Array(base64String){const padding='='.repeat((4-base64String.length%4)%4);const base64=(base64String+padding).replace(/-/g,'+').replace(/_/g,'/');const raw=window.atob(base64);const arr=new Uint8Array(raw.length);for(let i=0;i<raw.length;i++)arr[i]=raw.charCodeAt(i);return arr;}
+
+async function tSendNotif(){
+    const title=document.getElementById('tNotifTitle').value.trim();const body=document.getElementById('tNotifBody').value.trim();
+    if(!title||!body){tMsg('⚠️ Title aur message daalo!',false);return;}
+    const r=await fetch('/api/push/send',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({title,body})});
+    const d=await r.json();
+    const el=document.getElementById('tNotifMsg');
+    el.textContent=d.message||d.error;
+    el.style.cssText=`font-size:10px;font-weight:700;padding:5px 8px;border-radius:6px;margin-top:6px;display:block;background:${d.message?'#d4edda':'#f8d7da'};color:${d.message?'#155724':'#721c24'}`;
+    if(d.message){document.getElementById('tNotifTitle').value='';document.getElementById('tNotifBody').value='';}
+}
+
+// ══ LIVE CHAT STATE ══
+let chatOpen=false,chatPollTimer=null,lastMsgId=0,myUsername='';
+
+function tvMenuToggle(e){
+    if(e)e.stopPropagation();
+    const m=document.getElementById('tvMenu');
+    m.style.display=m.style.display==='none'?'block':'none';
+}
+document.addEventListener('click',function(e){
+    const menu=document.getElementById('tvMenu');const tv=document.getElementById('ledTv');
+    if(menu&&menu.style.display==='block'&&!tv.contains(e.target)){menu.style.display='none';}
+});
+
+// ✅ FIXED toggleChat
+function toggleChat(){
+    chatOpen=!chatOpen;
+    const panel=document.getElementById('chatPanel');
+    if(chatOpen){
+        panel.style.display='flex';
+        if(!panel.dataset.dragged){
+            const startTop=Math.max(80,window.innerHeight-400-90);
+            panel.style.left='16px';
+            panel.style.top=startTop+'px';
+            panel.style.bottom='auto';
+            panel.style.right='auto';
+        }
+        requestAnimationFrame(()=>{panel.style.opacity='1';});
+        loadChat();
+        chatPollTimer=setInterval(loadChat,5000);
+    }else{
+        panel.style.opacity='0';
+        setTimeout(()=>{panel.style.display='none';},200);
+        clearInterval(chatPollTimer);
+    }
+    document.getElementById('chatBadge').style.display='none';
+}
+
+// ✅ FIXED initChatDrag
+function initChatDrag(){
+    const panel=document.getElementById('chatPanel');
+    const header=document.getElementById('chatHeader');
+    if(!panel||!header){return;}
+    let dragging=false,startX=0,startY=0,startL=0,startT=0;
+    function onStart(e){
+        if(e.target.tagName==='BUTTON'||e.target.tagName==='INPUT')return;
+        dragging=true;
+        header.style.cursor='grabbing';
+        const rect=panel.getBoundingClientRect();
+        startL=rect.left;startT=rect.top;
+        const pt=e.touches?e.touches[0]:e;
+        startX=pt.clientX;startY=pt.clientY;
+        panel.style.transition='none';
+        panel.style.bottom='auto';panel.style.right='auto';
+        panel.style.left=startL+'px';panel.style.top=startT+'px';
+        e.preventDefault();e.stopPropagation();
+    }
+    function onMove(e){
+        if(!dragging)return;
+        const pt=e.touches?e.touches[0]:e;
+        const newL=Math.max(0,Math.min(window.innerWidth-panel.offsetWidth,startL+(pt.clientX-startX)));
+        const newT=Math.max(0,Math.min(window.innerHeight-panel.offsetHeight,startT+(pt.clientY-startY)));
+        panel.style.left=newL+'px';panel.style.top=newT+'px';
+        panel.dataset.dragged='1';
+        e.preventDefault();
+    }
+    function onEnd(){dragging=false;header.style.cursor='grab';}
+    header.style.cursor='grab';
+    header.addEventListener('mousedown',onStart,{passive:false});
+    header.addEventListener('touchstart',onStart,{passive:false});
+    document.addEventListener('mousemove',onMove,{passive:false});
+    document.addEventListener('touchmove',onMove,{passive:false});
+    document.addEventListener('mouseup',onEnd);
+    document.addEventListener('touchend',onEnd);
+}
+
+async function loadChat(){
+    try{
+        const r=await fetch('/api/chat/messages');const msgs=await r.json();
+        const c=document.getElementById('chatMsgs');
+        if(!msgs.length){c.innerHTML='<div style="text-align:center;color:#aaa;font-size:11px;padding:20px">Koi message nahi — pehle bhejo!</div>';return;}
+        const atBottom=c.scrollHeight-c.scrollTop-c.clientHeight<40;
+        const newMsgs=msgs.filter(m=>m.id>lastMsgId);
+        if(newMsgs.length){
+            if(!chatOpen){const badge=document.getElementById('chatBadge');badge.style.display='flex';badge.textContent=newMsgs.length;}
+            if(newMsgs.some(m=>m.username!==myUsername))showToast('💬 New message: '+newMsgs[newMsgs.length-1].message.substring(0,30));
+        }
+        if(msgs.length)lastMsgId=msgs[msgs.length-1].id;
+        c.innerHTML=msgs.map(m=>`<div style="display:flex;flex-direction:column;align-items:${m.username===myUsername?'flex-end':'flex-start'}"><div style="font-size:8px;color:#aaa;margin-bottom:1px;padding:0 4px">${m.is_admin?'👑 ':''}${m.username} · ${m.time}</div><div class="chat-msg ${m.username===myUsername?'me':'other'} ${m.is_admin?'admin-msg':''}">${m.message}${isAdmin&&m.username!==myUsername?`<button onclick="delChatMsg(${m.id})" style="background:none;border:none;color:rgba(255,255,255,0.5);cursor:pointer;font-size:9px;margin-left:4px">✕</button>`:''}</div></div>`).join('');
+        if(atBottom)c.scrollTop=c.scrollHeight;
+    }catch(e){}
+}
+async function sendChat(){const inp=document.getElementById('chatInp');const msg=inp.value.trim();if(!msg)return;inp.value='';try{await fetch('/api/chat/messages',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({message:msg})});loadChat();}catch(e){}}
+async function delChatMsg(id){await fetch('/api/chat/messages/'+id,{method:'DELETE'});loadChat();}
+
+let analyticsOpen=false;
+function toggleAnalytics(){analyticsOpen=!analyticsOpen;document.getElementById('analyticsPanel').classList.toggle('show',analyticsOpen);if(analyticsOpen)loadAnalytics();}
+async function loadAnalytics(){
+    try{
+        const r=await fetch('/api/analytics');const data=await r.json();const c=document.getElementById('analyticsContent');
+        if(!data.length){c.innerHTML='<p style="text-align:center;color:#aaa;font-size:12px;padding:16px">Koi data nahi abhi</p>';return;}
+        c.innerHTML=`<div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:8px;margin-bottom:14px"><div style="background:linear-gradient(135deg,#5b5ef4,#8b5cf6);border-radius:10px;padding:10px;text-align:center"><div style="font-size:20px;font-weight:800;color:white">${data.reduce((a,b)=>a+b.views,0)}</div><div style="font-size:9px;color:rgba(255,255,255,0.8)">Total Views</div></div><div style="background:linear-gradient(135deg,#06d6a0,#059669);border-radius:10px;padding:10px;text-align:center"><div style="font-size:20px;font-weight:800;color:white">${data.reduce((a,b)=>a+b.clicks,0)}</div><div style="font-size:9px;color:rgba(255,255,255,0.8)">Total Clicks</div></div><div style="background:linear-gradient(135deg,#f59e0b,#f97316);border-radius:10px;padding:10px;text-align:center"><div style="font-size:20px;font-weight:800;color:white">${data.length}</div><div style="font-size:9px;color:rgba(255,255,255,0.8)">Posts</div></div></div>${data.map(p=>`<div class="stat-card"><div style="flex:1;min-width:0"><div style="font-size:11px;font-weight:700;color:#1a1a2e;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${p.title}</div><div style="font-size:9px;color:#888;margin-top:2px">👁 ${p.views} views · 🖱 ${p.clicks} clicks · CTR: ${p.ctr}%</div><div style="height:4px;background:#e8eaf0;border-radius:2px;margin-top:4px;overflow:hidden"><div style="height:100%;background:linear-gradient(90deg,#5b5ef4,#8b5cf6);width:${Math.min(100,(p.views/Math.max(...data.map(x=>x.views)))*100)}%;border-radius:2px"></div></div></div></div>`).join('')}`;
+    }catch(e){document.getElementById('analyticsContent').innerHTML='<p style="color:red;font-size:12px;text-align:center">Load failed!</p>';}
+}
+function trackView(postId){fetch('/api/analytics/view/'+postId,{method:'POST'}).catch(()=>{});}
+function trackClick(postId){fetch('/api/analytics/click/'+postId,{method:'POST'}).catch(()=>{});}
+
+async function tSchedulePost(){
+    const title=document.getElementById('tSchTitle').value.trim();const content=document.getElementById('tSchContent').value.trim();const time=document.getElementById('tSchTime').value;
+    if(!title||!time){tMsg('⚠️ Title aur time required!',false);return;}
+    const fd=new FormData();fd.append('title',title);fd.append('content',content);fd.append('post_type','text');fd.append('scheduled_at',time);fd.append('affiliate_url',document.getElementById('tSchAff').value);
+    try{const r=await fetch('/api/scheduled',{method:'POST',body:fd});const d=await r.json();if(d.message){tMsg(d.message,true);['tSchTitle','tSchContent','tSchAff'].forEach(id=>document.getElementById(id).value='');document.getElementById('tSchTime').value='';tLoadSchList();showToast('⏰ Post scheduled!');}else tMsg(d.error||'Error!',false);}catch(e){tMsg('Failed!',false);}
+}
+async function tPublishDue(){const r=await fetch('/api/scheduled/publish',{method:'POST'});const d=await r.json();tMsg(d.message||d.error,!!d.message);if(d.message){tLoadSchList();tvLoadPosts();}}
+async function tLoadSchList(){
+    try{const r=await fetch('/api/scheduled');const posts=await r.json();const c=document.getElementById('tSchList');if(!posts.length){c.innerHTML='<p style="font-size:10px;color:#aaa;text-align:center;padding:8px">Koi scheduled post nahi</p>';return;}c.innerHTML=posts.map(p=>`<div class="tap-item"><span style="font-size:18px">⏰</span><div style="flex:1;min-width:0"><strong style="font-size:10px;display:block;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${p.title}</strong><small style="font-size:9px;color:#5b5ef4;font-weight:700">📅 ${p.scheduled_at}</small></div><button class="tap-del" onclick="tDelSch(${p.id})">✕</button></div>`).join('');}catch(e){}
+}
+async function tDelSch(id){if(!confirm('Remove?'))return;const r=await fetch('/api/scheduled/'+id,{method:'DELETE'});const d=await r.json();tMsg(d.message||d.error,!!d.message);tLoadSchList();}
+function tType(type){
+    tPostType=type;
+    ['Txt','Img'].forEach(t=>{const b=document.getElementById('tType'+t);const isOn=(t==='Txt'&&type==='text')||(t==='Img'&&type==='image');b.style.background=isOn?'linear-gradient(135deg,#5b5ef4,#8b5cf6)':'white';b.style.color=isOn?'white':'#1a1a2e';b.style.borderColor=isOn?'#5b5ef4':'#e8eaf0';});
+    document.getElementById('tImgField').style.display=type==='image'?'block':'none';
+}
+function tMsg(txt,ok){const e=document.getElementById('tapMsg');e.textContent=txt;e.style.cssText=`font-size:10px;font-weight:700;padding:5px 8px;border-radius:6px;margin-bottom:6px;display:block;background:${ok?'#d4edda':'#f8d7da'};color:${ok?'#155724':'#721c24'}`;setTimeout(()=>e.style.display='none',3000);}
+
+async function tLoadPosts(){try{const r=await fetch('/api/screen/posts');const posts=await r.json();document.getElementById('tPostList').innerHTML=posts.length?posts.map(p=>`<div class="tap-item"><span style="font-size:18px">${p.post_type==='image'?'🖼️':'📝'}</span><div style="flex:1;min-width:0"><strong style="font-size:10px;display:block;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${p.title}</strong><small style="font-size:9px;color:#888">${p.post_type}</small></div><button class="tap-del" onclick="tDelPost(${p.id})">✕</button></div>`).join(''):'<p style="font-size:10px;color:#aaa;text-align:center;padding:6px">Koi post nahi</p>';}catch(e){}}
+async function tAddPost(){
+    const title=document.getElementById('tTitle').value.trim();if(!title){tMsg('⚠️ Title chahiye!',false);return;}
+    const fd=new FormData();fd.append('title',title);fd.append('post_type',tPostType);fd.append('content',document.getElementById('tContent').value);fd.append('affiliate_url',document.getElementById('tAff').value);
+    if(tPostType==='image'){const img=document.getElementById('tImage').files[0];if(!img){tMsg('⚠️ Image select karo!',false);return;}fd.append('image',img);}
+    try{const r=await fetch('/api/screen/posts',{method:'POST',body:fd});const d=await r.json();if(d.message){tMsg(d.message,true);['tTitle','tContent','tAff'].forEach(id=>document.getElementById(id).value='');document.getElementById('tImage').value='';tLoadPosts();tvLoadPosts();}else tMsg(d.error||'Error!',false);}catch(e){tMsg('Failed!',false);}
+}
+async function tDelPost(id){if(!confirm('Remove?'))return;const r=await fetch('/api/screen/posts/'+id,{method:'DELETE'});const d=await r.json();tMsg(d.message||d.error,!!d.message);tLoadPosts();tvLoadPosts();}
+
+async function tLoadSongs(){try{const r=await fetch('/api/music');const tracks=await r.json();document.getElementById('tSongList').innerHTML=tracks.length?tracks.map(t=>`<div class="tap-item"><span style="font-size:18px">🎵</span><div style="flex:1;min-width:0"><strong style="font-size:10px;display:block;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${t.title}</strong><small style="font-size:9px;color:#888">${t.artist||'Unknown'}</small></div><button class="tap-del" onclick="tDelSong(${t.id})">✕</button></div>`).join(''):'<p style="font-size:10px;color:#aaa;text-align:center;padding:6px">Koi song nahi</p>';}catch(e){}}
+async function tUploadSong(){const file=document.getElementById('tSongFile').files[0];if(!file){tMsg('⚠️ File select karo!',false);return;}if(file.size>10*1024*1024){tMsg('⚠️ Max 10MB!',false);return;}const fd=new FormData();fd.append('audio',file);fd.append('title',document.getElementById('tSongTitle').value.trim()||file.name.replace(/\.[^/.]+$/,''));fd.append('artist',document.getElementById('tSongArtist').value.trim());tMsg('Uploading...',true);try{const r=await fetch('/api/music',{method:'POST',body:fd});const d=await r.json();if(d.message){tMsg(d.message,true);['tSongTitle','tSongArtist'].forEach(id=>document.getElementById(id).value='');document.getElementById('tSongFile').value='';tLoadSongs();tvLoadMusic();}else tMsg(d.error||'Error!',false);}catch(e){tMsg('Failed!',false);}}
+async function tDelSong(id){if(!confirm('Remove?'))return;const r=await fetch('/api/music/'+id,{method:'DELETE'});const d=await r.json();tMsg(d.message||d.error,!!d.message);tLoadSongs();tvLoadMusic();}
+
+async function tLoadVideos(){try{const r=await fetch('/api/video');const vids=await r.json();document.getElementById('tVideoList').innerHTML=vids.length?vids.map(v=>`<div class="tap-item"><span style="font-size:18px">🎬</span><div style="flex:1;min-width:0"><strong style="font-size:10px;display:block;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${v.title}</strong><small style="font-size:9px;color:#888">${v.description||'Video'}</small></div><button class="tap-del" onclick="tDelVideo(${v.id})">✕</button></div>`).join(''):'<p style="font-size:10px;color:#aaa;text-align:center;padding:6px">Koi video nahi</p>';}catch(e){}}
+async function tUploadVideo(){const file=document.getElementById('tVideoFile').files[0];if(!file){tMsg('⚠️ Video select karo!',false);return;}if(file.size>10*1024*1024){tMsg('⚠️ Max 10MB!',false);return;}const fd=new FormData();fd.append('video',file);fd.append('title',document.getElementById('tVideoTitle').value.trim()||file.name.replace(/\.[^/.]+$/,''));fd.append('description',document.getElementById('tVideoDesc').value.trim());tMsg('Uploading...',true);try{const r=await fetch('/api/video',{method:'POST',body:fd});const d=await r.json();if(d.message){tMsg(d.message,true);['tVideoTitle','tVideoDesc'].forEach(id=>document.getElementById(id).value='');document.getElementById('tVideoFile').value='';tLoadVideos();tvLoadVideos();}else tMsg(d.error||'Error!',false);}catch(e){tMsg('Failed!',false);}}
+async function tDelVideo(id){if(!confirm('Remove?'))return;const r=await fetch('/api/video/'+id,{method:'DELETE'});const d=await r.json();tMsg(d.message||d.error,!!d.message);tLoadVideos();tvLoadVideos();}
+
+let tvLiveLinks=[],tvCurLive=0;
+function tGetLiveLinks(){try{return JSON.parse(localStorage.getItem('liveLinks')||'[]');}catch(e){return[];}}
+function tSaveLiveLinks(d){try{localStorage.setItem('liveLinks',JSON.stringify(d));}catch(e){}}
+
+function tvRenderLive(){
+    tvLiveLinks=tGetLiveLinks();
+    const dot=document.getElementById('chLiveDot');if(dot)dot.style.display=tvLiveLinks.length?'block':'none';
+    document.getElementById('tvDots').innerHTML='';
+    if(!tvLiveLinks.length){tvScreen.innerHTML=`<div style="width:100%;height:100%;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:4px;background:#0a0a14"><span style="font-size:24px">📡</span><p style="font-size:7px;color:#4a4a7a;font-weight:700;text-align:center">Admin se Live URL add karo<br><span style="color:#3a3a5a">✏️ icon tap karo</span></p></div>`;return;}
+    const l=tvLiveLinks[tvCurLive];
+    tvScreen.innerHTML=`<video id="tvLiveEl" style="width:100%;height:100%;object-fit:contain;background:#000" src="${l.url}" playsinline controls></video><div style="position:absolute;top:3px;left:3px;background:rgba(239,68,68,0.9);border-radius:3px;padding:1px 5px;display:flex;align-items:center;gap:2px"><span style="width:5px;height:5px;border-radius:50%;background:white;animation:blink 1s infinite;display:inline-block"></span><span style="font-size:6px;font-weight:800;color:white">LIVE</span></div><div style="position:absolute;bottom:3px;left:3px;right:3px;background:rgba(0,0,0,0.75);border-radius:3px;padding:2px 5px"><div style="font-size:7px;font-weight:800;color:#fff;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">📡 ${l.title}</div></div>`;
+    if(tvLiveLinks.length>1){document.getElementById('tvDots').innerHTML=tvLiveLinks.map((_,i)=>`<div onclick="tvGoLive(${i})" style="width:4px;height:4px;border-radius:50%;background:${i===tvCurLive?'#ef4444':'#2a2a4a'};cursor:pointer;flex-shrink:0" id="tvld${i}"></div>`).join('');}
+    const vel=document.getElementById('tvLiveEl');if(vel){vel.volume=rVolVal;vel.play().catch(()=>{});}
+    tvPlaying=true;document.getElementById('tvPlayBtn').textContent='⏸';
+}
+function tvGoLive(idx){tvCurLive=idx;tvRenderLive();}
+function tSaveLive(){
+    const title=document.getElementById('tLiveTitle').value.trim();const url=document.getElementById('tLiveUrl').value.trim();
+    if(!title){tMsg('⚠️ Channel naam daalo!',false);return;}if(!url||!url.startsWith('http')){tMsg('⚠️ Valid URL daalo!',false);return;}
+    const links=tGetLiveLinks();links.push({title,url});tSaveLiveLinks(links);
+    document.getElementById('tLiveTitle').value='';document.getElementById('tLiveUrl').value='';
+    tMsg('✅ Channel save ho gaya!',true);tLoadLiveList();
+    const dot=document.getElementById('chLiveDot');if(dot)dot.style.display='block';
+}
+function tLoadLiveList(){
+    const links=tGetLiveLinks();const c=document.getElementById('tLiveList');
+    if(!links.length){c.innerHTML='<p style="font-size:10px;color:#aaa;text-align:center;padding:8px">Koi channel nahi — upar se add karo!</p>';return;}
+    c.innerHTML=links.map((l,i)=>`<div class="tap-item"><span style="font-size:16px">📡</span><div style="flex:1;min-width:0"><strong style="font-size:10px;display:block;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;color:#1a1a2e">${l.title}</strong><small style="font-size:8px;color:#888;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;display:block">${l.url}</small></div><button class="tap-del" onclick="tDelLive(${i})">✕</button></div>`).join('');
+}
+function tDelLive(idx){const links=tGetLiveLinks();links.splice(idx,1);tSaveLiveLinks(links);tLoadLiveList();tMsg('🗑️ Channel hata diya!',true);const dot=document.getElementById('chLiveDot');if(dot)dot.style.display=links.length?'block':'none';}
+
+let ytDefaultUrl='',ytCurrentStream='',ytCurrentTitle='';
+function tvRenderYouTube(){
+    document.getElementById('tvDots').innerHTML='';
+    ytDefaultUrl=localStorage.getItem('ytDefaultUrl')||'';
+    // ✅ YouTube Embed player - bina server ke seedha play hoga!
+    const embedId = (function(){ if(!ytDefaultUrl) return ''; var m = ytDefaultUrl.match(/[?&]v=([^&]+)/)||ytDefaultUrl.match(/youtu\.be\/([^?]+)/); return m?m[1]:''; })();
+    tvScreen.innerHTML=`<div style="width:100%;height:100%;display:flex;flex-direction:column;background:#0a0a14">
+        <div style="padding:3px 4px;background:#111;display:flex;gap:2px;flex-shrink:0;align-items:center">
+            <input id="ytUrlInp" type="url" placeholder="YouTube URL paste karo..." value="${ytDefaultUrl}"
+                style="flex:1;background:#1a1a2e;border:1px solid #3a3a5a;border-radius:4px;color:#e0e0ff;font-size:7px;padding:3px 5px;outline:none;font-family:'DM Sans',sans-serif;touch-action:manipulation;-webkit-user-select:text;user-select:text;"
+                autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false">
+            <button onclick="tvYtEmbed()" style="background:linear-gradient(135deg,#ff0000,#cc0000);border:none;border-radius:4px;color:white;cursor:pointer;font-size:7px;font-weight:800;padding:3px 6px;line-height:1;white-space:nowrap">▶ Play</button>
+        </div>
+        <div id="ytVideoArea" style="flex:1;position:relative;background:#000">
+            ${embedId
+                ? `<iframe id="ytFrame" src="https://www.youtube.com/embed/${embedId}?autoplay=1&mute=0" style="width:100%;height:100%;border:none" allow="autoplay;encrypted-media" allowfullscreen></iframe>`
+                : `<div style="width:100%;height:100%;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:4px">
+                    <span style="font-size:22px">▶</span>
+                    <p style="font-size:7px;color:#4a4a7a;font-weight:700;text-align:center">YouTube URL daalo → Play tap karo</p>
+                   </div>`
+            }
+        </div>
+    </div>`;
+    setTimeout(()=>{
+        const inp=document.getElementById('ytUrlInp');
+        if(!inp)return;
+        inp.addEventListener('touchstart',e=>e.stopPropagation(),{passive:true});
+        inp.addEventListener('touchend',e=>e.stopPropagation(),{passive:true});
+        inp.addEventListener('touchmove',e=>e.stopPropagation(),{passive:true});
+        inp.addEventListener('mousedown',e=>e.stopPropagation());
+        inp.addEventListener('click',e=>{e.stopPropagation();inp.focus();});
+    },100);
+}
+// ✅ Embed player function - YouTube URL se video ID nikalo aur iframe mein load karo
+function tvYtEmbed(){
+    const inp=document.getElementById('ytUrlInp');
+    if(!inp)return;
+    const url=inp.value.trim();
+    if(!url){return;}
+    const match=url.match(/(?:v=|youtu\.be\/)([^&\?]+)/);
+    if(!match){
+        const area=document.getElementById('ytVideoArea');
+        if(area)area.innerHTML='<p style="font-size:7px;color:#ef4444;text-align:center;padding:8px">❌ Valid YouTube URL daalo!</p>';
+        return;
+    }
+    const videoId=match[1];
+    const area=document.getElementById('ytVideoArea');
+    if(area)area.innerHTML=`<iframe id="ytFrame" src="https://www.youtube.com/embed/${videoId}?autoplay=1" style="width:100%;height:100%;border:none" allow="autoplay;encrypted-media" allowfullscreen></iframe>`;
+    // Save as default
+    localStorage.setItem('ytDefaultUrl',url);
+    document.getElementById('tvMusicTitle').textContent='▶ YouTube';
+}
+async function tvYtPlay(){
+    const inp=document.getElementById('ytUrlInp');if(!inp)return;const url=inp.value.trim();if(!url)return;
+    const area=document.getElementById('ytVideoArea');if(area)area.innerHTML=`<div style="display:flex;flex-direction:column;align-items:center;gap:4px"><div style="width:20px;height:20px;border:2px solid #5b5ef4;border-top-color:transparent;border-radius:50%;animation:spin 0.8s linear infinite"></div><p style="font-size:7px;color:#8890a4">Stream extract ho rahi hai...</p></div>`;
+    try{
+        const r=await fetch('/api/yt-stream',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({url})});const d=await r.json();
+        if(d.error){if(area)area.innerHTML=`<span style="font-size:18px">❌</span><p style="font-size:7px;color:#ef4444;text-align:center;padding:4px">${d.error}</p>`;return;}
+        ytCurrentStream=d.stream_url;ytCurrentTitle=d.title||'YouTube Video';
+        const videoDiv=tvScreen.querySelector('div[style*="flex:1"]');
+        if(videoDiv)videoDiv.innerHTML=`<video id="ytVid" src="${ytCurrentStream}" style="width:100%;height:100%;object-fit:contain;background:#000" playsinline autoplay controls></video><div style="position:absolute;bottom:0;left:0;right:0;background:rgba(0,0,0,0.7);padding:2px 5px"><div style="font-size:6.5px;font-weight:800;color:white;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">▶ ${ytCurrentTitle}</div></div>`;
+        const vel=document.getElementById('ytVid');if(vel){vel.volume=rVolVal;vel.play().catch(()=>{});}
+        document.getElementById('tvMusicTitle').textContent=ytCurrentTitle;tvPlaying=true;document.getElementById('tvPlayBtn').textContent='⏸';
+    }catch(e){if(area)area.innerHTML=`<span style="font-size:18px">❌</span><p style="font-size:7px;color:#ef4444">Network error!</p>`;}
+}
+function tSaveYtDefault(){const url=document.getElementById('tYtDefaultUrl').value.trim();if(!url||(!url.includes('youtube.com')&&!url.includes('youtu.be'))){tMsg('⚠️ Valid YouTube URL daalo!',false);return;}localStorage.setItem('ytDefaultUrl',url);tMsg('✅ Default YouTube video save ho gaya!',true);document.getElementById('tYtDefaultDisplay').textContent=url;}
+function tClearYtDefault(){localStorage.removeItem('ytDefaultUrl');tMsg('🗑️ Default video hata diya!',true);document.getElementById('tYtDefaultDisplay').textContent='Koi default set nahi';}
+
+let tvBrowserUrl='';
+function tvRenderBrowser(){
+    document.getElementById('tvDots').innerHTML='';
+    tvScreen.innerHTML=`<div style="width:100%;height:100%;display:flex;flex-direction:column;background:#0a0a18;">
+        <div style="background:#111827;padding:3px 5px;display:flex;align-items:center;gap:4px;flex-shrink:0;border-bottom:1px solid #1f2937;">
+            <span style="font-size:9px;font-weight:800;color:#06d6a0">🐍 Python</span>
+            <div id="pyStatus" style="font-size:7px;color:#4a4a7a;font-weight:700;flex:1">Loading Pyodide...</div>
+            <button onclick="pyRun()" id="pyRunBtn" disabled style="background:linear-gradient(135deg,#06d6a0,#059669);border:none;border-radius:4px;color:white;cursor:pointer;font-size:7px;font-weight:800;padding:2px 7px;line-height:1.4;white-space:nowrap">▶ Run</button>
+            <button onclick="pyClear()" style="background:#1f2937;border:none;border-radius:4px;color:#6b7280;cursor:pointer;font-size:7px;padding:2px 5px;line-height:1.4">🗑</button>
+        </div>
+        <div style="display:flex;flex-direction:column;flex:1;overflow:hidden;">
+            <textarea id="pyEditor" spellcheck="false"
+                style="flex:1;min-height:0;background:#0d1117;color:#e6edf3;font-family:monospace;font-size:8px;padding:6px;border:none;outline:none;resize:none;line-height:1.5;border-bottom:1px solid #1f2937;touch-action:manipulation;-webkit-user-select:text;user-select:text;"
+                placeholder="# Python likhlo aur Run karo!
+# DS Agent commands ki help ke liye:
+import pandas as pd
+import numpy as np
+
+# Example: Data dekhna
+data = {'Name': ['Alice', 'Bob', 'Charlie'],
+        'Score': [85, 92, 78]}
+df = pd.DataFrame(data)
+print(df)
+print('Average:', df.Score.mean())"></textarea>
+            <div id="pyOutput" style="height:35%;background:#0d1117;color:#e6edf3;font-family:monospace;font-size:7.5px;padding:5px 6px;overflow-y:auto;border-top:1px solid #1f2937;white-space:pre-wrap;word-break:break-all;">
+                <span style="color:#4a4a7a">Output yahan aayega...</span>
+            </div>
+        </div>
+        <div id="pySnippets" style="background:#111827;padding:3px 4px;display:flex;gap:2px;flex-shrink:0;border-top:1px solid #1f2937;overflow-x:auto;scrollbar-width:none;">
+            <button onclick="pySnip('basic')" style="background:#1f2937;border:none;border-radius:3px;color:#9ca3af;cursor:pointer;font-size:6px;font-weight:700;padding:2px 5px;white-space:nowrap;flex-shrink:0">📊 DataFrame</button>
+            <button onclick="pySnip('stats')" style="background:#1f2937;border:none;border-radius:3px;color:#9ca3af;cursor:pointer;font-size:6px;font-weight:700;padding:2px 5px;white-space:nowrap;flex-shrink:0">📈 Stats</button>
+            <button onclick="pySnip('filter')" style="background:#1f2937;border:none;border-radius:3px;color:#9ca3af;cursor:pointer;font-size:6px;font-weight:700;padding:2px 5px;white-space:nowrap;flex-shrink:0">🔍 Filter</button>
+            <button onclick="pySnip('sort')" style="background:#1f2937;border:none;border-radius:3px;color:#9ca3af;cursor:pointer;font-size:6px;font-weight:700;padding:2px 5px;white-space:nowrap;flex-shrink:0">↕ Sort</button>
+            <button onclick="pySnip('groupby')" style="background:#1f2937;border:none;border-radius:3px;color:#9ca3af;cursor:pointer;font-size:6px;font-weight:700;padding:2px 5px;white-space:nowrap;flex-shrink:0">📦 GroupBy</button>
+        </div>
+    </div>`;
+    setTimeout(()=>{
+        const ed=document.getElementById('pyEditor');
+        if(ed){
+            ed.addEventListener('touchstart',e=>e.stopPropagation(),{passive:true});
+            ed.addEventListener('touchend',e=>e.stopPropagation(),{passive:true});
+            ed.addEventListener('mousedown',e=>e.stopPropagation());
+            ed.addEventListener('click',e=>{e.stopPropagation();ed.focus();});
+            ed.addEventListener('keydown',e=>{
+                if(e.key==='Tab'){e.preventDefault();const s=ed.selectionStart;ed.value=ed.value.substring(0,s)+'    '+ed.value.substring(ed.selectionEnd);ed.selectionStart=ed.selectionEnd=s+4;}
+            });
+        }
+        pyInit();
+    },100);
+}
+let pyodideReady=false,pyodideLoading=false,pyodideObj=null;
+async function pyInit(){
+    if(pyodideReady||pyodideLoading)return;
+    pyodideLoading=true;
+    const st=document.getElementById('pyStatus');
+    if(st)st.textContent='Pyodide load ho raha hai... (~5MB)';
+    try{
+        if(!window.loadPyodide){
+            await new Promise((res,rej)=>{
+                const s=document.createElement('script');
+                s.src='https://cdn.jsdelivr.net/pyodide/v0.25.0/full/pyodide.js';
+                s.onload=res;s.onerror=rej;
+                document.head.appendChild(s);
+            });
+        }
+        pyodideObj=await loadPyodide({indexURL:'https://cdn.jsdelivr.net/pyodide/v0.25.0/full/'});
+        await pyodideObj.loadPackage(['pandas','numpy','micropip']);
+        pyodideReady=true;pyodideLoading=false;
+        if(st)st.textContent='✅ Ready! Python + pandas + numpy';
+        const btn=document.getElementById('pyRunBtn');
+        if(btn){btn.disabled=false;btn.style.opacity='1';}
+    }catch(e){
+        pyodideLoading=false;
+        if(st)st.textContent='❌ Load failed - internet chahiye pehli baar';
+    }
+}
+async function pyRun(){
+    if(!pyodideReady){alert('Pyodide abhi load ho raha hai, thoda wait karo!');return;}
+    const code=document.getElementById('pyEditor').value;
+    const out=document.getElementById('pyOutput');
+    if(!code.trim()||!out)return;
+    out.innerHTML='<span style="color:#f59e0b">⏳ Running...</span>';
+    try{
+        let output='';
+        pyodideObj.globals.set('print_output',[]);
+        pyodideObj.runPython(`
+import sys, io
+_buf = io.StringIO()
+sys.stdout = _buf
+`);
+        pyodideObj.runPython(code);
+        pyodideObj.runPython(`sys.stdout = sys.__stdout__`);
+        output=pyodideObj.runPython(`_buf.getvalue()`);
+        out.innerHTML=output
+            ?'<span style="color:#06d6a0">▶ Output:</span>\n'+escHtml(output)
+            :'<span style="color:#4a4a7a">✅ Chala — koi output nahi</span>';
+    }catch(e){
+        out.innerHTML='<span style="color:#ef4444">❌ Error:\n'+escHtml(e.message)+'</span>';
+    }
+}
+function pyClear(){
+    const ed=document.getElementById('pyEditor');
+    const out=document.getElementById('pyOutput');
+    if(ed)ed.value='';
+    if(out)out.innerHTML='<span style="color:#4a4a7a">Output yahan aayega...</span>';
+}
+function escHtml(t){return t.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');}
+function pySnip(type){
+    const ed=document.getElementById('pyEditor');if(!ed)return;
+    const snippets={
+        basic:`import pandas as pd
+import numpy as np
+
+data = {'Name': ['Alice', 'Bob', 'Charlie', 'David'],
+        'Sales': [1200, 850, 2100, 950],
+        'Region': ['North', 'South', 'North', 'East']}
+df = pd.DataFrame(data)
+print(df)
+print('\nTotal Sales:', df.Sales.sum())`,
+        stats:`import pandas as pd
+import numpy as np
+
+data = {'Score': [85, 92, 78, 95, 88, 72, 91, 84]}
+df = pd.DataFrame(data)
+print('Mean:', df.Score.mean())
+print('Median:', df.Score.median())
+print('Std:', round(df.Score.std(), 2))
+print('Min:', df.Score.min())
+print('Max:', df.Score.max())`,
+        filter:`import pandas as pd
+
+data = {'Name': ['Alice', 'Bob', 'Charlie', 'David'],
+        'Sales': [1200, 850, 2100, 950]}
+df = pd.DataFrame(data)
+
+# Filter: Sales > 1000 wale
+high = df[df['Sales'] > 1000]
+print('High performers:')
+print(high)`,
+        sort:`import pandas as pd
+
+data = {'Name': ['Alice', 'Bob', 'Charlie', 'David'],
+        'Sales': [1200, 850, 2100, 950]}
+df = pd.DataFrame(data)
+
+# Sort by Sales descending
+sorted_df = df.sort_values('Sales', ascending=False)
+print('Sorted by Sales:')
+print(sorted_df)`,
+        groupby:`import pandas as pd
+
+data = {'Name': ['Alice', 'Bob', 'Charlie', 'David', 'Eve'],
+        'Region': ['North', 'South', 'North', 'East', 'South'],
+        'Sales': [1200, 850, 2100, 950, 1400]}
+df = pd.DataFrame(data)
+
+# Region wise total
+grouped = df.groupby('Region')['Sales'].sum().reset_index()
+print('Region wise Sales:')
+print(grouped)`
+    };
+    ed.value=snippets[type]||'';
+}
+function tvBrowserBack(){}
+function tvBrowserRefresh(){}
+function tvBrowserGo(){}
+function tvBrowserLoadUrl(){}
+function tSaveBrowserUrl(){const url=document.getElementById('tBrowserUrl').value.trim();if(!url||!url.startsWith('http')){tMsg('⚠️ Valid URL daalo! (https://...)',false);return;}localStorage.setItem('tvBrowserUrl',url);tMsg('✅ URL save ho gaya!',true);document.getElementById('tBrowserUrlDisplay').textContent=url;if(tvChannel==='browser')tvRenderBrowser();}
+function tClearBrowserUrl(){localStorage.removeItem('tvBrowserUrl');tMsg('🗑️ URL hata diya!',true);document.getElementById('tBrowserUrlDisplay').textContent='Koi URL set nahi';if(tvChannel==='browser')tvRenderBrowser();}
+function tQuickBrowser(url){document.getElementById('tBrowserUrl').value=url;tSaveBrowserUrl();if(tvChannel==='browser')tvRenderBrowser();}
+
+function tvMuteToggle(){rMuted=!rMuted;tvAudio.muted=rMuted;const vel=document.getElementById('tvVid');if(vel)vel.muted=rMuted;document.getElementById('tvMuteBtn').textContent=rMuted?'🔇':'🔊';}
+function tvVolChange(delta){rVolVal=Math.max(0,Math.min(1,rVolVal+delta));tvAudio.volume=rVolVal;const vel=document.getElementById('tvVid');if(vel)vel.volume=rVolVal;document.getElementById('tvVolDisp').textContent=Math.round(rVolVal*100)+'%';}
+function tvSpeedChange(dir){rSpdIdx=Math.max(0,Math.min(SPEEDS.length-1,rSpdIdx+dir));const s=SPEEDS[rSpdIdx];tvAudio.playbackRate=s;const vel=document.getElementById('tvVid');if(vel)vel.playbackRate=s;document.getElementById('tvSpdDisp').textContent=s+'x';}
+function tvQualToggle(){rHQ=!rHQ;document.getElementById('tvQualBtn').textContent=rHQ?'📺HQ':'📺SD';tvScreen.style.filter=rHQ?'none':'blur(0.4px) contrast(0.85) saturate(0.7)';}
+function tvBrightSet(e){const tr=document.getElementById('tvBrightTrack');const r=tr.getBoundingClientRect();const pct=Math.max(20,Math.min(100,Math.round(((e.clientX-r.left)/r.width)*100)));document.getElementById('tvBrightFill').style.width=pct+'%';tvScreen.style.filter=`brightness(${pct/100})`;}
+function rVol(d){tvVolChange(d);}function rMute(){tvMuteToggle();}function rSpeed(d){tvSpeedChange(d);}function rQuality(){tvQualToggle();}function rBright(e){tvBrightSet(e);}
+
+(function(){
+    let sx=0,moved=false;
+    tvScreen.addEventListener('touchstart',e=>{sx=e.touches[0].clientX;moved=false;},{passive:true});
+    tvScreen.addEventListener('touchmove',e=>{if(Math.abs(e.touches[0].clientX-sx)>10)moved=true;},{passive:true});
+    tvScreen.addEventListener('touchend',e=>{if(!moved)return;const dx=e.changedTouches[0].clientX-sx;if(dx<-35)tvNext();else if(dx>35)tvPrev();},{passive:true});
+})();
+
+function tvShowErrorFix(originalCmd, errorMsg){
+    // TV ko browser/python channel pe switch karo
+    tvSetChannel('browser');
+    // Error panel dikhao
+    tvScreen.innerHTML=`<div style="width:100%;height:100%;display:flex;flex-direction:column;background:#0a0a18;overflow:hidden;">
+        <div style="background:#1a0a0a;padding:4px 6px;display:flex;align-items:center;gap:4px;flex-shrink:0;border-bottom:1px solid #3a1a1a;">
+            <span style="font-size:9px">⚠️</span>
+            <span style="font-size:7px;font-weight:800;color:#ef4444;flex:1">Command Error — AI Fix Suggest kar raha hai...</span>
+            <div id="tvErrLoader" style="width:10px;height:10px;border:1.5px solid #ef4444;border-top-color:transparent;border-radius:50%;animation:spin 0.8s linear infinite;flex-shrink:0"></div>
+        </div>
+        <div style="padding:5px 6px;background:#120808;flex-shrink:0;border-bottom:1px solid #2a1a1a;">
+            <div style="font-size:6px;color:#6b7280;font-weight:700;margin-bottom:2px">ORIGINAL COMMAND:</div>
+            <div style="font-size:7.5px;color:#fbbf24;font-weight:700;word-break:break-word">"${originalCmd}"</div>
+        </div>
+        <div id="tvErrFix" style="flex:1;padding:6px;overflow-y:auto;">
+            <div style="font-size:7px;color:#4a4a7a;text-align:center;padding:8px">AI soch raha hai... ⏳</div>
+        </div>
+        <div id="tvErrBtns" style="display:none;padding:4px 5px;background:#0d0d1a;border-top:1px solid #1f2937;display:flex;gap:3px;flex-shrink:0;">
+            <button id="tvErrCopy" style="flex:1;background:#1f2937;border:none;border-radius:4px;color:#9ca3af;cursor:pointer;font-size:6.5px;font-weight:800;padding:4px 2px">📋 Copy</button>
+            <button id="tvErrApply" style="flex:2;background:linear-gradient(135deg,#06d6a0,#059669);border:none;border-radius:4px;color:white;cursor:pointer;font-size:6.5px;font-weight:800;padding:4px 2px">✅ Fix Apply → DS Agent</button>
+            <button onclick="tvSetChannel('posts')" style="flex:1;background:#1a1a38;border:none;border-radius:4px;color:#6b7280;cursor:pointer;font-size:6.5px;font-weight:800;padding:4px 2px">✕ Close</button>
+        </div>
+    </div>`;
+    document.getElementById('tvStatus').textContent='⚠️ Error Fix';
+    // AI se fix maango — apna /chat endpoint use karo
+    fetch('/chat',{method:'POST',headers:{'Content-Type':'application/json'},
+        body:JSON.stringify({
+            message:'Meri command thi: "'+originalCmd+'" aur error aaya: "'+errorMsg.substring(0,200)+'". Please mujhe batao: 1) Problem kya hai (1 line mein) 2) Sahi command kya hogi (sirf command, koi explanation nahi). Format: PROBLEM: ... | FIX: ...',
+            ai_mode:true
+        })
+    })
+    .then(r=>r.json())
+    .then(d=>{
+        const fixBox=document.getElementById('tvErrFix');
+        const btns=document.getElementById('tvErrBtns');
+        const loader=document.getElementById('tvErrLoader');
+        if(loader)loader.style.display='none';
+        if(!fixBox)return;
+        const resp=d.response||'Fix nahi mila';
+        // Parse PROBLEM | FIX format
+        let problem='Command mein kuch issue hai',fixCmd=originalCmd;
+        if(resp.includes('PROBLEM:')&&resp.includes('FIX:')){
+            const parts=resp.split('|');
+            problem=(parts[0]||'').replace('PROBLEM:','').trim();
+            fixCmd=(parts[1]||'').replace('FIX:','').trim();
+        } else {
+            problem=resp.substring(0,120);
+            fixCmd=originalCmd;
+        }
+        fixBox.innerHTML=`
+            <div style="margin-bottom:5px;">
+                <div style="font-size:6px;color:#6b7280;font-weight:700;margin-bottom:2px">PROBLEM:</div>
+                <div style="font-size:7px;color:#fca5a5;line-height:1.4;word-break:break-word">${problem}</div>
+            </div>
+            <div style="background:#0d1a0d;border:1px solid #1a3a1a;border-radius:4px;padding:4px 5px;">
+                <div style="font-size:6px;color:#6b7280;font-weight:700;margin-bottom:2px">✅ SUGGESTED FIX:</div>
+                <div id="tvFixCmd" style="font-size:7.5px;color:#06d6a0;font-weight:800;word-break:break-word;line-height:1.4">${fixCmd}</div>
+            </div>`;
+        if(btns){
+            btns.style.display='flex';
+            const copyBtn=document.getElementById('tvErrCopy');
+            const applyBtn=document.getElementById('tvErrApply');
+            if(copyBtn)copyBtn.onclick=function(){
+                navigator.clipboard.writeText(fixCmd).catch(()=>{});
+                copyBtn.textContent='✅ Copied!';
+                setTimeout(()=>copyBtn.textContent='📋 Copy',2000);
+            };
+            if(applyBtn)applyBtn.onclick=function(){
+                const inp=document.getElementById('msgInput');
+                if(inp){inp.value=fixCmd;inp.focus();}
+                tvSetChannel('posts');
+                setTimeout(()=>{sendMsg();setTimeout(showThanksCartoon,1200);},300);
+            };
+        }
+    })
+    .catch(()=>{
+        const fixBox=document.getElementById('tvErrFix');
+        if(fixBox)fixBox.innerHTML='<div style="font-size:7px;color:#ef4444;text-align:center;padding:8px">AI se connect nahi hua — manually check karo</div>';
+        const loader=document.getElementById('tvErrLoader');
+        if(loader)loader.style.display='none';
+    });
+}
+
+// ══ ERROR CARTOON FUNCTIONS ══
+const ERR_CHARS=['🤖','🥺','😵','🙈','😬','🤦'];
+const ERR_MSGS=[
+    'Oho! Kya hua yaar? 😅<br>Koi baat nahi, TV pe jao<br>main fix karwa deta hoon!',
+    'Arre yaar! Command samjhi nahi 🤔<br>Chal TV pe chalte hain,<br>sab theek kar denge!',
+    'Oops! Kuch toh gadbad hai 😬<br>Par tension mat lo,<br>TV pe solution ready hai!',
+    'Arey bhai! ❌ Nahi chali command<br>Koi nahi, hota hai!<br>TV pe jao → fix ho jayega!'
+];
+let errPendingMsg='',errPendingCmd='';
+
+function showErrorCartoon(originalCmd, errorResp){
+    errPendingCmd=originalCmd;
+    errPendingMsg=errorResp;
+    const overlay=document.getElementById('errCartoonOverlay');
+    const charEl=document.getElementById('errCartoonChar');
+    const speechEl=document.getElementById('errSpeechBubble');
+    if(!overlay)return;
+    // Random character aur message
+    charEl.textContent=ERR_CHARS[Math.floor(Math.random()*ERR_CHARS.length)];
+    speechEl.innerHTML=ERR_MSGS[Math.floor(Math.random()*ERR_MSGS.length)];
+    // Shake animation
+    charEl.style.animation='charShake 0.5s ease, charBob 0.6s ease 0.6s infinite alternate';
+    overlay.classList.add('show');
+    // Auto-close after 8 sec
+    setTimeout(()=>closeErrCartoon(),8000);
+}
+
+function goToTvFix(){
+    closeErrCartoon();
+    setTimeout(()=>{
+        tvShowErrorFix(errPendingCmd, errPendingMsg);
+        showToast('📺 TV pe fix ho raha hai!');
+    },300);
+}
+
+function closeErrCartoon(){
+    const overlay=document.getElementById('errCartoonOverlay');
+    if(overlay)overlay.classList.remove('show');
+}
+
+// ── Thanks cartoon after fix apply ──
+const THANKS_REACTIONS=[
+    {char:'🥳',title:'Waah Waah! 🎉',body:'Command fix ho gayi! Abhi chalaate hain!',anim:'charDance'},
+    {char:'👏',title:'Taali Taali! 👏',body:'Sahi kiya bhai! Ab dekhte hain result!',anim:'charClap'},
+    {char:'😘',title:'Shukriya! 😘',body:'Tumne sahi command use ki! DS Agent khush hai!',anim:'charBob'},
+    {char:'🤩',title:'Amazing! 🤩',body:'Bilkul sahi! Result aa raha hai!',anim:'charDance'},
+];
+function showThanksCartoon(){
+    const rx=THANKS_REACTIONS[Math.floor(Math.random()*THANKS_REACTIONS.length)];
+    const overlay=document.getElementById('thanksCartoonOverlay');
+    const charEl=document.getElementById('thanksCartoonChar');
+    const title=document.getElementById('thanksMsgTitle');
+    const body=document.getElementById('thanksMsgBody');
+    if(!overlay)return;
+    charEl.textContent=rx.char;
+    charEl.style.animation=rx.anim+' 0.5s ease infinite alternate';
+    title.textContent=rx.title;
+    body.textContent=rx.body;
+    // Confetti add karo
+    const card=document.getElementById('thanksCartoonCard');
+    for(let i=0;i<8;i++){
+        const c=document.createElement('div');
+        c.className='confetti-piece';
+        c.style.cssText=`left:${10+Math.random()*80}%;top:${Math.random()*30}%;background:${'#5b5ef4,#06d6a0,#f59e0b,#ef4444,#8b5cf6'.split(',')[Math.floor(Math.random()*5)]};animation-delay:${Math.random()*0.5}s;animation-duration:${0.8+Math.random()*0.6}s;`;
+        card.appendChild(c);
+        setTimeout(()=>c.remove(),1500);
+    }
+    overlay.classList.add('show');
+    setTimeout(()=>closeThanksCartoon(),4000);
+}
+function closeThanksCartoon(){
+    const overlay=document.getElementById('thanksCartoonOverlay');
+    if(overlay)overlay.classList.remove('show');
+}
+
+function initTV(adminFlag){
+    isAdmin=adminFlag;
+    if(adminFlag){document.getElementById('tvEditBtn').style.display='block';document.getElementById('analyticsBtn').style.display='block';}
+    tvLoadPosts();tvLoadMusic();tvLoadVideos();
+    setTimeout(posRemote,400);
+    fetch('/get_username').then(r=>r.json()).then(d=>{myUsername=d.username||'User';}).catch(()=>{});
+    setTimeout(initPushNotif,2000);
+    if(adminFlag)setInterval(()=>fetch('/api/scheduled/publish',{method:'POST'}).catch(()=>{}),300000);
+}
+</script>
+<!-- ════ ERROR CARTOON OVERLAY ════ -->
+<div class="err-cartoon-overlay" id="errCartoonOverlay">
+    <div class="err-cartoon-card" id="errCartoonCard">
+        <span class="err-cartoon-char" id="errCartoonChar">🤖</span>
+        <div class="err-speech" id="errSpeechBubble">Oho! Kya hua yaar?<br>Koi baat nahi, sab theek ho jayega! 😅</div>
+        <button class="err-tv-btn" id="errTvBtn" onclick="goToTvFix()">📺 TV pe jao → Fix karo!</button>
+        <button class="err-skip" onclick="closeErrCartoon()">Skip karo</button>
+    </div>
+</div>
+
+<!-- ════ THANKS CARTOON OVERLAY ════ -->
+<div class="thanks-cartoon-overlay" id="thanksCartoonOverlay">
+    <div class="thanks-cartoon-card" id="thanksCartoonCard">
+        <span class="err-cartoon-char" id="thanksCartoonChar" style="font-size:64px">🎉</span>
+        <div style="font-size:16px;font-weight:800;color:#1a1a2e;margin-bottom:6px" id="thanksMsgTitle">Bahut badhiya!</div>
+        <div style="font-size:13px;color:#666;margin-bottom:16px" id="thanksMsgBody">Command fix ho gayi! 🚀</div>
+        <button onclick="closeThanksCartoon()" style="width:100%;padding:10px;background:linear-gradient(135deg,#06d6a0,#059669);color:white;border:none;border-radius:12px;font-size:14px;font-weight:800;cursor:pointer;font-family:'DM Sans',sans-serif;">✅ Theek hai!</button>
+    </div>
+</div>
+
+</body>
+</html>
