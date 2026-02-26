@@ -1,0 +1,287 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>⭐ Pricing — DS Agent</title>
+    <link href="https://fonts.googleapis.com/css2?family=Nunito:wght@400;600;700;800;900&family=Baloo+2:wght@800&display=swap" rel="stylesheet">
+    <style>
+        *{margin:0;padding:0;box-sizing:border-box}
+        body{font-family:'Nunito',sans-serif;background:#f0f2f8;min-height:100vh}
+        .topnav{display:flex;align-items:center;justify-content:space-between;padding:12px 20px;background:white;box-shadow:0 2px 12px rgba(102,126,234,0.12)}
+        .logo{font-family:'Baloo 2',cursive;font-size:20px;font-weight:800;background:linear-gradient(135deg,#667eea,#764ba2);-webkit-background-clip:text;-webkit-text-fill-color:transparent}
+        .topnav a{color:#667eea;text-decoration:none;font-size:13px;font-weight:700;background:#f0f2ff;padding:5px 12px;border-radius:20px}
+        .main{max-width:700px;margin:0 auto;padding:30px 15px}
+        .title{text-align:center;margin-bottom:30px}
+        .title h1{font-family:'Baloo 2',cursive;font-size:28px;font-weight:800;background:linear-gradient(135deg,#667eea,#764ba2);-webkit-background-clip:text;-webkit-text-fill-color:transparent}
+        .title p{color:#718096;font-weight:600;margin-top:6px}
+        .plans{display:grid;grid-template-columns:1fr 1fr;gap:16px}
+        .plan-card{background:white;border-radius:20px;padding:24px;box-shadow:0 4px 20px rgba(102,126,234,0.1);border:2px solid #f0f0f0;position:relative;transition:0.3s}
+        .plan-card.pro{border-color:#667eea;box-shadow:0 8px 30px rgba(102,126,234,0.2)}
+        .plan-card .badge-popular{position:absolute;top:-12px;left:50%;transform:translateX(-50%);background:linear-gradient(135deg,#667eea,#764ba2);color:white;padding:4px 16px;border-radius:20px;font-size:11px;font-weight:800;white-space:nowrap}
+        .plan-name{font-size:18px;font-weight:900;color:#2d3748;margin-bottom:6px}
+        .plan-price{font-size:32px;font-weight:900;color:#667eea;margin:10px 0 4px}
+        .plan-price span{font-size:14px;color:#718096;font-weight:600}
+        .plan-features{list-style:none;margin:16px 0;padding:0}
+        .plan-features li{font-size:13px;font-weight:600;color:#4a5568;padding:5px 0;display:flex;align-items:center;gap:8px}
+        .plan-features li.locked{color:#aaa}
+        .plan-btn{width:100%;padding:12px;border:none;border-radius:12px;cursor:pointer;font-weight:800;font-family:'Nunito',sans-serif;font-size:14px;transition:0.2s;margin-top:10px}
+        .plan-btn.free-btn{background:#f0f0f0;color:#555}
+        .plan-btn.pro-btn{background:linear-gradient(135deg,#667eea,#764ba2);color:white;box-shadow:0 4px 15px rgba(102,126,234,0.3)}
+        .plan-btn.pro-btn:hover{opacity:0.9;transform:translateY(-2px)}
+        .plan-btn.current-btn{background:#e8f5e9;color:#2e7d32;cursor:default}
+        .current-plan-label{text-align:center;margin-top:20px;font-size:13px;color:#718096;font-weight:700}
+        .current-plan-label strong{color:#667eea}
+        .msg{padding:12px 16px;border-radius:10px;font-size:13px;font-weight:700;text-align:center;margin-top:15px;display:none}
+        .msg.success{background:#d4edda;color:#155724;display:block}
+        .msg.error{background:#f8d7da;color:#721c24;display:block}
+
+        /* UPI Card */
+        .upi-card{background:white;border-radius:20px;padding:24px;margin-top:24px;box-shadow:0 4px 20px rgba(102,126,234,0.1);border:2px solid #e8f5e9;display:none}
+        .upi-card h3{font-size:16px;font-weight:900;color:#2d3748;margin-bottom:4px}
+        .upi-card>p{font-size:12px;color:#718096;font-weight:600;margin-bottom:16px}
+        .upi-steps{display:flex;flex-direction:column;gap:8px;margin-bottom:18px}
+        .upi-step{display:flex;align-items:flex-start;gap:10px;background:#f8f9fc;border-radius:10px;padding:9px 12px}
+        .step-num{width:22px;height:22px;border-radius:50%;background:linear-gradient(135deg,#667eea,#764ba2);color:white;font-size:11px;font-weight:900;display:flex;align-items:center;justify-content:center;flex-shrink:0;margin-top:1px}
+        .step-text{font-size:12px;color:#4a5568;font-weight:600;line-height:1.5}
+        .upi-amount{text-align:center;margin-bottom:14px}
+        .upi-amount .amt{font-size:32px;font-weight:900;color:#667eea}
+        .upi-amount small{font-size:12px;color:#718096;font-weight:600}
+        .upi-id-box{background:linear-gradient(135deg,#f0f2ff,#f5f0ff);border:2px dashed #667eea;border-radius:12px;padding:14px;text-align:center;margin-bottom:16px;cursor:pointer;transition:0.2s}
+        .upi-id-box:hover{background:linear-gradient(135deg,#e8ebff,#ede8ff);transform:scale(1.01)}
+        .upi-id-label{font-size:10px;font-weight:800;color:#667eea;text-transform:uppercase;letter-spacing:1px;margin-bottom:4px}
+        .upi-id-val{font-size:20px;font-weight:900;color:#2d3748;letter-spacing:0.5px}
+        .upi-copy-hint{font-size:10px;color:#aaa;margin-top:3px}
+        .divider{border:none;border-top:1px dashed #e2e8f0;margin:16px 0}
+        .ss-label{font-size:13px;font-weight:800;color:#2d3748;margin-bottom:10px}
+        .upload-box{border:2px dashed #cbd5e0;border-radius:12px;padding:16px;text-align:center;cursor:pointer;transition:0.2s;background:#fafbff;margin-bottom:10px}
+        .upload-box:hover{border-color:#667eea;background:#f0f2ff}
+        .upload-box.has-img{border-color:#48bb78;background:#f0fff4}
+        .upload-box p{font-size:13px;font-weight:700;color:#667eea}
+        .upload-box small{font-size:11px;color:#aaa}
+        #previewImg{max-width:100%;border-radius:8px;margin-top:8px;display:none}
+        .utr-input{width:100%;padding:10px 14px;border:2px solid #e2e8f0;border-radius:10px;font-size:13px;font-family:'Nunito',sans-serif;outline:none;margin:5px 0;font-weight:700;box-sizing:border-box}
+        .utr-input:focus{border-color:#667eea}
+        .submit-btn{width:100%;padding:13px;background:linear-gradient(135deg,#48bb78,#38a169);color:white;border:none;border-radius:12px;font-size:14px;font-weight:800;cursor:pointer;font-family:'Nunito',sans-serif;transition:0.2s;margin-top:8px;box-shadow:0 4px 12px rgba(72,187,120,0.3)}
+        .submit-btn:hover{opacity:0.92;transform:translateY(-1px)}
+        .submit-btn:disabled{background:#cbd5e0;cursor:not-allowed;transform:none;box-shadow:none}
+        .pending-badge{background:#fff3cd;color:#856404;border:1px solid #ffc107;border-radius:10px;padding:12px 14px;font-size:12px;font-weight:700;text-align:center;margin-top:12px;display:none;line-height:1.5}
+
+        @media(max-width:500px){.plans{grid-template-columns:1fr}}
+    </style>
+</head>
+<body>
+<div class="topnav">
+    <div class="logo">🤖 DS Agent</div>
+    <a href="/">← Back</a>
+</div>
+
+<div class="main">
+    <div class="title">
+        <h1>⭐ Choose Your Plan</h1>
+        <p>Upgrade karo aur full power unlock karo!</p>
+    </div>
+
+    <div class="plans">
+        <!-- FREE -->
+        <div class="plan-card">
+            <div class="plan-name">🆓 Free</div>
+            <div class="plan-price">₹0 <span>/ forever</span></div>
+            <ul class="plan-features">
+                <li>✅ CSV Upload</li>
+                <li>✅ Basic Queries</li>
+                <li>✅ Bar Chart</li>
+                <li>✅ CSV Export</li>
+                <li>✅ HTML Report</li>
+                <li>✅ 10 Queries/day</li>
+                <li class="locked">❌ AI Chat Mode</li>
+                <li class="locked">❌ Excel Export</li>
+                <li class="locked">❌ Dashboard</li>
+                <li class="locked">❌ Unlimited Queries</li>
+            </ul>
+            <button class="plan-btn {% if plan == 'free' %}current-btn{% else %}free-btn{% endif %}"
+                    {% if plan == 'free' %}disabled{% endif %}>
+                {% if plan == 'free' %}✅ Current Plan{% else %}Downgrade{% endif %}
+            </button>
+        </div>
+
+        <!-- PRO -->
+        <div class="plan-card pro">
+            <div class="badge-popular">🔥 Most Popular</div>
+            <div class="plan-name">⭐ Pro</div>
+            <div class="plan-price">₹499 <span>/ month</span></div>
+            <ul class="plan-features">
+                <li>✅ Sab Free features</li>
+                <li>✅ 🤖 AI Chat Mode</li>
+                <li>✅ 📄 Excel Export</li>
+                <li>✅ 📊 Full Dashboard</li>
+                <li>✅ Unlimited Queries</li>
+                <li>✅ Priority Support</li>
+                <li>✅ All Future Features</li>
+            </ul>
+            <button class="plan-btn {% if plan == 'pro' %}current-btn{% else %}pro-btn{% endif %}"
+                    id="upgradeBtn"
+                    {% if plan == 'pro' %}disabled{% endif %}
+                    onclick="showUpiSection()">
+                {% if plan == 'pro' %}✅ Current Plan{% else %}🚀 Upgrade to Pro — ₹499/mo{% endif %}
+            </button>
+        </div>
+    </div>
+
+    <div class="current-plan-label">
+        Aapka current plan: <strong>{{ plan|upper }}</strong>
+    </div>
+
+    <!-- ══ UPI SECTION (sirf non-pro users ke liye) ══ -->
+    {% if plan != 'pro' %}
+    <div class="upi-card" id="upiSection">
+        <h3>📱 UPI se Pay Karo</h3>
+        <p>Sirf 2 minutes mein Pro activate! No card needed.</p>
+
+        <div class="upi-amount">
+            <div class="amt">₹499</div>
+            <small>Pro Plan — 30 Days</small>
+        </div>
+
+        <div class="upi-steps">
+            <div class="upi-step">
+                <div class="step-num">1</div>
+                <div class="step-text">Neeche UPI ID copy karo ya apne UPI app (PhonePe / GPay / Paytm) mein search karo</div>
+            </div>
+            <div class="upi-step">
+                <div class="step-num">2</div>
+                <div class="step-text">Exactly <b>₹499</b> bhejo aur payment ka screenshot lo</div>
+            </div>
+            <div class="upi-step">
+                <div class="step-num">3</div>
+                <div class="step-text">Screenshot + UTR number neeche submit karo — admin 24hrs mein Pro activate karega</div>
+            </div>
+        </div>
+
+        <div class="upi-id-box" onclick="copyUpi()" id="upiIdBox">
+            <div class="upi-id-label">UPI ID — Tap to Copy 📋</div>
+            <div class="upi-id-val" id="upiIdVal">Loading...</div>
+            <div class="upi-copy-hint" id="upiCopyHint">Tap karke copy karo</div>
+        </div>
+
+        <hr class="divider">
+        <div class="ss-label">📸 Payment Screenshot Submit Karo</div>
+
+        <div class="upload-box" id="uploadBox" onclick="document.getElementById('ssFile').click()">
+            <p>📁 Screenshot yahan select karo</p>
+            <small>JPG, PNG — Max 5MB</small>
+            <input type="file" id="ssFile" accept="image/*" style="display:none" onchange="previewSS(this)">
+            <img id="previewImg" src="" alt="preview">
+        </div>
+
+        <input class="utr-input" type="text" id="utrInput" placeholder="UTR / Transaction ID (optional but recommended)">
+        <input class="utr-input" type="text" id="amtInput" placeholder="Amount bheja (e.g. 499)" value="499">
+
+        <button class="submit-btn" id="submitBtn" onclick="submitScreenshot()">
+            ✅ Screenshot Submit Karo → Pro Activate Karo
+        </button>
+
+        <div class="pending-badge" id="pendingBadge">
+            ⏳ Aapka payment review mein hai!<br>
+            Admin 24hrs mein Pro activate karega.<br>
+            Koi sawaal? Homepage ke Live Chat mein message karo! 💬
+        </div>
+    </div>
+    {% endif %}
+
+    <div id="payMsg" class="msg"></div>
+</div>
+
+<script>
+    // Load UPI ID from server
+    async function loadUpiInfo() {
+        try {
+            const r = await fetch('/api/upi_info');
+            const d = await r.json();
+            document.getElementById('upiIdVal').textContent = d.upi_id || 'yourname@upi';
+        } catch(e) {
+            document.getElementById('upiIdVal').textContent = 'yourname@upi';
+        }
+    }
+    loadUpiInfo();
+
+    function showUpiSection() {
+        const s = document.getElementById('upiSection');
+        if (s) {
+            s.style.display = 'block';
+            setTimeout(() => s.scrollIntoView({behavior:'smooth', block:'start'}), 100);
+        }
+    }
+
+    function copyUpi() {
+        const upi = document.getElementById('upiIdVal').textContent;
+        navigator.clipboard.writeText(upi).then(() => {
+            document.getElementById('upiCopyHint').textContent = '✅ Copied!';
+            document.getElementById('upiIdBox').style.background = 'linear-gradient(135deg,#d4edda,#c3e6cb)';
+            setTimeout(() => {
+                document.getElementById('upiCopyHint').textContent = 'Tap karke copy karo';
+                document.getElementById('upiIdBox').style.background = '';
+            }, 2000);
+        }).catch(() => {
+            prompt('Manually copy karo:', upi);
+        });
+    }
+
+    function previewSS(input) {
+        if (!input.files[0]) return;
+        const file = input.files[0];
+        if (file.size > 5 * 1024 * 1024) { alert('Max 5MB!'); return; }
+        const reader = new FileReader();
+        reader.onload = e => {
+            const img = document.getElementById('previewImg');
+            img.src = e.target.result;
+            img.style.display = 'block';
+            document.getElementById('uploadBox').classList.add('has-img');
+            document.querySelector('#uploadBox p').textContent = '✅ Screenshot selected!';
+        };
+        reader.readAsDataURL(file);
+    }
+
+    async function submitScreenshot() {
+        const file = document.getElementById('ssFile').files[0];
+        if (!file) { alert('Pehle screenshot select karo!'); return; }
+        const utr = document.getElementById('utrInput').value.trim();
+        const amt = document.getElementById('amtInput').value.trim() || '499';
+        const btn = document.getElementById('submitBtn');
+        btn.disabled = true;
+        btn.textContent = '⏳ Submitting...';
+
+        const reader = new FileReader();
+        reader.onload = async e => {
+            const b64 = e.target.result.split(',')[1];
+            const mime = file.type || 'image/jpeg';
+            try {
+                const r = await fetch('/submit_payment_screenshot', {
+                    method: 'POST',
+                    headers: {'Content-Type': 'application/json'},
+                    body: JSON.stringify({image_data: b64, image_mime: mime, utr_number: utr, amount: amt})
+                });
+                const d = await r.json();
+                if (d.message) {
+                    document.getElementById('pendingBadge').style.display = 'block';
+                    document.getElementById('payMsg').textContent = '🎉 ' + d.message;
+                    document.getElementById('payMsg').className = 'msg success';
+                    btn.textContent = '✅ Submitted!';
+                } else {
+                    document.getElementById('payMsg').textContent = '❌ ' + (d.error || 'Error!');
+                    document.getElementById('payMsg').className = 'msg error';
+                    btn.disabled = false;
+                    btn.textContent = '✅ Screenshot Submit Karo → Pro Activate Karo';
+                }
+            } catch(e) {
+                document.getElementById('payMsg').textContent = '❌ Network error! Dobara try karo.';
+                document.getElementById('payMsg').className = 'msg error';
+                btn.disabled = false;
+                btn.textContent = '✅ Screenshot Submit Karo → Pro Activate Karo';
+            }
+        };
+        reader.readAsDataURL(file);
+    }
+</script>
+</body>
+</html>
