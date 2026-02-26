@@ -25,8 +25,8 @@ class Subscription(Base):
     __tablename__ = "subscriptions"
     id          = Column(Integer, primary_key=True, index=True)
     user_id     = Column(Integer, unique=True, index=True)
-    plan        = Column(String, default="free")   # "free" | "pro"
-    razorpay_id = Column(String, nullable=True)    # Razorpay payment/subscription ID
+    plan        = Column(String, default="free")
+    razorpay_id = Column(String, nullable=True)
     started_at  = Column(DateTime, default=datetime.utcnow)
     expires_at  = Column(DateTime, nullable=True)
     is_active   = Column(Boolean, default=True)
@@ -44,8 +44,8 @@ class AffiliateLink(Base):
     """Admin-managed affiliate links shown before downloads."""
     __tablename__ = "affiliate_links"
     id          = Column(Integer, primary_key=True, index=True)
-    title       = Column(String)           # e.g. "Try Razorpay"
-    url         = Column(String)           # affiliate URL
+    title       = Column(String)
+    url         = Column(String)
     description = Column(Text, nullable=True)
     is_active   = Column(Boolean, default=True)
     created_at  = Column(DateTime, default=datetime.utcnow)
@@ -64,10 +64,10 @@ class ScreenPost(Base):
     id            = Column(Integer, primary_key=True, index=True)
     title         = Column(String)
     content       = Column(Text, nullable=True)
-    image_data    = Column(Text, nullable=True)   # base64
+    image_data    = Column(Text, nullable=True)
     image_mime    = Column(String, nullable=True)
     affiliate_url = Column(String, nullable=True)
-    post_type     = Column(String, default="text")  # "text" | "image"
+    post_type     = Column(String, default="text")
     is_active     = Column(Boolean, default=True)
     order_num     = Column(Integer, default=0)
     created_at    = Column(DateTime, default=datetime.utcnow)
@@ -78,7 +78,7 @@ class MusicTrack(Base):
     id         = Column(Integer, primary_key=True, index=True)
     title      = Column(String)
     artist     = Column(String, nullable=True)
-    audio_data = Column(Text)        # base64 MP3
+    audio_data = Column(Text)
     mime_type  = Column(String, default="audio/mpeg")
     is_active  = Column(Boolean, default=True)
     created_at = Column(DateTime, default=datetime.utcnow)
@@ -89,7 +89,7 @@ class VideoTrack(Base):
     id          = Column(Integer, primary_key=True, index=True)
     title       = Column(String)
     description = Column(Text, nullable=True)
-    video_data  = Column(Text)       # base64 MP4/WebM
+    video_data  = Column(Text)
     mime_type   = Column(String, default="video/mp4")
     thumbnail   = Column(Text, nullable=True)
     thumb_mime  = Column(String, nullable=True)
@@ -112,7 +112,7 @@ class PostAnalytics(Base):
     post_id    = Column(Integer, index=True)
     views      = Column(Integer, default=0)
     clicks     = Column(Integer, default=0)
-    date       = Column(String)  # YYYY-MM-DD
+    date       = Column(String)
 
 class ScheduledPost(Base):
     """Posts scheduled to go live at a specific time."""
@@ -138,5 +138,20 @@ class PushSubscription(Base):
     auth       = Column(Text)
     created_at = Column(DateTime, default=datetime.utcnow)
 
+
+class PaymentScreenshot(Base):
+    """User uploaded UPI payment screenshots — admin verifies manually."""
+    __tablename__ = "payment_screenshots"
+    id           = Column(Integer, primary_key=True, index=True)
+    user_id      = Column(Integer, index=True)
+    username     = Column(String)
+    image_data   = Column(Text)           # base64
+    image_mime   = Column(String, default="image/jpeg")
+    utr_number   = Column(String, nullable=True)   # UPI transaction ref
+    amount       = Column(String, nullable=True)   # e.g. "499"
+    status       = Column(String, default="pending")  # pending | approved | rejected
+    admin_note   = Column(Text, nullable=True)
+    created_at   = Column(DateTime, default=datetime.utcnow)
+
 # Create all tables
-Base.metadata.create_all(bind=engine)#80FF00
+Base.metadata.create_all(bind=engine)
