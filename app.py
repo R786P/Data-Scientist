@@ -606,27 +606,6 @@ def dashboard_png():
         return jsonify({'error':'Dashboard nahi bana abhi tak'}),404
     return send_file(dash_path, mimetype='image/png')
 
-@app.route('/send_report', methods=['POST'])
-@login_required
-@single_session_check
-def send_report():
-    try:
-        data=request.get_json();client_email=data.get('email')
-        if not client_email:return jsonify({"error":"Email required"}),400
-        pdf_filename=f"static/report_{current_user.username}_{int(datetime.now().timestamp())}.pdf"
-        db=SessionLocal()
-        last_query=db.query(UserQuery).filter_by(user_id=current_user.id).order_by(UserQuery.timestamp.desc()).first()
-        insights=last_query.response_text if last_query else "No data"
-        db.close()
-        success=generate_pdf_report(pdf_filename,client_email,insights,'static/plot.png')
-        if success:
-            email_sent=send_report_email(to_email=client_email,subject="📊 Your Data Analysis Report",body="Hi,\n\nPlease find attached your report.\n\nRegards,\nDS Agent",attachment_path=pdf_filename)
-            if email_sent:return jsonify({"message":"✅ Report sent!"})
-            return jsonify({"error":"Email failed"}),500
-        return jsonify({"error":"PDF generation failed"}),500
-    except Exception as e:
-        return jsonify({"error":str(e)}),500
-
 @app.route('/screen')
 @login_required
 def screen():return render_template('screen.html')
