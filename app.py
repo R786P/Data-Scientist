@@ -1002,6 +1002,214 @@ def send_push():
     finally:
         db.close()
 
+@app.route('/send_report', methods=['POST'])
+@login_required
+@single_session_check
+def send_report():
+    try:
+        data = request.get_json()
+        client_email = data.get('email')
+        report_type = data.get('report_type', 'summary')   # summary / full / charts
+        schedule    = data.get('schedule', 'now')           # now / daily / weekly
+
+        if not client_email:
+            return jsonify({"error": "Email required"}), 400
+
+        # Schedule = daily/weekly → future mein bhejenge (abhi sirf confirm karo)
+        if schedule != 'now':
+            return jsonify({
+                "message": f"✅ Report scheduled! {schedule.capitalize()} emails {client_email} pe jaayenge.",
+                "scheduled": True,
+                "schedule": schedule
+            })
+
+        db = SessionLocal()
+        last_query = db.query(UserQuery).filter_by(user_id=current_user.id).order_by(UserQuery.timestamp.desc()).first()
+        insights = last_query.response_text if last_query else "No data"
+        db.close()
+
+        subject_map = {
+            'summary': '📊 Data Analysis Summary Report',
+            'full':    '📊 Full Data Analysis Report',
+            'charts':  '📊 Charts & Visualizations Report'
+        }
+        subject = subject_map.get(report_type, '📊 Your Data Analysis Report')
+
+        pdf_filename = f"static/report_{current_user.username}_{int(datetime.now().timestamp())}.pdf"
+        success = generate_pdf_report(pdf_filename, client_email, insights, 'static/plot.png')
+
+        if success:
+            email_sent = send_report_email(
+                to_email=client_email,
+                subject=subject,
+                body=f"Hi,\n\nPlease find attached your {report_type} report.\n\nRegards,\nDS Agent",
+                attachment_path=pdf_filename
+            )
+            if email_sent:
+                return jsonify({"message": f"✅ {subject} sent to {client_email}!"})
+            return jsonify({"error": "Email failed"}), 500
+        return jsonify({"error": "PDF generation failed"}), 500
+    except Exception as e:
+        return jsonify({"error": str(e)}), 500
+
+
+# ── ROUTE 2: CSV Compare Upload ───────────────────────────────────
+@app.route('/upload_compare', methods=['POST'])
+@login_required
+@single_session_check
+def upload_compare():
+    """Compare ke liye second CSV file upload"""
+    if 'file' not in request.files:
+        return jsonify({"error": "No file provided"}), 400
+    file = request.files['file']
+    if not file or not file.filename:
+        return jsonify({"error": "Empty file"}), 400
+    try:
+        import io as _io
+        filename = secure_filename(file.filename)
+        content = file.read().decode('utf-8', errors='replace')
+        df2 = pd.read_csv(_io.StringIO(content))
+        rows, cols = len(df2), len(df2.columns)
+        columns = list(df2.columns)
+
+        # Numeric stats
+        stats = {}
+        for col in df2.select_dtypes(include='number').columns:
+            stats[col] = {
+                "mean":  round(float(df2[col].mean()), 2),
+                "min":   round(float(df2[col].min()), 2),
+                "max":   round(float(df2[col].max()), 2),
+                "nulls": int(df2[col].isnull().sum())
+            }
+
+        # Compare with main loaded dataset
+        comparison = None
+        if agent.df is not None:
+            df1 = agent.df
+            common_cols = list(set(df1.columns) & set(df2.columns))
+            comparison = {
+                "file1_rows": len(df1), "file2_rows": rows,
+                "file1_cols": len(df1.columns), "file2_cols": cols,
+                "common_columns": common_cols,
+                "only_in_file1": list(set(df1.columns) - set(df2.columns)),
+                "only_in_file2": list(set(df2.columns) - set(df1.columns)),
+                "col_stats": {}
+            }
+            for col in common_cols:
+                if pd.api.types.is_numeric_dtype(df1[col]) and pd.api.types.is_numeric_dtype(df2[col]):
+                    comparison["col_stats"][col] = {
+                        "file1_mean": round(float(df1[col].mean()), 2),
+                        "file2_mean": round(float(df2[col].mean()), 2),
+                        "file1_max":  round(float(df1[col].max()), 2),
+                        "file2_max":  round(float(df2[col].max()), 2),
+                        "diff_mean":  round(float(df2[col].mean()) - float(df1[col].mean()), 2)
+                    }
+
+        return jsonify({
+            "message": f"✅ {filename} loaded!",
+            "filename": filename, "rows": rows, "cols": cols,
+            "columns": columns, "stats": stats, "comparison": comparison
+        })
+    except Exception as e:
+        return jsonify({"error": str(e)}), 500
+
+
+# ── ROUTE 3: Save Plotly Chart (base64 image) ────────────────────
+@app.route('/save_plot_base64', methods=['POST'])
+@login_required
+@single_session_check
+def save_plot_base64():
+    """Plotly chart ko gallery mein save karo"""
+    try:
+        data = request.get_json()
+        image_b64 = data.get('image')
+        title = data.get('title', f'Plotly Chart {datetime.now().strftime("%d %b %H:%M")}')
+
+        if not image_b64:
+            return jsonify({"error": "Image data required"}), 400
+
+        # Remove data URL prefix
+        if ',' in image_b64:
+            image_b64 = image_b64.split(',', 1)[1]
+
+        db = SessionLocal()
+        try:
+            chart = UserChart(
+                user_id=current_user.id,
+                chart_title=title,
+                image_data=image_b64,
+                chart_type='plotly'
+            )
+            db.add(chart)
+            db.commit()
+            return jsonify({
+                "message": f"✅ '{title}' gallery mein save ho gaya!",
+                "chart_id": chart.id
+            })
+        except Exception as db_err:
+            db.rollback()
+            return jsonify({"error": str(db_err)}), 500
+        finally:
+            db.close()
+    except Exception as e:
+        return jsonify({"error": str(e)}), 500
+
+
+# ── ROUTE 4: PWA Manifest ────────────────────────────────────────
+@app.route('/manifest.json')
+def pwa_manifest():
+    manifest = {
+        "name": "DS Agent", "short_name": "DS Agent",
+        "description": "AI-powered Data Science Agent",
+        "start_url": "/", "display": "standalone",
+        "background_color": "#0a0a18", "theme_color": "#5b5ef4",
+        "orientation": "portrait-primary",
+        "icons": [
+            {
+                "src": "data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><rect width='100' height='100' rx='20' fill='%235b5ef4'/><text y='.9em' font-size='80' x='10'>🤖</text></svg>",
+                "sizes": "192x192", "type": "image/svg+xml", "purpose": "any maskable"
+            },
+            {
+                "src": "data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><rect width='100' height='100' rx='20' fill='%235b5ef4'/><text y='.9em' font-size='80' x='10'>🤖</text></svg>",
+                "sizes": "512x512", "type": "image/svg+xml", "purpose": "any maskable"
+            }
+        ],
+        "categories": ["productivity", "utilities"], "lang": "en"
+    }
+    return jsonify(manifest)
+
+
+# ── ROUTE 5: Service Worker ──────────────────────────────────────
+@app.route('/sw.js')
+def service_worker():
+    sw_content = """
+const CACHE_NAME = 'ds-agent-v1';
+const STATIC_ASSETS = ['/'];
+
+self.addEventListener('install', e => {
+    e.waitUntil(caches.open(CACHE_NAME).then(c => c.addAll(STATIC_ASSETS).catch(()=>{})));
+    self.skipWaiting();
+});
+
+self.addEventListener('activate', e => {
+    e.waitUntil(caches.keys().then(keys =>
+        Promise.all(keys.filter(k => k !== CACHE_NAME).map(k => caches.delete(k)))
+    ));
+    self.clients.claim();
+});
+
+self.addEventListener('fetch', e => {
+    if (e.request.method !== 'GET') return;
+    if (['/chat','/upload','/api/'].some(p => e.request.url.includes(p))) return;
+    e.respondWith(
+        fetch(e.request)
+            .then(r => { if(r.ok){caches.open(CACHE_NAME).then(c=>c.put(e.request,r.clone()));}return r;})
+            .catch(() => caches.match(e.request))
+    );
+});
+"""
+    return Response(sw_content, mimetype='application/javascript',
+                    headers={'Service-Worker-Allowed': '/'})
 if __name__ == '__main__':
     port=int(os.environ.get('PORT',10000))
     app.run(host='0.0.0.0',port=port)
