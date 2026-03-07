@@ -1,0 +1,156 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Register — DS Agent</title>
+    <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@300;400;500;600;700&family=Sora:wght@700;800&display=swap" rel="stylesheet">
+    <style>
+        :root { --p:#5b5ef4; --p2:#8b5cf6; --acc:#06d6a0; --bg:#f6f7fb; --surface:#fff; --text:#1a1a2e; --muted:#8890a4; --border:#e8eaf0; }
+        * { margin:0; padding:0; box-sizing:border-box; }
+        body { font-family:'DM Sans',sans-serif; background:var(--bg); min-height:100vh; display:flex; align-items:center; justify-content:center; padding:20px; }
+        body::before { content:''; position:fixed; inset:0; background:linear-gradient(135deg,#eef0ff 0%,#f6f7fb 50%,#f0e8ff 100%); z-index:-1; }
+        .blob { position:fixed; border-radius:50%; filter:blur(80px); opacity:0.25; z-index:-1; animation:float 8s ease-in-out infinite; }
+        .blob1 { width:400px; height:400px; background:#5b5ef4; top:-100px; right:-100px; }
+        .blob2 { width:300px; height:300px; background:#8b5cf6; bottom:-80px; left:-80px; animation-delay:-4s; }
+        @keyframes float { 0%,100%{transform:translateY(0) scale(1)} 50%{transform:translateY(-30px) scale(1.05)} }
+
+        .card { background:var(--surface); border-radius:28px; padding:40px 36px; width:100%; max-width:420px; box-shadow:0 8px 40px rgba(91,94,244,0.12); border:1px solid var(--border); }
+        .logo { display:flex; align-items:center; gap:10px; justify-content:center; margin-bottom:28px; }
+        .logo-icon { width:48px; height:48px; background:linear-gradient(135deg,var(--p),var(--p2)); border-radius:14px; display:flex; align-items:center; justify-content:center; font-size:24px; }
+        .logo-text { font-family:'Sora',sans-serif; font-size:20px; font-weight:800; color:var(--text); }
+        .title { font-family:'Sora',sans-serif; font-size:24px; font-weight:800; color:var(--text); text-align:center; margin-bottom:6px; }
+        .subtitle { font-size:13px; color:var(--muted); text-align:center; margin-bottom:28px; }
+
+        .steps { display:flex; gap:6px; justify-content:center; margin-bottom:24px; }
+        .step { width:28px; height:4px; border-radius:2px; background:var(--border); }
+        .step.active { background:var(--p); }
+
+        .field { margin-bottom:16px; }
+        .field label { display:block; font-size:12px; font-weight:700; color:var(--muted); text-transform:uppercase; letter-spacing:0.8px; margin-bottom:6px; }
+        .field-wrap { position:relative; }
+        .field-icon { position:absolute; left:14px; top:50%; transform:translateY(-50%); font-size:16px; }
+        .field input { width:100%; padding:12px 14px 12px 40px; border:2px solid var(--border); border-radius:12px; font-size:14px; font-family:'DM Sans',sans-serif; color:var(--text); outline:none; transition:0.2s; background:var(--bg); }
+        .field input:focus { border-color:var(--p); background:white; box-shadow:0 0 0 4px rgba(91,94,244,0.08); }
+        .field input::placeholder { color:#c0c8d8; }
+
+        .strength-bar { height:3px; border-radius:2px; background:#eee; margin-top:6px; overflow:hidden; }
+        .strength-fill { height:100%; border-radius:2px; transition:0.3s; width:0%; }
+        .strength-label { font-size:10px; font-weight:700; margin-top:3px; }
+
+        .submit-btn { width:100%; padding:14px; background:linear-gradient(135deg,var(--p),var(--p2)); color:white; border:none; border-radius:14px; font-size:15px; font-weight:800; cursor:pointer; font-family:'DM Sans',sans-serif; transition:0.2s; margin-top:8px; }
+        .submit-btn:hover { opacity:0.9; transform:translateY(-1px); box-shadow:0 4px 16px rgba(91,94,244,0.3); }
+
+        .alert { padding:12px 16px; border-radius:12px; font-size:13px; font-weight:600; margin-bottom:20px; }
+        .alert-error { background:#fef2f2; border:1px solid #fecaca; color:#dc2626; }
+
+        .login-link { text-align:center; margin-top:20px; font-size:13px; color:var(--muted); }
+        .login-link a { color:var(--p); font-weight:700; text-decoration:none; }
+
+        .terms { font-size:11px; color:var(--muted); text-align:center; margin-top:14px; line-height:1.6; }
+
+        .feature-pills { display:flex; gap:6px; flex-wrap:wrap; justify-content:center; margin-bottom:22px; }
+        .pill { background:linear-gradient(135deg,#eef0ff,#f0e8ff); color:var(--p); font-size:11px; font-weight:700; padding:4px 10px; border-radius:20px; border:1px solid #d0d4ff; }
+    </style>
+</head>
+<body>
+    <div class="blob blob1"></div>
+    <div class="blob blob2"></div>
+
+    <div class="card">
+        <div class="logo">
+            <div class="logo-icon">🤖</div>
+            <span class="logo-text">DS Agent</span>
+        </div>
+
+        <div class="steps">
+            <div class="step active"></div>
+            <div class="step"></div>
+            <div class="step"></div>
+        </div>
+
+        <h1 class="title">Account Banao 🚀</h1>
+        <p class="subtitle">Free mein start karo — koi credit card nahi chahiye</p>
+
+        <div class="feature-pills">
+            <span class="pill">📊 Data Analysis</span>
+            <span class="pill">📈 Charts</span>
+            <span class="pill">🤖 AI Chat</span>
+            <span class="pill">📄 Excel Export</span>
+        </div>
+
+        {% if error %}
+        <div class="alert alert-error">⚠️ {{ error }}</div>
+        {% endif %}
+
+        <form method="POST">
+            <div class="field">
+                <label>Username</label>
+                <div class="field-wrap">
+                    <span class="field-icon">👤</span>
+                    <input type="text" name="username" placeholder="Apna username likho" required minlength="3" autocomplete="username">
+                </div>
+            </div>
+
+            <div class="field">
+                <label>Email Address</label>
+                <div class="field-wrap">
+                    <span class="field-icon">📧</span>
+                    <input type="email" name="email" placeholder="example@gmail.com" required autocomplete="email" id="emailInp">
+                </div>
+            </div>
+
+            <div class="field">
+                <label>Password</label>
+                <div class="field-wrap">
+                    <span class="field-icon">🔒</span>
+                    <input type="password" name="password" placeholder="Min 6 characters" required minlength="6" id="passInp" autocomplete="new-password">
+                </div>
+                <div class="strength-bar"><div class="strength-fill" id="strengthFill"></div></div>
+                <div class="strength-label" id="strengthLabel"></div>
+            </div>
+
+            <button type="submit" class="submit-btn">
+                📧 OTP Bhejo → Verify Karo
+            </button>
+        </form>
+
+        <div class="login-link">
+            Already account hai? <a href="/login">Login karo</a>
+        </div>
+
+        <div class="terms">
+            Register karke tum hamari Terms of Service aur<br>Privacy Policy se agree karte ho.
+        </div>
+    </div>
+
+    <script>
+        // Password strength indicator
+        document.getElementById('passInp').addEventListener('input', function(){
+            const val = this.value;
+            const fill = document.getElementById('strengthFill');
+            const label = document.getElementById('strengthLabel');
+            let strength = 0;
+            if(val.length >= 6) strength++;
+            if(val.length >= 10) strength++;
+            if(/[A-Z]/.test(val)) strength++;
+            if(/[0-9]/.test(val)) strength++;
+            if(/[^A-Za-z0-9]/.test(val)) strength++;
+
+            const configs = [
+                {w:'0%',c:'',t:''},
+                {w:'20%',c:'#ef4444',t:'Bahut weak'},
+                {w:'40%',c:'#f97316',t:'Weak'},
+                {w:'60%',c:'#f59e0b',t:'Theek hai'},
+                {w:'80%',c:'#84cc16',t:'Strong'},
+                {w:'100%',c:'#22c55e',t:'Bahut strong! 💪'},
+            ];
+            const cfg = configs[strength] || configs[0];
+            fill.style.width = cfg.w;
+            fill.style.background = cfg.c;
+            label.textContent = cfg.t;
+            label.style.color = cfg.c;
+        });
+    </script>
+</body>
+</html>
