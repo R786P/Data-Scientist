@@ -1,0 +1,209 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Email Verify — DS Agent</title>
+    <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@300;400;500;600;700&family=Sora:wght@700;800&display=swap" rel="stylesheet">
+    <style>
+        :root { --p:#5b5ef4; --p2:#8b5cf6; --acc:#06d6a0; --bg:#f6f7fb; --surface:#fff; --text:#1a1a2e; --muted:#8890a4; --border:#e8eaf0; }
+        * { margin:0; padding:0; box-sizing:border-box; }
+        body { font-family:'DM Sans',sans-serif; background:var(--bg); min-height:100vh; display:flex; align-items:center; justify-content:center; padding:20px; }
+
+        /* Animated background */
+        body::before { content:''; position:fixed; inset:0; background:linear-gradient(135deg,#eef0ff 0%,#f6f7fb 50%,#f0e8ff 100%); z-index:-1; }
+        .blob { position:fixed; border-radius:50%; filter:blur(80px); opacity:0.25; z-index:-1; animation:float 8s ease-in-out infinite; }
+        .blob1 { width:400px; height:400px; background:#5b5ef4; top:-100px; right:-100px; }
+        .blob2 { width:300px; height:300px; background:#8b5cf6; bottom:-80px; left:-80px; animation-delay:-4s; }
+        @keyframes float { 0%,100%{transform:translateY(0) scale(1)} 50%{transform:translateY(-30px) scale(1.05)} }
+
+        .card { background:var(--surface); border-radius:28px; padding:40px 36px; width:100%; max-width:420px; box-shadow:0 8px 40px rgba(91,94,244,0.12); border:1px solid var(--border); }
+
+        .logo { display:flex; align-items:center; gap:10px; justify-content:center; margin-bottom:28px; }
+        .logo-icon { width:48px; height:48px; background:linear-gradient(135deg,var(--p),var(--p2)); border-radius:14px; display:flex; align-items:center; justify-content:center; font-size:24px; }
+        .logo-text { font-family:'Sora',sans-serif; font-size:20px; font-weight:800; color:var(--text); }
+
+        .title { font-family:'Sora',sans-serif; font-size:22px; font-weight:800; color:var(--text); text-align:center; margin-bottom:6px; }
+        .subtitle { font-size:13px; color:var(--muted); text-align:center; margin-bottom:28px; line-height:1.6; }
+        .email-badge { display:inline-block; background:linear-gradient(135deg,#eef0ff,#f0e8ff); color:var(--p); font-weight:700; font-size:13px; padding:4px 12px; border-radius:20px; border:1px solid #d0d4ff; }
+
+        /* OTP Input */
+        .otp-wrap { display:flex; gap:10px; justify-content:center; margin:24px 0; }
+        .otp-input { width:50px; height:58px; border:2px solid var(--border); border-radius:14px; text-align:center; font-size:22px; font-weight:800; font-family:'DM Sans',sans-serif; color:var(--text); outline:none; transition:0.2s; background:var(--bg); }
+        .otp-input:focus { border-color:var(--p); background:#f0f0ff; box-shadow:0 0 0 4px rgba(91,94,244,0.1); }
+        .otp-input.filled { border-color:var(--p); background:linear-gradient(135deg,#eef0ff,#f0e8ff); color:var(--p); }
+
+        /* Hidden actual input */
+        #otpHidden { position:absolute; opacity:0; pointer-events:none; }
+
+        .verify-btn { width:100%; padding:14px; background:linear-gradient(135deg,var(--p),var(--p2)); color:white; border:none; border-radius:14px; font-size:15px; font-weight:800; cursor:pointer; font-family:'DM Sans',sans-serif; transition:0.2s; margin-top:4px; }
+        .verify-btn:hover { opacity:0.9; transform:translateY(-1px); box-shadow:0 4px 16px rgba(91,94,244,0.3); }
+        .verify-btn:disabled { background:#d0d4e8; cursor:not-allowed; transform:none; box-shadow:none; }
+
+        .resend-row { display:flex; align-items:center; justify-content:center; gap:8px; margin-top:18px; font-size:13px; color:var(--muted); }
+        .resend-btn { background:none; border:none; color:var(--p); font-weight:700; cursor:pointer; font-size:13px; font-family:'DM Sans',sans-serif; padding:0; }
+        .resend-btn:disabled { color:var(--muted); cursor:not-allowed; }
+        #timerText { font-weight:700; color:var(--p); min-width:30px; }
+
+        .alert { padding:12px 16px; border-radius:12px; font-size:13px; font-weight:600; margin-bottom:20px; display:flex; align-items:center; gap:8px; }
+        .alert-error { background:#fef2f2; border:1px solid #fecaca; color:#dc2626; }
+        .alert-success { background:#f0fdf4; border:1px solid #bbf7d0; color:#15803d; }
+
+        .back-link { display:block; text-align:center; margin-top:20px; font-size:13px; color:var(--muted); text-decoration:none; }
+        .back-link:hover { color:var(--p); }
+
+        .steps { display:flex; gap:6px; justify-content:center; margin-bottom:24px; }
+        .step { width:28px; height:4px; border-radius:2px; background:var(--border); }
+        .step.done { background:var(--acc); }
+        .step.active { background:var(--p); }
+
+        .toast { position:fixed; top:20px; left:50%; transform:translateX(-50%) translateY(-80px); background:#1a1a2e; color:white; padding:10px 20px; border-radius:12px; font-size:13px; font-weight:700; transition:0.3s; z-index:999; }
+        .toast.show { transform:translateX(-50%) translateY(0); }
+    </style>
+</head>
+<body>
+    <div class="blob blob1"></div>
+    <div class="blob blob2"></div>
+
+    <div class="toast" id="toast">Message</div>
+
+    <div class="card">
+        <div class="logo">
+            <div class="logo-icon">🤖</div>
+            <span class="logo-text">DS Agent</span>
+        </div>
+
+        <!-- Progress steps -->
+        <div class="steps">
+            <div class="step done"></div>
+            <div class="step active"></div>
+            <div class="step"></div>
+        </div>
+
+        <h1 class="title">📧 Email Verify Karo</h1>
+        <p class="subtitle">
+            6-digit OTP bheja hai<br>
+            <span class="email-badge">{{ email }}</span>
+        </p>
+
+        {% if error %}
+        <div class="alert alert-error">⚠️ {{ error }}</div>
+        {% endif %}
+
+        <form method="POST" id="otpForm">
+            <!-- Visual OTP boxes -->
+            <div class="otp-wrap" id="otpBoxes">
+                <input class="otp-input" maxlength="1" id="d0" inputmode="numeric">
+                <input class="otp-input" maxlength="1" id="d1" inputmode="numeric">
+                <input class="otp-input" maxlength="1" id="d2" inputmode="numeric">
+                <input class="otp-input" maxlength="1" id="d3" inputmode="numeric">
+                <input class="otp-input" maxlength="1" id="d4" inputmode="numeric">
+                <input class="otp-input" maxlength="1" id="d5" inputmode="numeric">
+            </div>
+            <!-- Hidden field jo submit hoga -->
+            <input type="hidden" name="otp" id="otpHidden">
+
+            <button type="submit" class="verify-btn" id="verifyBtn" disabled>
+                ✅ Verify Karo
+            </button>
+        </form>
+
+        <div class="resend-row">
+            <span>OTP nahi aaya?</span>
+            <button class="resend-btn" id="resendBtn" onclick="resendOTP()" disabled>Resend</button>
+            <span id="timerText">60s</span>
+        </div>
+
+        <a href="/register" class="back-link">← Wapas Register</a>
+    </div>
+
+    <script>
+        // ── OTP Box Logic ──
+        const digits = [0,1,2,3,4,5].map(i => document.getElementById('d'+i));
+        const verifyBtn = document.getElementById('verifyBtn');
+        const hidden = document.getElementById('otpHidden');
+
+        digits.forEach((inp, idx) => {
+            inp.addEventListener('input', e => {
+                const val = e.target.value.replace(/\D/g,'');
+                inp.value = val ? val[0] : '';
+                inp.classList.toggle('filled', !!inp.value);
+                if(val && idx < 5) digits[idx+1].focus();
+                updateHidden();
+            });
+            inp.addEventListener('keydown', e => {
+                if(e.key==='Backspace' && !inp.value && idx > 0) {
+                    digits[idx-1].value='';
+                    digits[idx-1].classList.remove('filled');
+                    digits[idx-1].focus();
+                    updateHidden();
+                }
+            });
+            inp.addEventListener('paste', e => {
+                e.preventDefault();
+                const pasted = (e.clipboardData||window.clipboardData).getData('text').replace(/\D/g,'');
+                pasted.split('').slice(0,6).forEach((ch, i) => {
+                    if(digits[i]){ digits[i].value=ch; digits[i].classList.add('filled'); }
+                });
+                updateHidden();
+                if(pasted.length >= 6) verifyBtn.focus();
+            });
+        });
+
+        function updateHidden(){
+            const otp = digits.map(d=>d.value).join('');
+            hidden.value = otp;
+            verifyBtn.disabled = otp.length < 6;
+        }
+
+        digits[0].focus();
+
+        // ── Resend Timer ──
+        let timeLeft = 60;
+        const resendBtn = document.getElementById('resendBtn');
+        const timerEl  = document.getElementById('timerText');
+
+        function startTimer(){
+            timeLeft = 60;
+            resendBtn.disabled = true;
+            timerEl.textContent = timeLeft+'s';
+            const t = setInterval(()=>{
+                timeLeft--;
+                timerEl.textContent = timeLeft > 0 ? timeLeft+'s' : '';
+                if(timeLeft <= 0){ clearInterval(t); resendBtn.disabled=false; }
+            }, 1000);
+        }
+        startTimer();
+
+        async function resendOTP(){
+            resendBtn.disabled = true;
+            timerEl.textContent = '...';
+            try {
+                const r = await fetch('/resend-otp', {method:'POST'});
+                const d = await r.json();
+                showToast(d.message || d.error);
+                if(d.message) startTimer();
+                else { resendBtn.disabled=false; timerEl.textContent=''; }
+            } catch(e) {
+                showToast('❌ Network error!');
+                resendBtn.disabled=false;
+            }
+        }
+
+        function showToast(msg){
+            const t = document.getElementById('toast');
+            t.textContent = msg;
+            t.classList.add('show');
+            setTimeout(()=>t.classList.remove('show'), 3000);
+        }
+
+        // Auto-submit when all 6 filled
+        const observer = new MutationObserver(()=>{
+            if(digits.every(d=>d.value)) {
+                setTimeout(()=>document.getElementById('otpForm').submit(), 300);
+            }
+        });
+        digits.forEach(d => observer.observe(d, {attributes:true, attributeFilter:['class']}));
+    </script>
+</body>
+</html>
