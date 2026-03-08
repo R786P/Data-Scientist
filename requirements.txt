@@ -22,3 +22,5 @@ python-json-logger
 reportlab==4.0.7
 yt-dlp>=2024.1.0
 resend
+yfinance
+pywebpush
