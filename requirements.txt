@@ -25,3 +25,4 @@ resend
 yfinance
 pywebpush
 scipy
+APScheduler
