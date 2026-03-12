@@ -27,3 +27,4 @@ pywebpush
 scipy
 APScheduler
 shap
+statsmodels
