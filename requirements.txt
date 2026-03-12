@@ -26,3 +26,4 @@ yfinance
 pywebpush
 scipy
 APScheduler
+shap
