@@ -28,3 +28,6 @@ scipy
 APScheduler
 shap
 statsmodels
+python-pptx
+sqlalchemy
+lxml
