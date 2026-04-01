@@ -1,0 +1,204 @@
+import os
+from sqlalchemy import create_engine, Column, Integer, String, Text, DateTime, Boolean, Float, ForeignKey
+from sqlalchemy.ext.declarative import declarative_base
+from sqlalchemy.orm import sessionmaker
+from datetime import datetime
+
+DATABASE_URL = os.getenv("DATABASE_URL", "sqlite:////tmp/agent.db")
+if DATABASE_URL.startswith("postgres://"):
+    DATABASE_URL = DATABASE_URL.replace("postgres://", "postgresql://", 1)
+
+# Neon PostgreSQL needs SSL + pool settings to avoid SSL EOF errors
+_engine_kwargs = {
+    'pool_pre_ping': True,       # Test connection before using
+    'pool_recycle': 300,         # Recycle connections every 5 min
+    'pool_size': 3,
+    'max_overflow': 5,
+    'pool_timeout': 30,
+    'connect_args': {}
+}
+
+# Add SSL for PostgreSQL (Neon requires it)
+if 'postgresql' in DATABASE_URL or 'postgres' in DATABASE_URL:
+    _engine_kwargs['connect_args'] = {
+        'sslmode': 'require',
+        'connect_timeout': 10,
+        'keepalives': 1,
+        'keepalives_idle': 30,
+        'keepalives_interval': 5,
+        'keepalives_count': 3,
+    }
+
+engine = create_engine(DATABASE_URL, **_engine_kwargs)
+SessionLocal = sessionmaker(autocommit=False, autoflush=False, bind=engine)
+Base = declarative_base()
+
+class UserQuery(Base):
+    __tablename__ = "user_queries"
+    id            = Column(Integer, primary_key=True, index=True)
+    query_text    = Column(Text)
+    response_text = Column(Text)
+    user_id       = Column(Integer)
+    timestamp     = Column(DateTime, default=datetime.utcnow)
+
+class Subscription(Base):
+    __tablename__ = "subscriptions"
+    id          = Column(Integer, primary_key=True, index=True)
+    user_id     = Column(Integer, unique=True, index=True)
+    plan        = Column(String, default="free")
+    razorpay_id = Column(String, nullable=True)
+    started_at  = Column(DateTime, default=datetime.utcnow)
+    expires_at  = Column(DateTime, nullable=True)
+    is_active   = Column(Boolean, default=True)
+
+class ActiveSession(Base):
+    __tablename__ = "active_sessions"
+    id            = Column(Integer, primary_key=True, index=True)
+    user_id       = Column(Integer, unique=True, index=True)
+    session_token = Column(String, unique=True, index=True)
+    created_at    = Column(DateTime, default=datetime.utcnow)
+    last_seen     = Column(DateTime, default=datetime.utcnow)
+
+class AffiliateLink(Base):
+    __tablename__ = "affiliate_links"
+    id          = Column(Integer, primary_key=True, index=True)
+    title       = Column(String)
+    url         = Column(String)
+    description = Column(Text, nullable=True)
+    is_active   = Column(Boolean, default=True)
+    created_at  = Column(DateTime, default=datetime.utcnow)
+
+class QueryCount(Base):
+    __tablename__ = "query_counts"
+    id      = Column(Integer, primary_key=True, index=True)
+    user_id = Column(Integer, index=True)
+    date    = Column(String)
+    count   = Column(Integer, default=0)
+
+class ScreenPost(Base):
+    __tablename__ = "screen_posts"
+    id            = Column(Integer, primary_key=True, index=True)
+    title         = Column(String)
+    content       = Column(Text, nullable=True)
+    image_data    = Column(Text, nullable=True)
+    image_mime    = Column(String, nullable=True)
+    affiliate_url = Column(String, nullable=True)
+    post_type     = Column(String, default="text")
+    is_active     = Column(Boolean, default=True)
+    order_num     = Column(Integer, default=0)
+    created_at    = Column(DateTime, default=datetime.utcnow)
+
+class MusicTrack(Base):
+    __tablename__ = "music_tracks"
+    id         = Column(Integer, primary_key=True, index=True)
+    title      = Column(String)
+    artist     = Column(String, nullable=True)
+    audio_data = Column(Text)
+    mime_type  = Column(String, default="audio/mpeg")
+    is_active  = Column(Boolean, default=True)
+    created_at = Column(DateTime, default=datetime.utcnow)
+
+class VideoTrack(Base):
+    __tablename__ = "video_tracks"
+    id          = Column(Integer, primary_key=True, index=True)
+    title       = Column(String)
+    description = Column(Text, nullable=True)
+    video_data  = Column(Text)
+    mime_type   = Column(String, default="video/mp4")
+    thumbnail   = Column(Text, nullable=True)
+    thumb_mime  = Column(String, nullable=True)
+    is_active   = Column(Boolean, default=True)
+    created_at  = Column(DateTime, default=datetime.utcnow)
+
+class ChatMessage(Base):
+    __tablename__ = "chat_messages"
+    id         = Column(Integer, primary_key=True, index=True)
+    username   = Column(String)
+    message    = Column(Text)
+    is_admin   = Column(Boolean, default=False)
+    created_at = Column(DateTime, default=datetime.utcnow)
+
+class PostAnalytics(Base):
+    __tablename__ = "post_analytics"
+    id      = Column(Integer, primary_key=True, index=True)
+    post_id = Column(Integer, index=True)
+    views   = Column(Integer, default=0)
+    clicks  = Column(Integer, default=0)
+    date    = Column(String)
+
+class ScheduledPost(Base):
+    __tablename__ = "scheduled_posts"
+    id            = Column(Integer, primary_key=True, index=True)
+    title         = Column(String)
+    content       = Column(Text, nullable=True)
+    image_data    = Column(Text, nullable=True)
+    image_mime    = Column(String, nullable=True)
+    affiliate_url = Column(String, nullable=True)
+    post_type     = Column(String, default="text")
+    scheduled_at  = Column(DateTime)
+    is_published  = Column(Boolean, default=False)
+    created_at    = Column(DateTime, default=datetime.utcnow)
+
+class PushSubscription(Base):
+    __tablename__ = "push_subscriptions"
+    id         = Column(Integer, primary_key=True, index=True)
+    user_id    = Column(Integer, index=True)
+    endpoint   = Column(Text)
+    p256dh     = Column(Text)
+    auth       = Column(Text)
+    created_at = Column(DateTime, default=datetime.utcnow)
+
+class PaymentScreenshot(Base):
+    __tablename__ = "payment_screenshots"
+    id         = Column(Integer, primary_key=True, index=True)
+    user_id    = Column(Integer, index=True)
+    username   = Column(String)
+    image_data = Column(Text)
+    image_mime = Column(String, default="image/jpeg")
+    utr_number = Column(String, nullable=True)
+    amount     = Column(String, nullable=True)
+    status     = Column(String, default="pending")
+    admin_note = Column(Text, nullable=True)
+    created_at = Column(DateTime, default=datetime.utcnow)
+
+class UserDataset(Base):
+    __tablename__ = 'user_datasets'
+    id          = Column(Integer, primary_key=True)
+    user_id     = Column(Integer, nullable=False, index=True)
+    filename    = Column(String(255), nullable=False)
+    csv_data    = Column(Text, nullable=False)
+    columns     = Column(Text, nullable=True)
+    row_count   = Column(Integer, default=0)
+    uploaded_at = Column(DateTime, default=datetime.utcnow)
+
+# ── UserChart — Extended for all DS Agent features ────────────────
+class UserChart(Base):
+    __tablename__ = 'user_charts'
+    id          = Column(Integer, primary_key=True)
+    user_id     = Column(Integer, nullable=False, index=True)
+    chart_title = Column(String(255), nullable=True)
+    title       = Column(String(255), nullable=True)   # used by MLOps, BDM, EA
+    image_data  = Column(Text, nullable=True)          # base64 charts / JSON data
+    chart_data  = Column(Text, nullable=True)          # text/JSON storage
+    chart_type  = Column(String(100), default='matplotlib')
+    description = Column(Text, nullable=True)          # metadata JSON
+    target      = Column(String(255), nullable=True)   # ML target column
+    task        = Column(String(100), nullable=True)   # ML task type
+    score       = Column(Float, nullable=True)         # model accuracy
+    features    = Column(Text, nullable=True)          # feature list JSON
+    created_at  = Column(DateTime, default=datetime.utcnow)
+
+# ── NEW: OTP Verification ─────────────────────────────────────────
+class OTPVerification(Base):
+    """Email OTP verification tokens."""
+    __tablename__ = "otp_verification"
+    id         = Column(Integer, primary_key=True, index=True)
+    user_id    = Column(Integer, index=True)
+    email      = Column(String, nullable=False)
+    otp        = Column(String(6), nullable=False)
+    created_at = Column(DateTime, default=datetime.utcnow)
+    expires_at = Column(DateTime, nullable=False)
+    is_used    = Column(Boolean, default=False)
+
+# Create all tables
+Base.metadata.create_all(bind=engine)
