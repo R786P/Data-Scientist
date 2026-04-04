@@ -1,0 +1,1232 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>🐍 Python Practice — DS Agent</title>
+<style>
+@import url('https://fonts.googleapis.com/css2?family=Sora:wght@400;600;700;800&family=JetBrains+Mono:wght@400;500;600&display=swap');
+
+:root{
+  --bg:#0d1117; --surface:#161b22; --card:#21262d;
+  --border:#30363d; --accent:#58a6ff; --green:#3fb950;
+  --red:#f85149; --amber:#d29922; --purple:#bc8cff;
+  --text:#e6edf3; --muted:#8b949e; --orange:#f0883e;
+}
+*{margin:0;padding:0;box-sizing:border-box;}
+body{font-family:'Sora',sans-serif;background:var(--bg);color:var(--text);height:100vh;display:flex;flex-direction:column;overflow:hidden;}
+
+/* TOP BAR */
+.topbar{display:flex;align-items:center;gap:10px;padding:8px 14px;background:var(--surface);border-bottom:1px solid var(--border);flex-shrink:0;flex-wrap:wrap;}
+.topbar-brand{font-size:15px;font-weight:800;color:var(--accent);}
+.back-btn{padding:5px 11px;background:var(--card);border:1px solid var(--border);color:var(--muted);border-radius:7px;cursor:pointer;font-size:11px;font-family:'Sora',sans-serif;text-decoration:none;}
+.back-btn:hover{color:var(--text);border-color:var(--accent);}
+.topic-pills{display:flex;gap:5px;flex-wrap:wrap;flex:1;}
+.topic-pill{padding:4px 10px;border-radius:15px;border:1px solid var(--border);background:var(--card);color:var(--muted);cursor:pointer;font-size:10px;font-weight:600;transition:0.15s;white-space:nowrap;}
+.topic-pill:hover{border-color:var(--accent);color:var(--accent);}
+.topic-pill.active{background:var(--accent);color:#0d1117;border-color:var(--accent);}
+
+/* MAIN LAYOUT */
+.main{display:flex;flex:1;overflow:hidden;}
+
+/* LEFT: TOPIC TREE */
+.sidebar{width:220px;background:var(--surface);border-right:1px solid var(--border);display:flex;flex-direction:column;overflow:hidden;flex-shrink:0;}
+.sidebar-title{padding:10px 12px;font-size:11px;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:1px;border-bottom:1px solid var(--border);}
+.topic-tree{flex:1;overflow-y:auto;padding:6px;}
+.topic-tree::-webkit-scrollbar{width:3px;}
+.topic-tree::-webkit-scrollbar-thumb{background:var(--border);border-radius:3px;}
+.tree-section{margin-bottom:4px;}
+.tree-section-title{padding:6px 8px;font-size:11px;font-weight:700;color:var(--accent);cursor:pointer;border-radius:6px;display:flex;align-items:center;gap:6px;}
+.tree-section-title:hover{background:var(--card);}
+.tree-items{padding-left:8px;}
+.tree-item{padding:5px 10px;font-size:11px;color:var(--muted);cursor:pointer;border-radius:6px;border-left:2px solid transparent;margin:1px 0;line-height:1.3;}
+.tree-item:hover{background:var(--card);color:var(--text);border-left-color:var(--accent);}
+.tree-item.active{background:rgba(88,166,255,0.1);color:var(--accent);border-left-color:var(--accent);}
+.tree-item.done{color:var(--green);}
+.tree-item.done::after{content:' ✓';font-size:10px;}
+
+/* CENTER: EDITOR */
+.editor-section{flex:1;display:flex;flex-direction:column;overflow:hidden;}
+
+/* Problem statement */
+.problem-bar{padding:10px 14px;background:var(--card);border-bottom:1px solid var(--border);flex-shrink:0;}
+.problem-title{font-size:13px;font-weight:700;color:var(--text);margin-bottom:4px;}
+.problem-desc{font-size:11px;color:var(--muted);line-height:1.5;}
+.problem-tags{display:flex;gap:4px;margin-top:6px;flex-wrap:wrap;}
+.ptag{font-size:10px;padding:2px 7px;border-radius:10px;font-weight:600;}
+.ptag-green{background:rgba(63,185,80,0.15);color:var(--green);border:1px solid rgba(63,185,80,0.3);}
+.ptag-blue{background:rgba(88,166,255,0.12);color:var(--accent);border:1px solid rgba(88,166,255,0.25);}
+.ptag-orange{background:rgba(240,136,62,0.12);color:var(--orange);border:1px solid rgba(240,136,62,0.25);}
+
+/* Editor */
+.editor-wrap{flex:1;display:flex;flex-direction:column;overflow:hidden;position:relative;}
+.editor-toolbar{display:flex;align-items:center;gap:6px;padding:6px 10px;background:var(--surface);border-bottom:1px solid var(--border);flex-shrink:0;}
+.toolbar-btn{padding:4px 10px;border-radius:6px;border:1px solid var(--border);background:var(--card);color:var(--text);cursor:pointer;font-size:11px;font-family:'Sora',sans-serif;font-weight:600;transition:0.15s;display:flex;align-items:center;gap:4px;}
+.toolbar-btn:hover{border-color:var(--accent);color:var(--accent);}
+.run-btn{background:var(--green);border-color:var(--green);color:#0d1117;font-weight:700;}
+.run-btn:hover{background:#2ea043;border-color:#2ea043;color:#0d1117;}
+.run-btn:disabled{opacity:0.5;cursor:not-allowed;}
+.clear-btn{color:var(--red);border-color:rgba(248,81,73,0.3);}
+.hint-btn{color:var(--purple);border-color:rgba(188,140,255,0.3);}
+.font-size-ctrl{display:flex;align-items:center;gap:4px;margin-left:auto;}
+.font-size-ctrl span{font-size:11px;color:var(--muted);}
+.fs-btn{width:22px;height:22px;border:1px solid var(--border);background:var(--card);color:var(--text);border-radius:4px;cursor:pointer;font-size:12px;display:flex;align-items:center;justify-content:center;}
+
+textarea#codeEditor{
+  flex:1;
+  background:var(--bg);
+  color:var(--text);
+  border:none;
+  outline:none;
+  padding:14px;
+  font-family:'JetBrains Mono',monospace;
+  font-size:13px;
+  line-height:1.7;
+  resize:none;
+  tab-size:4;
+  -webkit-text-fill-color:var(--text);
+  caret-color:var(--accent);
+}
+textarea#codeEditor::selection{background:rgba(88,166,255,0.25);}
+
+/* Output */
+.output-panel{height:220px;display:flex;flex-direction:column;border-top:2px solid var(--border);flex-shrink:0;}
+.output-tabs{display:flex;border-bottom:1px solid var(--border);background:var(--surface);flex-shrink:0;}
+.out-tab{padding:6px 14px;font-size:11px;font-weight:600;color:var(--muted);cursor:pointer;border-bottom:2px solid transparent;transition:0.15s;}
+.out-tab.active{color:var(--accent);border-bottom-color:var(--accent);}
+.output-content{flex:1;overflow-y:auto;padding:10px 14px;font-family:'JetBrains Mono',monospace;font-size:12px;line-height:1.7;white-space:pre-wrap;}
+.output-content::-webkit-scrollbar{width:4px;}
+.output-content::-webkit-scrollbar-thumb{background:var(--border);border-radius:4px;}
+.out-success{color:var(--green);}
+.out-error{color:var(--red);}
+.out-hint{color:var(--text);font-family:'Sora',sans-serif;font-size:12px;line-height:1.7;}
+.out-placeholder{color:var(--muted);font-style:italic;}
+
+/* Status bar */
+.status-bar{padding:3px 10px;background:var(--surface);border-top:1px solid var(--border);display:flex;gap:12px;align-items:center;font-size:10px;color:var(--muted);flex-shrink:0;}
+.status-dot{width:7px;height:7px;border-radius:50%;}
+
+/* RIGHT: REFERENCE */
+.ref-panel{width:200px;background:var(--surface);border-left:1px solid var(--border);display:flex;flex-direction:column;overflow:hidden;flex-shrink:0;}
+.ref-title{padding:10px 12px;font-size:11px;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:1px;border-bottom:1px solid var(--border);}
+.ref-content{flex:1;overflow-y:auto;padding:8px;}
+.ref-content::-webkit-scrollbar{width:3px;}
+.ref-content::-webkit-scrollbar-thumb{background:var(--border);}
+.ref-item{margin-bottom:8px;border:1px solid var(--border);border-radius:8px;overflow:hidden;}
+.ref-item-title{padding:5px 8px;font-size:10px;font-weight:700;color:var(--accent);background:var(--card);cursor:pointer;display:flex;justify-content:space-between;}
+.ref-code{padding:6px 8px;font-family:'JetBrains Mono',monospace;font-size:10px;color:var(--text);background:var(--bg);line-height:1.6;cursor:pointer;}
+.ref-code:hover{background:var(--card);}
+
+/* Mobile: hide sidebar/ref on small screens */
+@media(max-width:640px){
+  .sidebar{display:none;}
+  .ref-panel{display:none;}
+  .topbar{gap:6px;}
+}
+
+/* Running animation */
+@keyframes spin{to{transform:rotate(360deg)}}
+.spinning{animation:spin 0.8s linear infinite;display:inline-block;}
+
+/* Completion popup */
+.completion-popup{
+  position:fixed;top:50%;left:50%;transform:translate(-50%,-50%) scale(0);
+  background:linear-gradient(135deg,#1a2332,#1e2d40);
+  border:1px solid var(--accent);border-radius:16px;
+  padding:24px 32px;text-align:center;z-index:9999;
+  transition:transform 0.3s cubic-bezier(0.34,1.56,0.64,1);
+}
+.completion-popup.show{transform:translate(-50%,-50%) scale(1);}
+</style>
+</head>
+<body>
+
+<!-- TOP BAR -->
+<div class="topbar">
+  <a href="/" class="back-btn">← DS Agent</a>
+  <div class="topbar-brand">🐍 Python Practice</div>
+  <div class="topic-pills" id="topicPills">
+    <div class="topic-pill active" onclick="switchTopic('fundamentals',this)">Fundamentals</div>
+    <div class="topic-pill" onclick="switchTopic('data_structures',this)">Data Structures</div>
+    <div class="topic-pill" onclick="switchTopic('numpy',this)">NumPy</div>
+    <div class="topic-pill" onclick="switchTopic('pandas',this)">Pandas</div>
+    <div class="topic-pill" onclick="switchTopic('matplotlib',this)">Viz</div>
+    <div class="topic-pill" onclick="switchTopic('ml',this)">ML</div>
+    <div class="topic-pill" onclick="switchTopic('stats',this)">Stats</div>
+    <div class="topic-pill" onclick="switchTopic('preprocessing',this)">Preprocessing</div>
+  </div>
+</div>
+
+<!-- MAIN -->
+<div class="main">
+
+  <!-- SIDEBAR: Topic Tree -->
+  <div class="sidebar">
+    <div class="sidebar-title">📚 Topics</div>
+    <div class="topic-tree" id="topicTree"></div>
+  </div>
+
+  <!-- CENTER: Editor -->
+  <div class="editor-section">
+    <!-- Problem -->
+    <div class="problem-bar">
+      <div class="problem-title" id="problemTitle">🐍 Python Fundamentals — Variables & Data Types</div>
+      <div class="problem-desc" id="problemDesc">Variables declare karo aur different data types explore karo: int, float, str, bool. Type checking aur basic operations practice karo.</div>
+      <div class="problem-tags" id="problemTags">
+        <span class="ptag ptag-green">Beginner</span>
+        <span class="ptag ptag-blue">Python Basics</span>
+      </div>
+    </div>
+
+    <!-- Editor Toolbar -->
+    <div class="editor-toolbar">
+      <button class="toolbar-btn run-btn" id="runBtn" onclick="runCode()">▶ Run</button>
+      <button class="toolbar-btn clear-btn" onclick="clearEditor()">🗑 Clear</button>
+      <button class="toolbar-btn hint-btn" onclick="getHint()">💡 Hint</button>
+      <button class="toolbar-btn" onclick="copyCode()">📋 Copy</button>
+      <button class="toolbar-btn" onclick="loadSolution()">👁 Solution</button>
+      <div class="font-size-ctrl">
+        <button class="fs-btn" onclick="changeFontSize(-1)">−</button>
+        <span id="fsLabel">13px</span>
+        <button class="fs-btn" onclick="changeFontSize(1)">+</button>
+      </div>
+    </div>
+
+    <!-- Code Editor -->
+    <div class="editor-wrap" style="flex:1;display:flex;flex-direction:column;">
+      <textarea id="codeEditor" spellcheck="false"
+        placeholder="# Yahan code likho..."
+        onkeydown="handleTab(event)"></textarea>
+    </div>
+
+    <!-- Output Panel -->
+    <div class="output-panel">
+      <div class="output-tabs">
+        <div class="out-tab active" onclick="showOutTab('output',this)">Output</div>
+        <div class="out-tab" onclick="showOutTab('hint',this)">💡 Hint / AI Help</div>
+        <div class="out-tab" onclick="showOutTab('expected',this)">✅ Expected</div>
+      </div>
+      <pre class="output-content" id="outOutput"><span class="out-placeholder">▶ Run karo to output yahan aayega...</span></pre>
+      <pre class="output-content out-hint" id="outHint" style="display:none">💡 Hint button dabao ya koi sawaal pucho...</pre>
+      <pre class="output-content" id="outExpected" style="display:none"><span class="out-placeholder">Is exercise ka expected output yahan dikhega...</span></pre>
+    </div>
+
+    <!-- Status Bar -->
+    <div class="status-bar">
+      <div style="display:flex;align-items:center;gap:4px">
+        <div class="status-dot" id="statusDot" style="background:var(--muted)"></div>
+        <span id="statusText">Ready</span>
+      </div>
+      <span id="execTime" style="color:var(--muted)"></span>
+      <span style="margin-left:auto;color:var(--muted)" id="lineCol">Line 1, Col 1</span>
+    </div>
+  </div>
+
+  <!-- RIGHT: Quick Reference -->
+  <div class="ref-panel">
+    <div class="ref-title">📖 Quick Ref</div>
+    <div class="ref-content" id="refContent"></div>
+  </div>
+
+</div>
+
+<!-- AI Question Input (floating) -->
+<div style="position:fixed;bottom:0;left:220px;right:200px;padding:6px 10px;background:var(--surface);border-top:1px solid var(--border);display:flex;gap:6px;" id="questionBar">
+  <input type="text" id="questionInput" placeholder="🤔 Koi sawaal pucho... (e.g. 'list aur tuple mein kya fark hai?')"
+    style="flex:1;background:var(--card);border:1px solid var(--border);color:var(--text);border-radius:8px;padding:7px 12px;font-size:12px;font-family:'Sora',sans-serif;outline:none;"
+    onkeydown="if(event.key==='Enter')askQuestion()">
+  <button onclick="askQuestion()" style="padding:7px 14px;background:var(--accent);border:none;color:#0d1117;border-radius:8px;cursor:pointer;font-size:12px;font-weight:700;font-family:'Sora',sans-serif;">Ask</button>
+</div>
+
+<script>
+// ═══ ALL TOPICS DATA ═══
+const TOPICS = {
+  fundamentals: {
+    label:'🐍 Python Fundamentals', color:'#58a6ff',
+    items:[
+      {id:'vars', title:'Variables & Data Types',
+       desc:'Variables declare karo: int, float, str, bool. type() function use karo.',
+       tags:['Beginner','Basics'],
+       code:`# Variables & Data Types Practice
+# Run karo aur output dekho!
+
+# Integer
+age = 25
+print(f"Age: {age}, Type: {type(age)}")
+
+# Float
+salary = 45000.50
+print(f"Salary: {salary}, Type: {type(salary)}")
+
+# String
+name = "Data Scientist"
+print(f"Name: {name}, Type: {type(name)}")
+
+# Boolean
+is_learning = True
+print(f"Learning: {is_learning}, Type: {type(is_learning)}")
+
+# ========= AAPKA TURN =========
+# Neeche apni variables banao:
+# 1. Apna naam store karo
+# 2. Apni umra store karo
+# 3. Kya tum Python seekh rahe ho? (bool)
+
+your_name = "____"   # Apna naam daalo
+your_age  = 0        # Apni umra daalo
+learning  = True     # True ya False
+
+print(f"\\nMera naam {your_name} hai")
+print(f"Meri umra {your_age} saal hai")
+print(f"Python seekh raha/rahi hoon: {learning}")`,
+       expected:`Age: 25, Type: <class 'int'>\nSalary: 45000.5, Type: <class 'float'>\nName: Data Scientist, Type: <class 'str'>\nLearning: True, Type: <class 'bool'>`,
+       solution:`name = "Rahul"\nage = 22\nlearning = True\nprint(f"Mera naam {name} hai")\nprint(f"Meri umra {age} saal hai")\nprint(f"Python seekh raha hoon: {learning}")`},
+
+      {id:'conditionals', title:'Conditions & Loops',
+       desc:'if-else, for loop, while loop practice karo.',
+       tags:['Beginner','Control Flow'],
+       code:`# Conditions & Loops
+import random
+
+# IF-ELSE
+score = 75
+
+if score >= 90:
+    grade = "A"
+elif score >= 75:
+    grade = "B"
+elif score >= 60:
+    grade = "C"
+else:
+    grade = "F"
+
+print(f"Score: {score} → Grade: {grade}")
+
+# FOR LOOP
+print("\\n--- For Loop ---")
+subjects = ["Python", "NumPy", "Pandas", "ML", "Stats"]
+for i, subject in enumerate(subjects, 1):
+    print(f"{i}. {subject}")
+
+# WHILE LOOP
+print("\\n--- Countdown ---")
+count = 5
+while count > 0:
+    print(f"  {count}...")
+    count -= 1
+print("  GO! 🚀")
+
+# ===== CHALLENGE =====
+# FizzBuzz: 1 se 20 tak print karo
+# 3 ka multiple → "Fizz"
+# 5 ka multiple → "Buzz"
+# dono ka → "FizzBuzz"
+print("\\n--- FizzBuzz ---")
+for n in range(1, 21):
+    if n % 15 == 0:
+        print("FizzBuzz")
+    elif n % 3 == 0:
+        print("Fizz")
+    elif n % 5 == 0:
+        print("Buzz")
+    else:
+        print(n)`,
+       expected:'Score: 75 → Grade: B',
+       solution:''},
+
+      {id:'functions', title:'Functions & Lambda',
+       desc:'def, return, *args, **kwargs, lambda expressions.',
+       tags:['Beginner','Functions'],
+       code:`# Functions & Lambda
+
+# Basic function
+def calculate_bmi(weight_kg, height_m):
+    """BMI calculate karo"""
+    bmi = weight_kg / (height_m ** 2)
+    if bmi < 18.5:   category = "Underweight"
+    elif bmi < 25:   category = "Normal"
+    elif bmi < 30:   category = "Overweight"
+    else:            category = "Obese"
+    return round(bmi, 2), category
+
+bmi, cat = calculate_bmi(70, 1.75)
+print(f"BMI: {bmi} → {cat}")
+
+# *args example
+def total_sales(*monthly_sales):
+    return sum(monthly_sales)
+
+print(f"Total: ₹{total_sales(45000, 62000, 38000, 71000):,}")
+
+# **kwargs example
+def create_profile(**info):
+    for key, value in info.items():
+        print(f"  {key}: {value}")
+
+print("\\nProfile:")
+create_profile(name="Rahul", city="Jaipur", skill="Data Science")
+
+# Lambda functions
+double = lambda x: x * 2
+square = lambda x: x ** 2
+add    = lambda x, y: x + y
+
+nums = [1, 2, 3, 4, 5]
+print(f"\\nDoubled: {list(map(double, nums))}")
+print(f"Squared: {list(map(square, nums))}")
+print(f"Evens:   {list(filter(lambda x: x%2==0, nums))}")`,
+       expected:'BMI: 22.86 → Normal',
+       solution:''},
+
+      {id:'comprehensions', title:'List Comprehensions',
+       desc:'List, dict, set comprehensions for cleaner code.',
+       tags:['Intermediate','Pythonic'],
+       code:`# List Comprehensions — Cleaner Code!
+
+# Normal loop vs comprehension
+numbers = range(1, 11)
+
+# Old way
+squares_old = []
+for n in numbers:
+    squares_old.append(n**2)
+
+# Comprehension way (shorter!)
+squares = [n**2 for n in numbers]
+print("Squares:", squares)
+
+# With condition
+evens  = [n for n in numbers if n % 2 == 0]
+odds   = [n for n in numbers if n % 2 != 0]
+print("Evens:", evens)
+print("Odds:", odds)
+
+# Dict comprehension
+students = ["Alice", "Bob", "Charlie", "Diana"]
+scores   = [92, 78, 85, 95]
+grade_map = {s: sc for s, sc in zip(students, scores)}
+print("\\nGrades:", grade_map)
+
+# Nested comprehension (2D matrix)
+matrix = [[i*j for j in range(1,4)] for i in range(1,4)]
+print("\\nMatrix:")
+for row in matrix:
+    print(" ", row)
+
+# DS Use case: Clean data
+raw_data = ["  Python  ", " NumPy", "Pandas ", " ML  ", ""]
+clean = [s.strip() for s in raw_data if s.strip()]
+print("\\nClean:", clean)`,
+       expected:'Squares: [1, 4, 9, 16, 25, 36, 49, 64, 81, 100]',
+       solution:''},
+    ]
+  },
+
+  data_structures: {
+    label:'📦 Data Structures', color:'#3fb950',
+    items:[
+      {id:'lists', title:'Lists — Ordered Collections',
+       desc:'Append, extend, slice, sort, reverse — list operations.',
+       tags:['Beginner','Lists'],
+       code:`# Lists — Python ka most used DS!
+
+# Create
+fruits = ["mango", "apple", "banana", "orange", "grapes"]
+print("Original:", fruits)
+
+# CRUD operations
+fruits.append("pineapple")        # Add end
+fruits.insert(1, "strawberry")    # Add at index
+removed = fruits.pop(2)           # Remove by index
+print(f"Removed: {removed}")
+print("After ops:", fruits)
+
+# Slicing [start:end:step]
+print("\\nSlicing:")
+print("First 3:", fruits[:3])
+print("Last 2:", fruits[-2:])
+print("Every 2nd:", fruits[::2])
+print("Reversed:", fruits[::-1])
+
+# List methods
+nums = [3, 1, 4, 1, 5, 9, 2, 6, 5, 3]
+print("\\nNumbers:", nums)
+print("Sorted:", sorted(nums))
+print("Unique sorted:", sorted(set(nums)))
+print("Max:", max(nums), "Min:", min(nums))
+print("Count of 1:", nums.count(1))
+print("Sum:", sum(nums))
+
+# 2D list (like a table!)
+data = [
+    ["Name",   "Age", "Score"],
+    ["Rahul",   22,    92],
+    ["Priya",   25,    88],
+    ["Arjun",   21,    95],
+]
+print("\\nData Table:")
+for row in data:
+    print(f"  {row[0]:<10} {row[1]:<5} {row[2]}")`,
+       expected:'Original: [\'mango\', \'apple\', \'banana\', \'orange\', \'grapes\']',
+       solution:''},
+
+      {id:'dicts', title:'Dictionaries — Key-Value Pairs',
+       desc:'Dict creation, access, methods, nested dicts.',
+       tags:['Beginner','Dicts'],
+       code:`# Dictionaries — Key-Value Store
+
+# Create
+person = {
+    "name": "Rahul Bunker",
+    "age": 22,
+    "city": "Jaipur",
+    "skills": ["Python", "ML", "Flask"],
+    "experience": {"ds": 1, "web": 2}
+}
+
+# Access
+print("Name:", person["name"])
+print("Skills:", person["skills"])
+print("DS Exp:", person["experience"]["ds"], "year")
+
+# Safe access with .get()
+print("Salary:", person.get("salary", "Not specified"))
+
+# Add / Update
+person["salary"] = 50000
+person["city"] = "Jaipur, Rajasthan"
+print("\\nUpdated city:", person["city"])
+
+# Dict methods
+print("\\nKeys:", list(person.keys()))
+print("Values count:", len(person))
+
+# Iterate
+print("\\nAll info:")
+for key, value in person.items():
+    if not isinstance(value, (list, dict)):
+        print(f"  {key}: {value}")
+
+# Dict comprehension — DS use case
+prices = {"apple":10, "mango":25, "banana":5, "orange":15}
+expensive = {k:v for k,v in prices.items() if v > 10}
+print("\\nExpensive fruits:", expensive)
+
+# Word frequency counter
+text = "python data science python machine learning python"
+freq = {}
+for word in text.split():
+    freq[word] = freq.get(word, 0) + 1
+print("\\nWord freq:", dict(sorted(freq.items(), key=lambda x:-x[1])))`,
+       expected:'Name: Rahul Bunker',
+       solution:''},
+    ]
+  },
+
+  numpy: {
+    label:'🔢 NumPy', color:'#f0883e',
+    items:[
+      {id:'np_basics', title:'NumPy Arrays Basics',
+       desc:'Array creation, operations, broadcasting.',
+       tags:['Intermediate','NumPy'],
+       code:`import numpy as np
+
+# Array creation
+arr1 = np.array([1, 2, 3, 4, 5])
+arr2 = np.array([10, 20, 30, 40, 50])
+
+print("Array:", arr1)
+print("Shape:", arr1.shape)
+print("Dtype:", arr1.dtype)
+
+# Array math (vectorized!)
+print("\\n--- Math Operations ---")
+print("arr1 + arr2:", arr1 + arr2)
+print("arr1 * 2:", arr1 * 2)
+print("arr1 ** 2:", arr1 ** 2)
+print("sqrt:", np.sqrt(arr1))
+
+# 2D Array (Matrix)
+matrix = np.array([[1,2,3],[4,5,6],[7,8,9]])
+print("\\n--- Matrix ---")
+print(matrix)
+print("Shape:", matrix.shape)
+print("Sum all:", matrix.sum())
+print("Sum cols:", matrix.sum(axis=0))
+print("Sum rows:", matrix.sum(axis=1))
+
+# Special arrays
+print("\\n--- Special Arrays ---")
+print("Zeros:", np.zeros(5))
+print("Ones:", np.ones((2,3)))
+print("Range:", np.arange(0, 10, 2))
+print("Linspace:", np.linspace(0, 1, 5))
+
+# Random arrays — DS use case
+np.random.seed(42)
+data = np.random.randn(1000)  # Normal distribution
+print(f"\\n1000 samples: mean={data.mean():.3f}, std={data.std():.3f}")
+print(f"Min: {data.min():.3f}, Max: {data.max():.3f}")`,
+       expected:'Array: [1 2 3 4 5]',
+       solution:''},
+
+      {id:'np_indexing', title:'NumPy Indexing & Slicing',
+       desc:'Advanced indexing, boolean masks, fancy indexing.',
+       tags:['Intermediate','NumPy'],
+       code:`import numpy as np
+
+np.random.seed(42)
+data = np.random.randint(0, 100, size=(5, 6))
+print("Data:")
+print(data)
+
+# Basic slicing
+print("\\nRow 0:", data[0])
+print("Col 2:", data[:, 2])
+print("Submatrix [1:3, 2:5]:")
+print(data[1:3, 2:5])
+
+# Boolean masking — VERY important in DS!
+mask = data > 50
+print("\\nValues > 50:")
+print(data[mask])
+
+# Replace values
+data_copy = data.copy()
+data_copy[data_copy < 20] = 0  # Values < 20 → 0
+print("\\nAfter replacing <20 with 0:")
+print(data_copy)
+
+# Statistical operations
+print("\\n--- Stats ---")
+print(f"Mean: {data.mean():.2f}")
+print(f"Median: {np.median(data):.2f}")
+print(f"Std: {data.std():.2f}")
+print(f"25th percentile: {np.percentile(data, 25):.2f}")
+print(f"75th percentile: {np.percentile(data, 75):.2f}")`,
+       expected:'',
+       solution:''},
+    ]
+  },
+
+  pandas: {
+    label:'🐼 Pandas', color:'#bc8cff',
+    items:[
+      {id:'pd_basics', title:'DataFrame Basics',
+       desc:'Create DataFrame, access columns, basic operations.',
+       tags:['Intermediate','Pandas'],
+       code:`import pandas as pd
+import numpy as np
+
+# Create DataFrame
+data = {
+    'Name':    ['Rahul', 'Priya', 'Arjun', 'Sneha', 'Vikram'],
+    'Age':     [22, 25, 21, 28, 24],
+    'City':    ['Jaipur', 'Delhi', 'Mumbai', 'Pune', 'Jaipur'],
+    'Salary':  [45000, 65000, 38000, 72000, 55000],
+    'Score':   [92, 88, 76, 95, 83],
+    'Dept':    ['DS', 'ML', 'DS', 'NLP', 'ML'],
+}
+df = pd.DataFrame(data)
+
+print("=== DataFrame ===")
+print(df)
+
+print("\\n=== Basic Info ===")
+print(f"Shape: {df.shape}")
+print(f"Columns: {list(df.columns)}")
+print(f"Dtypes:\\n{df.dtypes}")
+
+print("\\n=== Describe ===")
+print(df.describe())
+
+print("\\n=== Filtering ===")
+# High earners
+high = df[df['Salary'] > 50000]
+print("Salary > 50k:")
+print(high[['Name', 'Salary', 'Dept']])
+
+# Multiple conditions
+jaipur_ds = df[(df['City'] == 'Jaipur') & (df['Dept'] == 'DS')]
+print("\\nJaipur + DS dept:")
+print(jaipur_ds[['Name', 'City', 'Dept', 'Salary']])`,
+       expected:'',
+       solution:''},
+
+      {id:'pd_groupby', title:'GroupBy & Aggregation',
+       desc:'GroupBy, agg functions, pivot tables.',
+       tags:['Intermediate','Pandas'],
+       code:`import pandas as pd
+import numpy as np
+
+np.random.seed(42)
+df = pd.DataFrame({
+    'Dept':   np.random.choice(['DS','ML','NLP','CV'], 50),
+    'City':   np.random.choice(['Delhi','Mumbai','Bangalore','Jaipur'], 50),
+    'Salary': np.random.randint(30000, 120000, 50),
+    'Score':  np.random.randint(60, 100, 50),
+    'Exp':    np.random.randint(0, 8, 50),
+})
+
+print("=== GroupBy Dept ===")
+dept_stats = df.groupby('Dept').agg({
+    'Salary': ['mean', 'min', 'max'],
+    'Score':  'mean',
+    'Exp':    'mean'
+}).round(1)
+print(dept_stats)
+
+print("\\n=== City-wise Avg Salary ===")
+city_sal = df.groupby('City')['Salary'].mean().sort_values(ascending=False)
+print(city_sal.apply(lambda x: f"₹{x:,.0f}"))
+
+print("\\n=== Pivot Table ===")
+pivot = df.pivot_table(
+    values='Salary', 
+    index='Dept', 
+    columns='City',
+    aggfunc='mean'
+).round(0)
+print(pivot)
+
+print("\\n=== Top 5 by Salary ===")
+print(df.nlargest(5, 'Salary')[['Dept','City','Salary','Score']])`,
+       expected:'',
+       solution:''},
+    ]
+  },
+
+  matplotlib: {
+    label:'📊 Visualization', color:'#d29922',
+    items:[
+      {id:'matplotlib_basics', title:'Matplotlib Basics',
+       desc:'Line, bar, scatter plots using matplotlib.',
+       tags:['Intermediate','Matplotlib'],
+       code:`import matplotlib
+matplotlib.use('Agg')
+import matplotlib.pyplot as plt
+import numpy as np
+
+print("Matplotlib loaded! Charts are generated as files.")
+print("DS Agent mein charts seedha display hote hain.")
+print()
+
+# Data
+months = ['Jan','Feb','Mar','Apr','May','Jun']
+sales  = [45, 62, 38, 71, 55, 80]
+profit = [12, 18, 8,  22, 15, 25]
+
+# Line chart stats
+print("=== Sales Analysis ===")
+print(f"Total Sales:  ₹{sum(sales)*1000:,}")
+print(f"Avg Sales:    ₹{sum(sales)/len(sales)*1000:,.0f}")
+print(f"Best Month:   {months[sales.index(max(sales))]} (₹{max(sales)}K)")
+print(f"Worst Month:  {months[sales.index(min(sales))]} (₹{min(sales)}K)")
+print(f"Growth:       {((sales[-1]-sales[0])/sales[0]*100):.1f}%")
+
+# Statistical correlation
+correlation = np.corrcoef(sales, profit)[0,1]
+print(f"\\nSales-Profit Correlation: {correlation:.3f}")
+print("(1.0 = perfect positive, -1.0 = perfect negative)")
+
+# Moving average
+window = 3
+moving_avg = []
+for i in range(len(sales)):
+    if i < window-1:
+        moving_avg.append(None)
+    else:
+        avg = sum(sales[i-window+1:i+1]) / window
+        moving_avg.append(round(avg, 1))
+        
+print(f"\\n{window}-Month Moving Avg: {moving_avg}")`,
+       expected:'Matplotlib loaded!',
+       solution:''},
+    ]
+  },
+
+  ml: {
+    label:'🤖 Machine Learning', color:'#f85149',
+    items:[
+      {id:'ml_workflow', title:'ML Workflow — Complete',
+       desc:'Define problem → Split → Train → Evaluate.',
+       tags:['Intermediate','Scikit-learn'],
+       code:`from sklearn.datasets import make_classification
+from sklearn.model_selection import train_test_split
+from sklearn.preprocessing import StandardScaler
+from sklearn.ensemble import RandomForestClassifier
+from sklearn.metrics import accuracy_score, classification_report
+import numpy as np
+
+print("=== ML Workflow Demo ===")
+
+# 1. Generate Dataset
+X, y = make_classification(
+    n_samples=1000, n_features=10,
+    n_informative=5, random_state=42
+)
+print(f"Dataset: {X.shape[0]} samples, {X.shape[1]} features")
+print(f"Classes: {np.bincount(y)}")
+
+# 2. Train/Test Split
+X_train, X_test, y_train, y_test = train_test_split(
+    X, y, test_size=0.2, random_state=42
+)
+print(f"\\nTrain: {X_train.shape[0]} | Test: {X_test.shape[0]}")
+
+# 3. Preprocessing
+scaler = StandardScaler()
+X_train_sc = scaler.fit_transform(X_train)
+X_test_sc  = scaler.transform(X_test)
+
+# 4. Train Model
+model = RandomForestClassifier(n_estimators=100, random_state=42)
+model.fit(X_train_sc, y_train)
+print("\\nModel trained! ✅")
+
+# 5. Evaluate
+y_pred = model.predict(X_test_sc)
+accuracy = accuracy_score(y_test, y_pred)
+print(f"\\nAccuracy: {accuracy:.4f} ({accuracy*100:.2f}%)")
+
+# 6. Feature Importance
+importances = model.feature_importances_
+top5_idx = np.argsort(importances)[::-1][:5]
+print("\\nTop 5 Features:")
+for i, idx in enumerate(top5_idx, 1):
+    print(f"  {i}. Feature_{idx}: {importances[idx]:.4f}")`,
+       expected:'',
+       solution:''},
+    ]
+  },
+
+  stats: {
+    label:'📐 Statistics', color:'#58a6ff',
+    items:[
+      {id:'stats_basics', title:'Descriptive Statistics',
+       desc:'Mean, median, mode, std, percentiles, distributions.',
+       tags:['Beginner','Statistics'],
+       code:`import statistics
+import math
+
+# Sample dataset
+data = [23, 45, 12, 67, 34, 89, 45, 23, 56, 78, 
+        34, 12, 90, 45, 67, 23, 56, 34, 78, 45]
+
+print("=== Descriptive Statistics ===")
+print(f"Data: {sorted(data)}")
+print(f"Count: {len(data)}")
+print()
+print(f"Mean (Average):   {statistics.mean(data):.2f}")
+print(f"Median (Middle):  {statistics.median(data):.2f}")
+print(f"Mode (Most freq): {statistics.mode(data)}")
+print()
+print(f"Variance:  {statistics.variance(data):.2f}")
+print(f"Std Dev:   {statistics.stdev(data):.2f}")
+print(f"Min:       {min(data)}")
+print(f"Max:       {max(data)}")
+print(f"Range:     {max(data) - min(data)}")
+
+# Percentiles manually
+sorted_data = sorted(data)
+n = len(sorted_data)
+def percentile(data, p):
+    idx = (p/100) * (len(data)-1)
+    lower = int(idx)
+    frac = idx - lower
+    if lower+1 < len(data):
+        return data[lower] + frac*(data[lower+1]-data[lower])
+    return data[lower]
+
+print(f"\\n25th percentile (Q1): {percentile(sorted_data, 25):.1f}")
+print(f"50th percentile (Q2): {percentile(sorted_data, 50):.1f}")
+print(f"75th percentile (Q3): {percentile(sorted_data, 75):.1f}")
+iqr = percentile(sorted_data, 75) - percentile(sorted_data, 25)
+print(f"IQR (Q3-Q1):          {iqr:.1f}")
+
+# Skewness approximation
+mean_ = statistics.mean(data)
+median_ = statistics.median(data)
+std_ = statistics.stdev(data)
+skew = 3 * (mean_ - median_) / std_
+print(f"\\nSkewness (approx): {skew:.3f}")
+print("(0=symmetric, +ve=right skewed, -ve=left skewed)")`,
+       expected:'',
+       solution:''},
+    ]
+  },
+
+  preprocessing: {
+    label:'🔧 Data Preprocessing', color:'#3fb950',
+    items:[
+      {id:'missing_vals', title:'Handle Missing Values',
+       desc:'Detect, fill, drop missing values — common DS task.',
+       tags:['Intermediate','Preprocessing'],
+       code:`import pandas as pd
+import numpy as np
+
+# Create dataset with missing values
+np.random.seed(42)
+n = 20
+df = pd.DataFrame({
+    'Age':     np.random.choice([np.nan, 22, 25, 30, 35, 28, 24], n),
+    'Salary':  np.random.choice([np.nan, 45000, 60000, 35000, 80000], n),
+    'City':    np.random.choice([np.nan, 'Delhi', 'Mumbai', 'Jaipur'], n),
+    'Score':   np.random.randint(50, 100, n).astype(float),
+    'Dept':    np.random.choice([np.nan, 'DS', 'ML', 'NLP'], n),
+})
+# Add some nulls to Score
+df.loc[::5, 'Score'] = np.nan
+
+print("=== Original Data (first 10 rows) ===")
+print(df.head(10))
+
+print("\\n=== Missing Values Count ===")
+missing = df.isnull().sum()
+missing_pct = (df.isnull().sum() / len(df) * 100).round(1)
+missing_df = pd.DataFrame({'Count': missing, 'Percent': missing_pct})
+print(missing_df[missing_df['Count']>0])
+
+print("\\n=== Fixing Missing Values ===")
+
+# Numeric: fill with mean/median
+df['Age'].fillna(df['Age'].median(), inplace=True)
+df['Salary'].fillna(df['Salary'].mean(), inplace=True)
+df['Score'].fillna(df['Score'].median(), inplace=True)
+
+# Categorical: fill with mode
+df['City'].fillna(df['City'].mode()[0], inplace=True)
+df['Dept'].fillna('Unknown', inplace=True)
+
+print("After fixing:")
+print(df.isnull().sum())
+print("\\nAll nulls fixed! ✅")
+print(f"Final shape: {df.shape}")`,
+       expected:'',
+       solution:''},
+    ]
+  }
+};
+
+// ═══ STATE ═══
+let currentTopic = 'fundamentals';
+let currentItem  = null;
+let fontSize      = 13;
+let completedItems = JSON.parse(localStorage.getItem('py_completed') || '[]');
+
+// ═══ INIT ═══
+window.addEventListener('load', () => {
+  buildTopicTree();
+  loadTopic('fundamentals', 'vars');
+  updateRefPanel('fundamentals');
+});
+
+function buildTopicTree() {
+  const tree = document.getElementById('topicTree');
+  tree.innerHTML = '';
+  for (const [key, topic] of Object.entries(TOPICS)) {
+    const section = document.createElement('div');
+    section.className = 'tree-section';
+    section.innerHTML = `<div class="tree-section-title" onclick="switchTopic('${key}',null)">
+      ${topic.label}
+    </div><div class="tree-items" id="tree_${key}">`;
+    const itemsDiv = document.createElement('div');
+    itemsDiv.className = 'tree-items';
+    itemsDiv.id = `tree_${key}`;
+    topic.items.forEach(item => {
+      const el = document.createElement('div');
+      el.className = 'tree-item' + (completedItems.includes(item.id) ? ' done' : '');
+      el.id = `treeItem_${item.id}`;
+      el.textContent = item.title;
+      el.onclick = () => { switchTopic(key,null); loadTopic(key, item.id); };
+      itemsDiv.appendChild(el);
+    });
+    section.appendChild(itemsDiv);
+    tree.appendChild(section);
+  }
+}
+
+function switchTopic(topicKey, el) {
+  currentTopic = topicKey;
+  // Update pills
+  document.querySelectorAll('.topic-pill').forEach(p => p.classList.remove('active'));
+  if(el) el.classList.add('active');
+  const items = TOPICS[topicKey]?.items;
+  if(items && items.length > 0) loadTopic(topicKey, items[0].id);
+  updateRefPanel(topicKey);
+}
+
+function loadTopic(topicKey, itemId) {
+  const topic = TOPICS[topicKey];
+  if(!topic) return;
+  const item = topic.items.find(i => i.id === itemId);
+  if(!item) return;
+  currentItem = item;
+
+  // Update problem bar
+  document.getElementById('problemTitle').textContent = `${topic.label.split(' ')[0]} — ${item.title}`;
+  document.getElementById('problemDesc').textContent  = item.desc;
+  const tagsEl = document.getElementById('problemTags');
+  tagsEl.innerHTML = item.tags.map(t =>
+    `<span class="ptag ptag-${t==='Beginner'?'green':t==='Intermediate'?'orange':'blue'}">${t}</span>`
+  ).join('');
+
+  // Load code
+  document.getElementById('codeEditor').value = item.code;
+
+  // Reset output
+  showOutTab('output', null);
+  setOutputContent('output', '<span class="out-placeholder">▶ Run karo to output yahan aayega...</span>');
+  if(item.expected) {
+    setOutputContent('expected', item.expected || 'Run karo to dekho!');
+  }
+
+  // Mark active in tree
+  document.querySelectorAll('.tree-item').forEach(el => el.classList.remove('active'));
+  const treeEl = document.getElementById(`treeItem_${itemId}`);
+  if(treeEl) treeEl.classList.add('active');
+
+  // Set status
+  setStatus('ready', '#8b949e');
+}
+
+// ═══ RUN CODE ═══
+async function runCode() {
+  const code = document.getElementById('codeEditor').value;
+  if(!code.trim()) return;
+
+  const btn = document.getElementById('runBtn');
+  btn.innerHTML = '<span class="spinning">⟳</span> Running...';
+  btn.disabled = true;
+  setStatus('running...', '#d29922');
+
+  showOutTab('output', null);
+  setOutputContent('output', '<span style="color:var(--amber)">⟳ Executing...</span>');
+
+  try {
+    const r = await fetch('/api/python/run', {
+      method:'POST',
+      headers:{'Content-Type':'application/json'},
+      body: JSON.stringify({ code, timeout: 20 })
+    });
+    const d = await r.json();
+
+    if(d.status === 'success') {
+      const out = d.output || '(No output)';
+      setOutputContent('output', `<span class="out-success">${escHtml(out)}</span>\n<span style="color:var(--muted);font-size:10px">⏱ ${d.elapsed}s</span>`);
+      setStatus(`✅ Success (${d.elapsed}s)`, '#3fb950');
+      // Mark as completed
+      if(currentItem && !completedItems.includes(currentItem.id)) {
+        completedItems.push(currentItem.id);
+        localStorage.setItem('py_completed', JSON.stringify(completedItems));
+        const treeEl = document.getElementById(`treeItem_${currentItem.id}`);
+        if(treeEl) treeEl.classList.add('done');
+        showCompletion();
+      }
+    } else if(d.status === 'timeout') {
+      setOutputContent('output', `<span class="out-error">⏱ Timeout! Code zyada time le raha tha.\nInfinite loop check karo!</span>`);
+      setStatus('⏱ Timeout', '#f85149');
+    } else {
+      const err = d.error || 'Unknown error';
+      setOutputContent('output', `<span class="out-error">❌ Error:\n${escHtml(err)}</span>`);
+      setStatus('❌ Error', '#f85149');
+    }
+  } catch(e) {
+    setOutputContent('output', `<span class="out-error">Network error: ${e.message}</span>`);
+    setStatus('❌ Network error', '#f85149');
+  }
+
+  btn.innerHTML = '▶ Run';
+  btn.disabled = false;
+}
+
+// ═══ HINT ═══
+async function getHint() {
+  const code = document.getElementById('codeEditor').value;
+  showOutTab('hint', null);
+  setOutputContent('hint', '💡 AI se hint le raha hoon...');
+
+  const outEl = document.getElementById('outOutput');
+  const hasError = outEl.innerHTML.includes('❌');
+  const error = hasError ? outEl.textContent.replace('❌ Error:\n','') : '';
+
+  try {
+    const r = await fetch('/api/python/hint', {
+      method:'POST',
+      headers:{'Content-Type':'application/json'},
+      body: JSON.stringify({
+        code, error,
+        topic: currentItem?.title || '',
+        question: ''
+      })
+    });
+    const d = await r.json();
+    document.getElementById('outHint').className = 'output-content out-hint';
+    setOutputContent('hint', d.hint || 'Hint nahi mila.');
+  } catch(e) {
+    setOutputContent('hint', `Error: ${e.message}`);
+  }
+}
+
+// ═══ ASK QUESTION ═══
+async function askQuestion() {
+  const q = document.getElementById('questionInput').value.trim();
+  if(!q) return;
+  document.getElementById('questionInput').value = '';
+  showOutTab('hint', null);
+  setOutputContent('hint', `🤔 Sawaal: "${q}"\n\n💭 Jawab dhundh raha hoon...`);
+
+  try {
+    const r = await fetch('/api/python/hint', {
+      method:'POST',
+      headers:{'Content-Type':'application/json'},
+      body: JSON.stringify({
+        code: document.getElementById('codeEditor').value,
+        error: '',
+        topic: currentItem?.title || currentTopic,
+        question: q
+      })
+    });
+    const d = await r.json();
+    setOutputContent('hint', `🤔 Q: ${q}\n\n💡 A:\n${d.hint || 'Jawab nahi mila.'}`);
+  } catch(e) {
+    setOutputContent('hint', `Error: ${e.message}`);
+  }
+}
+
+// ═══ SOLUTION ═══
+function loadSolution() {
+  if(!currentItem?.solution) {
+    setOutputContent('hint', '📝 Is exercise ka solution built-in nahi hai.\n💡 Hint button dabao ya code run karo!');
+    showOutTab('hint', null);
+    return;
+  }
+  document.getElementById('codeEditor').value = currentItem.solution;
+}
+
+// ═══ UI HELPERS ═══
+function clearEditor() {
+  document.getElementById('codeEditor').value = '';
+  document.getElementById('codeEditor').focus();
+}
+
+function copyCode() {
+  navigator.clipboard.writeText(document.getElementById('codeEditor').value);
+  const btn = event.target;
+  btn.textContent = '✅ Copied!';
+  setTimeout(() => btn.textContent = '📋 Copy', 1500);
+}
+
+function handleTab(e) {
+  if(e.key === 'Tab') {
+    e.preventDefault();
+    const ta = e.target;
+    const start = ta.selectionStart, end = ta.selectionEnd;
+    ta.value = ta.value.substring(0, start) + '    ' + ta.value.substring(end);
+    ta.selectionStart = ta.selectionEnd = start + 4;
+  }
+  // Update cursor position
+  const ta = document.getElementById('codeEditor');
+  const lines = ta.value.substr(0, ta.selectionStart).split('\n');
+  document.getElementById('lineCol').textContent = `Line ${lines.length}, Col ${lines[lines.length-1].length+1}`;
+}
+
+function changeFontSize(delta) {
+  fontSize = Math.max(10, Math.min(20, fontSize + delta));
+  document.getElementById('codeEditor').style.fontSize = fontSize + 'px';
+  document.getElementById('fsLabel').textContent = fontSize + 'px';
+}
+
+function showOutTab(tab, el) {
+  ['output','hint','expected'].forEach(t => {
+    document.getElementById('out'+t.charAt(0).toUpperCase()+t.slice(1)).style.display = t===tab?'':'none';
+  });
+  document.querySelectorAll('.out-tab').forEach(b => b.classList.remove('active'));
+  if(el) el.classList.add('active');
+  else {
+    const tabs = document.querySelectorAll('.out-tab');
+    const idx = ['output','hint','expected'].indexOf(tab);
+    if(idx>=0 && tabs[idx]) tabs[idx].classList.add('active');
+  }
+}
+
+function setOutputContent(tab, html) {
+  const id = 'out' + tab.charAt(0).toUpperCase() + tab.slice(1);
+  document.getElementById(id).innerHTML = html;
+}
+
+function setStatus(text, color) {
+  document.getElementById('statusText').textContent = text;
+  document.getElementById('statusDot').style.background = color;
+}
+
+function escHtml(s) {
+  return s.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
+}
+
+function showCompletion() {
+  const popup = document.createElement('div');
+  popup.className = 'completion-popup';
+  popup.innerHTML = `
+    <div style="font-size:40px;margin-bottom:10px">🎉</div>
+    <div style="font-size:16px;font-weight:800;color:var(--green);margin-bottom:4px">Exercise Complete!</div>
+    <div style="font-size:12px;color:var(--muted)">+10 XP earned!</div>
+  `;
+  document.body.appendChild(popup);
+  setTimeout(() => popup.classList.add('show'), 50);
+  setTimeout(() => { popup.classList.remove('show'); setTimeout(()=>popup.remove(), 400); }, 2000);
+}
+
+function updateRefPanel(topicKey) {
+  const refs = {
+    fundamentals: [
+      {title:'Data Types', code:'int  float  str  bool\ntype(x)  # check type\nint("42")  # convert'},
+      {title:'String Methods', code:'.upper() .lower()\n.strip() .split()\nf"Hello {name}"'},
+      {title:'List Ops', code:'lst.append(x)\nlst.pop(i)\nlst[1:4]  # slice\nsorted(lst)'},
+    ],
+    numpy: [
+      {title:'Create Arrays', code:'np.array([1,2,3])\nnp.zeros((3,4))\nnp.random.randn(100)'},
+      {title:'Operations', code:'arr.mean() .std()\narr.reshape(2,-1)\nnp.dot(a, b)'},
+    ],
+    pandas: [
+      {title:'DataFrame', code:'pd.read_csv("f.csv")\ndf.head() .info()\ndf.describe()'},
+      {title:'Filter', code:'df[df.col > 5]\ndf[(a) & (b)]\ndf.groupby("col")'},
+      {title:'Clean', code:'df.fillna(0)\ndf.dropna()\ndf.drop_duplicates()'},
+    ],
+    ml: [
+      {title:'Workflow', code:'train_test_split()\nmodel.fit(X,y)\nmodel.predict(X)\naccuracy_score()'},
+      {title:'Models', code:'RandomForestClassifier\nLogisticRegression\nSVM, KNN, XGBoost'},
+    ],
+  };
+
+  const content = document.getElementById('refContent');
+  const items = refs[topicKey] || refs.fundamentals;
+  content.innerHTML = items.map(r => `
+    <div class="ref-item">
+      <div class="ref-item-title">${r.title}</div>
+      <div class="ref-code" onclick="insertCode('${r.code.replace(/'/g,"\\'").replace(/\n/g,'\\n')}')">${r.code}</div>
+    </div>
+  `).join('');
+}
+
+function insertCode(code) {
+  const ta = document.getElementById('codeEditor');
+  const start = ta.selectionStart;
+  const realCode = code.replace(/\\n/g,'\n');
+  ta.value = ta.value.substring(0,start) + '\n' + realCode + '\n' + ta.value.substring(start);
+  ta.focus();
+}
+
+// Track cursor
+document.addEventListener('DOMContentLoaded', () => {
+  const ta = document.getElementById('codeEditor');
+  if(ta) {
+    ta.addEventListener('click', ()=>{
+      const lines = ta.value.substr(0,ta.selectionStart).split('\n');
+      document.getElementById('lineCol').textContent = `Line ${lines.length}, Col ${lines[lines.length-1].length+1}`;
+    });
+  }
+});
+</script>
+</body>
+</html>
