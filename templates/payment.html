@@ -1,0 +1,519 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>DS Agent — Payment</title>
+<link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=JetBrains+Mono:wght@600&display=swap" rel="stylesheet">
+<style>
+:root{
+  --bg:#f0f4ff;--surface:#fff;--accent:#5b5ef4;--accent2:#7c3aed;
+  --green:#059669;--red:#dc2626;--amber:#d97706;--text:#1e293b;
+  --muted:#64748b;--border:#e2e8f0;
+}
+*{margin:0;padding:0;box-sizing:border-box;}
+body{font-family:'Plus Jakarta Sans',sans-serif;background:var(--bg);color:var(--text);min-height:100vh;display:flex;flex-direction:column;}
+
+/* TOP BAR */
+.topbar{background:white;border-bottom:1px solid var(--border);padding:12px 5%;display:flex;justify-content:space-between;align-items:center;flex-shrink:0}
+.logo{font-size:18px;font-weight:800;color:var(--accent);display:flex;align-items:center;gap:6px}
+.back-link{font-size:13px;color:var(--muted);text-decoration:none;font-weight:600;display:flex;align-items:center;gap:4px}
+.back-link:hover{color:var(--accent)}
+
+/* MAIN */
+.main{flex:1;display:flex;align-items:center;justify-content:center;padding:24px 16px}
+
+.payment-card{
+  background:white;border-radius:24px;
+  box-shadow:0 20px 60px rgba(91,94,244,0.12);
+  width:100%;max-width:500px;
+  overflow:hidden;
+}
+
+/* HEADER */
+.card-header{
+  background:linear-gradient(135deg,#1e3a5f,#2563eb,#5b5ef4);
+  padding:24px 28px;color:white;
+}
+.plan-badge-row{display:flex;align-items:center;justify-content:space-between;margin-bottom:8px}
+.plan-chip{background:rgba(255,255,255,0.2);border-radius:20px;padding:4px 12px;font-size:12px;font-weight:700}
+.secure-chip{display:flex;align-items:center;gap:5px;font-size:11px;opacity:0.8}
+.header-title{font-size:22px;font-weight:800;margin-bottom:4px}
+.header-sub{font-size:13px;opacity:0.75}
+
+/* AMOUNT */
+.amount-section{
+  display:flex;align-items:center;justify-content:center;
+  gap:16px;padding:20px 28px;
+  background:linear-gradient(135deg,#f8faff,#eff6ff);
+  border-bottom:1px solid var(--border);
+}
+.amount-display{text-align:center}
+.amount-number{font-size:48px;font-weight:800;color:var(--accent);letter-spacing:-2px;line-height:1;font-family:'JetBrains Mono',monospace}
+.amount-label{font-size:12px;color:var(--muted);margin-top:2px}
+.amount-divider{width:1px;height:50px;background:var(--border)}
+.duration-display{text-align:center}
+.duration-text{font-size:14px;font-weight:700;color:var(--text)}
+.duration-sub{font-size:11px;color:var(--muted);margin-top:2px}
+
+/* BODY */
+.card-body{padding:24px 28px}
+
+/* UPI SECTION */
+.upi-section{
+  background:linear-gradient(135deg,#f0fdf4,#ecfdf5);
+  border:2px solid #86efac;
+  border-radius:16px;
+  padding:20px;
+  margin-bottom:20px;
+}
+.upi-label{font-size:11px;font-weight:800;color:#059669;text-transform:uppercase;letter-spacing:1px;margin-bottom:12px;display:flex;align-items:center;gap:6px}
+
+.upi-content{display:flex;gap:16px;align-items:flex-start}
+
+/* QR Code area */
+.qr-area{flex-shrink:0;text-align:center}
+.qr-box{
+  width:130px;height:130px;
+  background:white;
+  border-radius:12px;
+  border:2px solid #86efac;
+  display:flex;align-items:center;justify-content:center;
+  overflow:hidden;
+  position:relative;
+}
+.qr-box img{width:100%;height:100%;object-fit:contain}
+.qr-placeholder{
+  display:flex;flex-direction:column;align-items:center;justify-content:center;
+  gap:6px;padding:12px;text-align:center;
+  width:100%;height:100%;
+}
+.qr-upload-btn{
+  font-size:10px;font-weight:700;color:#059669;
+  background:#f0fdf4;border:1.5px dashed #86efac;
+  border-radius:6px;padding:4px 8px;cursor:pointer;
+  font-family:inherit;
+}
+.qr-label{font-size:10px;color:var(--muted);margin-top:6px}
+
+/* UPI ID */
+.upi-details{flex:1;min-width:0}
+.upi-id-box{
+  background:white;
+  border:1.5px solid #86efac;
+  border-radius:10px;
+  padding:12px 14px;
+  margin-bottom:10px;
+}
+.upi-id-label{font-size:10px;color:#059669;font-weight:700;margin-bottom:4px}
+.upi-id-value{
+  font-size:16px;font-weight:800;color:#059669;
+  font-family:'JetBrains Mono',monospace;
+  word-break:break-all;
+}
+.copy-btn{
+  width:100%;padding:8px;
+  background:var(--green);color:white;
+  border:none;border-radius:8px;cursor:pointer;
+  font-size:12px;font-weight:700;font-family:inherit;
+  transition:0.2s;display:flex;align-items:center;justify-content:center;gap:5px;
+}
+.copy-btn:hover{background:#047857}
+.copy-btn.copied{background:#0d9488}
+
+/* Apps row */
+.apps-row{display:flex;gap:8px;margin-top:10px;flex-wrap:wrap}
+.app-chip{
+  display:flex;align-items:center;gap:4px;
+  padding:5px 10px;
+  background:white;border:1.5px solid #86efac;
+  border-radius:20px;font-size:11px;font-weight:600;
+  color:#059669;cursor:pointer;transition:0.15s;
+}
+.app-chip:hover{background:#f0fdf4}
+
+/* STEPS */
+.steps-section{margin-bottom:20px}
+.steps-title{font-size:13px;font-weight:700;color:var(--text);margin-bottom:12px}
+.step-row{display:flex;gap:10px;align-items:flex-start;margin-bottom:10px}
+.step-circle{
+  width:26px;height:26px;border-radius:50%;
+  background:var(--accent);color:white;
+  display:flex;align-items:center;justify-content:center;
+  font-size:12px;font-weight:800;flex-shrink:0;
+}
+.step-text{font-size:13px;color:var(--text);line-height:1.5;padding-top:3px}
+.step-text span{color:var(--accent);font-weight:700}
+
+/* UPLOAD */
+.upload-section{
+  background:#f8faff;border:2px dashed #c7d2fe;
+  border-radius:14px;padding:20px;text-align:center;
+  cursor:pointer;transition:all 0.2s;
+}
+.upload-section:hover{border-color:var(--accent);background:#eff6ff}
+.upload-section.has-file{border-color:var(--green);background:#f0fdf4;border-style:solid}
+.upload-icon{font-size:32px;margin-bottom:8px}
+.upload-title{font-size:14px;font-weight:700;color:var(--text);margin-bottom:4px}
+.upload-sub{font-size:12px;color:var(--muted)}
+.file-preview{
+  display:none;
+  width:100%;max-height:150px;object-fit:contain;
+  border-radius:8px;margin:8px 0;
+}
+
+/* SUBMIT */
+.submit-btn{
+  width:100%;padding:14px;
+  background:linear-gradient(135deg,var(--accent),var(--accent2));
+  color:white;border:none;border-radius:12px;cursor:pointer;
+  font-size:15px;font-weight:800;font-family:inherit;
+  box-shadow:0 6px 20px rgba(91,94,244,0.3);
+  transition:all 0.25s;margin-top:16px;
+  display:flex;align-items:center;justify-content:center;gap:8px;
+}
+.submit-btn:hover{transform:translateY(-2px);box-shadow:0 8px 28px rgba(91,94,244,0.4)}
+.submit-btn:disabled{opacity:0.6;cursor:not-allowed;transform:none}
+
+/* STATUS */
+.status-box{
+  display:none;margin-top:14px;padding:14px;
+  border-radius:10px;font-size:13px;line-height:1.6;
+  text-align:center;font-weight:600;
+}
+.status-success{background:#f0fdf4;border:1.5px solid #86efac;color:#059669}
+.status-error{background:#fef2f2;border:1.5px solid #fca5a5;color:#dc2626}
+
+/* INFO */
+.info-row{
+  display:flex;align-items:center;gap:8px;
+  font-size:11px;color:var(--muted);
+  margin-top:12px;justify-content:center;
+}
+
+/* FOOTER */
+footer{padding:16px;text-align:center;font-size:12px;color:var(--muted)}
+
+/* Responsive */
+@media(max-width:480px){
+  .amount-number{font-size:36px}
+  .upi-content{flex-direction:column;align-items:center}
+  .qr-box{width:150px;height:150px}
+  .card-body{padding:20px 18px}
+  .card-header{padding:20px 18px}
+}
+</style>
+</head>
+<body>
+
+<!-- TOP BAR -->
+<div class="topbar">
+  <div class="logo">🤖 DS Agent</div>
+  <a href="/pricing" class="back-link">← Plans</a>
+</div>
+
+<!-- MAIN -->
+<div class="main">
+  <div class="payment-card">
+
+    <!-- HEADER -->
+    <div class="card-header">
+      <div class="plan-badge-row">
+        <div class="plan-chip" id="planChip">⚡ Pro Hourly</div>
+        <div class="secure-chip">🔒 Secure Payment</div>
+      </div>
+      <div class="header-title">Complete Your Payment</div>
+      <div class="header-sub">UPI se pay karo → Screenshot bhejo → Pro access pao!</div>
+    </div>
+
+    <!-- AMOUNT -->
+    <div class="amount-section">
+      <div class="amount-display">
+        <div class="amount-number" id="amountDisplay">₹500</div>
+        <div class="amount-label">Total Amount</div>
+      </div>
+      <div class="amount-divider"></div>
+      <div class="duration-display">
+        <div class="duration-text" id="durationDisplay">1 Hour Pro Access</div>
+        <div class="duration-sub">Activate within 30 min</div>
+      </div>
+    </div>
+
+    <!-- BODY -->
+    <div class="card-body">
+
+      <!-- UPI SECTION -->
+      <div class="upi-section">
+        <div class="upi-label">✅ UPI Payment Details</div>
+        <div class="upi-content">
+
+          <!-- QR CODE -->
+          <div class="qr-area">
+            <div class="qr-box" id="qrBox">
+              <!-- Admin apna QR code yahan set kar sakta hai -->
+              <div class="qr-placeholder" id="qrPlaceholder">
+                <div style="font-size:28px">📱</div>
+                <div style="font-size:10px;color:#059669;font-weight:700;text-align:center">QR Code</div>
+                <div style="font-size:9px;color:#94a3b8;text-align:center;line-height:1.3">Admin ne set nahi kiya abhi</div>
+              </div>
+              <img id="qrImage" src="" alt="QR Code" style="display:none;width:100%;height:100%;object-fit:contain">
+            </div>
+            <div class="qr-label">Scan to Pay</div>
+          </div>
+
+          <!-- UPI ID -->
+          <div class="upi-details">
+            <div class="upi-id-box">
+              <div class="upi-id-label">📲 UPI ID</div>
+              <div class="upi-id-value" id="upiIdVal">{{ upi_id }}</div>
+            </div>
+            <button class="copy-btn" id="copyBtn" onclick="copyUPI()">
+              📋 Copy UPI ID
+            </button>
+
+            <div class="apps-row">
+              <div class="app-chip" onclick="openUPIApp('phonepe')">🟣 PhonePe</div>
+              <div class="app-chip" onclick="openUPIApp('gpay')">🔵 GPay</div>
+              <div class="app-chip" onclick="openUPIApp('paytm')">💙 Paytm</div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- STEPS -->
+      <div class="steps-section">
+        <div class="steps-title">📋 Simple 4 Steps</div>
+        <div class="step-row">
+          <div class="step-circle">1</div>
+          <div class="step-text">UPI ID copy karo ya QR scan karo → <span>₹<span id="stepAmt">500</span> pay karo</span></div>
+        </div>
+        <div class="step-row">
+          <div class="step-circle">2</div>
+          <div class="step-text"><span>Payment successful</span> hone ke baad screenshot lo (transaction ID dikhna chahiye)</div>
+        </div>
+        <div class="step-row">
+          <div class="step-circle">3</div>
+          <div class="step-text">Neeche screenshot <span>upload karo</span> → Submit dabao</div>
+        </div>
+        <div class="step-row">
+          <div class="step-circle">4</div>
+          <div class="step-text">Admin verify karega → <span>30 minutes mein Pro access</span> activate hoga!</div>
+        </div>
+      </div>
+
+      <!-- SCREENSHOT UPLOAD -->
+      <div class="upload-section" id="uploadZone" onclick="document.getElementById('ssInput').click()">
+        <div class="upload-icon" id="uploadIcon">📸</div>
+        <div class="upload-title" id="uploadTitle">Payment Screenshot Upload Karo</div>
+        <div class="upload-sub" id="uploadSub">JPG / PNG — Click karo ya drag karo</div>
+        <img id="filePreview" class="file-preview" src="" alt="Preview">
+        <input type="file" id="ssInput" accept="image/*" style="display:none" onchange="onFileSelect(this)">
+      </div>
+
+      <!-- USERNAME -->
+      <div style="margin-top:14px">
+        <label style="font-size:12px;font-weight:700;color:var(--muted);display:block;margin-bottom:6px">👤 Your Username (optional)</label>
+        <input type="text" id="usernameInput"
+          style="width:100%;padding:10px 14px;border:1.5px solid var(--border);border-radius:9px;font-size:13px;font-family:inherit;outline:none;color:var(--text)"
+          placeholder="DS Agent username daalo (faster activation ke liye)"
+          onfocus="this.style.borderColor='#5b5ef4'"
+          onblur="this.style.borderColor='#e2e8f0'">
+      </div>
+
+      <!-- SUBMIT -->
+      <button class="submit-btn" id="submitBtn" onclick="submitPayment()" disabled>
+        <span id="submitIcon">📤</span>
+        <span id="submitText">Pehle Screenshot Upload Karo</span>
+      </button>
+
+      <!-- STATUS -->
+      <div class="status-box" id="statusBox"></div>
+
+      <!-- INFO -->
+      <div class="info-row">
+        🔒 Secure &nbsp;|&nbsp; ⏱️ 30 min activation &nbsp;|&nbsp;
+        <a href="mailto:rahulbunker6255@gmail.com" style="color:var(--accent);text-decoration:none">Help →</a>
+      </div>
+
+    </div>
+  </div>
+</div>
+
+<footer>© 2026 DS Agent • data-scientist-1ly9.onrender.com</footer>
+
+<!-- Admin QR Config Script (backend injects QR URL if set) -->
+<script>
+// ── Page Init ──────────────────────────────────────────────────
+var _plan     = '{{ plan }}';
+var _amount   = '{{ amount }}';
+var _duration = '{{ duration }}';
+var _upiId    = '{{ upi_id }}';
+var _upiName  = '{{ upi_name }}';
+var _fileB64  = null;
+var _qrUrl    = null;  // Admin sets this via env QR_CODE_URL
+
+// Plan display names
+var planNames = {
+  'hourly':     '⚡ Pro Hourly',
+  'daily':      '📅 Pro Daily',
+  'monthly':    '🏆 Pro Monthly',
+  'enterprise': '👥 Enterprise',
+};
+
+document.addEventListener('DOMContentLoaded', function() {
+  // Set values from URL params too
+  var params = new URLSearchParams(window.location.search);
+  if(params.get('plan'))     _plan     = params.get('plan');
+  if(params.get('amount'))   _amount   = params.get('amount');
+  if(params.get('duration')) _duration = decodeURIComponent(params.get('duration'));
+
+  document.getElementById('planChip').textContent     = planNames[_plan] || '⚡ Pro';
+  document.getElementById('amountDisplay').textContent = '₹' + _amount;
+  document.getElementById('durationDisplay').textContent = _duration;
+  document.getElementById('stepAmt').textContent       = _amount;
+  document.getElementById('upiIdVal').textContent      = _upiId;
+
+  // Load QR code if set
+  fetch('/api/payment/qr_config').then(function(r){ return r.json(); }).then(function(d){
+    if(d.qr_url) {
+      showQR(d.qr_url);
+      _qrUrl = d.qr_url;
+    }
+    if(d.upi_id) {
+      document.getElementById('upiIdVal').textContent = d.upi_id;
+      _upiId = d.upi_id;
+    }
+  }).catch(function(){});
+});
+
+function showQR(url) {
+  var img = document.getElementById('qrImage');
+  var placeholder = document.getElementById('qrPlaceholder');
+  img.src = url;
+  img.style.display = 'block';
+  placeholder.style.display = 'none';
+}
+
+// ── UPI Actions ────────────────────────────────────────────────
+function copyUPI() {
+  navigator.clipboard.writeText(_upiId).then(function() {
+    var btn = document.getElementById('copyBtn');
+    btn.textContent = '✅ Copied!';
+    btn.classList.add('copied');
+    setTimeout(function() {
+      btn.textContent = '📋 Copy UPI ID';
+      btn.classList.remove('copied');
+    }, 2500);
+  });
+}
+
+function openUPIApp(app) {
+  var upiLink = 'upi://pay?pa=' + encodeURIComponent(_upiId)
+    + '&pn=' + encodeURIComponent(_upiName)
+    + '&am=' + _amount
+    + '&cu=INR'
+    + '&tn=' + encodeURIComponent('DS Agent ' + _duration);
+  window.location.href = upiLink;
+  // Fallback: show UPI ID
+  setTimeout(function() {
+    copyUPI();
+  }, 1500);
+}
+
+// ── File Upload ────────────────────────────────────────────────
+function onFileSelect(input) {
+  var file = input.files[0];
+  if(!file) return;
+
+  var reader = new FileReader();
+  reader.onload = function(e) {
+    _fileB64 = e.target.result.split(',')[1];
+
+    // Show preview
+    var preview = document.getElementById('filePreview');
+    preview.src = e.target.result;
+    preview.style.display = 'block';
+
+    // Update UI
+    var zone = document.getElementById('uploadZone');
+    zone.classList.add('has-file');
+    document.getElementById('uploadIcon').textContent  = '✅';
+    document.getElementById('uploadTitle').textContent = file.name;
+    document.getElementById('uploadSub').textContent   = 'File selected — Submit karo!';
+
+    // Enable submit
+    var btn = document.getElementById('submitBtn');
+    btn.disabled = false;
+    document.getElementById('submitIcon').textContent = '🚀';
+    document.getElementById('submitText').textContent = 'Submit Payment — Get Pro Access!';
+    btn.style.background = 'linear-gradient(135deg,#059669,#047857)';
+  };
+  reader.readAsDataURL(file);
+}
+
+// Drag & drop
+var zone = document.getElementById('uploadZone');
+zone.addEventListener('dragover', function(e) { e.preventDefault(); zone.style.borderColor='#5b5ef4'; });
+zone.addEventListener('dragleave', function()  { zone.style.borderColor=''; });
+zone.addEventListener('drop', function(e) {
+  e.preventDefault(); zone.style.borderColor='';
+  var file = e.dataTransfer.files[0];
+  if(file && file.type.startsWith('image/')) {
+    var input = document.getElementById('ssInput');
+    var dt = new DataTransfer(); dt.items.add(file);
+    input.files = dt.files;
+    onFileSelect(input);
+  }
+});
+
+// ── Submit ─────────────────────────────────────────────────────
+async function submitPayment() {
+  if(!_fileB64) { alert('Screenshot upload karo pehle!'); return; }
+
+  var btn = document.getElementById('submitBtn');
+  btn.disabled = true;
+  document.getElementById('submitIcon').textContent = '⏳';
+  document.getElementById('submitText').textContent = 'Submitting...';
+
+  var status = document.getElementById('statusBox');
+  status.style.display = 'none';
+
+  try {
+    var r = await fetch('/api/payment/verify', {
+      method: 'POST',
+      headers: {'Content-Type': 'application/json'},
+      body: JSON.stringify({
+        image_data : _fileB64,
+        plan       : _plan,
+        amount     : _amount,
+        username   : document.getElementById('usernameInput').value.trim(),
+      })
+    });
+    var d = await r.json();
+
+    if(d.success) {
+      status.className = 'status-box status-success';
+      status.innerHTML = '🎉 <b>Payment Submitted!</b><br>'
+        + d.message + '<br><br>'
+        + '📧 Confirmation email aayega.<br>'
+        + '💬 Issue ho to: <a href="mailto:rahulbunker6255@gmail.com" style="color:#059669">rahulbunker6255@gmail.com</a>';
+      status.style.display = 'block';
+      btn.textContent = '✅ Submitted Successfully!';
+      btn.style.background = '#059669';
+    } else {
+      throw new Error(d.error || 'Submit failed');
+    }
+  } catch(err) {
+    status.className = 'status-box status-error';
+    status.innerHTML = '❌ Error: ' + err.message + '<br><br>'
+      + 'Direct contact: <a href="mailto:rahulbunker6255@gmail.com" style="color:#dc2626">rahulbunker6255@gmail.com</a>';
+    status.style.display = 'block';
+    btn.disabled = false;
+    document.getElementById('submitIcon').textContent = '🚀';
+    document.getElementById('submitText').textContent = 'Try Again';
+    btn.style.background = '';
+  }
+}
+</script>
+</body>
+</html>
