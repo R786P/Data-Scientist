@@ -1,0 +1,355 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>DS Agent — Pricing Plans</title>
+<meta name="google-adsense-account" content="ca-pub-1552402380533601">
+<script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-1552402380533601" crossorigin="anonymous"></script>
+<link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+<style>
+:root{--bg:#f8f9ff;--surface:#fff;--accent:#5b5ef4;--accent2:#7c3aed;--green:#059669;--red:#dc2626;--amber:#d97706;--text:#1e293b;--muted:#64748b;--border:#e2e8f0;}
+*{margin:0;padding:0;box-sizing:border-box;}
+body{font-family:'Plus Jakarta Sans',sans-serif;background:var(--bg);color:var(--text);}
+.topbar{background:white;border-bottom:1px solid var(--border);padding:12px 5%;display:flex;justify-content:space-between;align-items:center;position:sticky;top:0;z-index:100}
+.logo{font-size:18px;font-weight:800;color:var(--accent)}
+.back-link{font-size:13px;color:var(--muted);text-decoration:none;font-weight:600}
+.back-link:hover{color:var(--accent)}
+
+.hero{text-align:center;padding:60px 5% 40px;background:linear-gradient(135deg,#f8f9ff,#eff6ff)}
+.hero h1{font-size:clamp(28px,5vw,48px);font-weight:800;color:var(--text);letter-spacing:-1px;margin-bottom:12px}
+.hero p{font-size:16px;color:var(--muted);max-width:550px;margin:0 auto 20px;line-height:1.6}
+.free-banner{display:inline-flex;align-items:center;gap:8px;background:#fff7ed;border:1.5px solid #f59e0b;border-radius:20px;padding:8px 20px;font-size:13px;font-weight:700;color:#d97706;margin-bottom:8px}
+
+.plans{padding:40px 5%;max-width:1200px;margin:0 auto;display:grid;grid-template-columns:repeat(auto-fit,minmax(210px,1fr));gap:20px}
+
+.plan-card{background:white;border:2px solid var(--border);border-radius:18px;padding:28px 22px;position:relative;transition:all 0.25s;display:flex;flex-direction:column}
+.plan-card:hover{box-shadow:0 12px 40px rgba(91,94,244,0.12);transform:translateY(-4px)}
+.plan-card.featured{border-color:var(--accent);box-shadow:0 12px 40px rgba(91,94,244,0.15)}
+.plan-card.enterprise{border-color:#1e40af;background:linear-gradient(135deg,#eff6ff,#f8faff)}
+
+.plan-badge{position:absolute;top:-14px;left:50%;transform:translateX(-50%);background:linear-gradient(135deg,var(--accent),var(--accent2));color:white;font-size:11px;font-weight:800;padding:4px 14px;border-radius:20px;white-space:nowrap}
+
+.plan-name{font-size:13px;font-weight:700;color:var(--muted);margin-bottom:6px;text-transform:uppercase;letter-spacing:1px}
+.plan-price{font-size:36px;font-weight:800;color:var(--text);letter-spacing:-1px;line-height:1}
+.plan-period{font-size:13px;color:var(--muted);font-weight:500}
+.plan-highlight{margin:12px 0;padding:8px 12px;border-radius:8px;font-size:12px;font-weight:700}
+
+.plan-features{list-style:none;margin:16px 0;flex:1}
+.plan-features li{display:flex;align-items:flex-start;gap:7px;font-size:13px;color:var(--text);padding:6px 0;border-bottom:1px solid var(--border);line-height:1.4}
+.plan-features li:last-child{border:none}
+.plan-features li::before{content:'✓';color:var(--green);font-weight:800;font-size:13px;flex-shrink:0;margin-top:1px}
+.plan-features li.no::before{content:'✗';color:#cbd5e1}
+.plan-features li.no{color:var(--muted)}
+
+.plan-btn{display:block;width:100%;padding:12px;border-radius:10px;text-align:center;font-size:14px;font-weight:700;text-decoration:none;transition:all 0.2s;margin-top:auto;cursor:pointer;border:none;font-family:inherit}
+.btn-primary{background:linear-gradient(135deg,var(--accent),var(--accent2));color:white;box-shadow:0 6px 20px rgba(91,94,244,0.3)}
+.btn-primary:hover{transform:translateY(-1px);box-shadow:0 8px 28px rgba(91,94,244,0.4)}
+.btn-outline{border:2px solid var(--accent);color:var(--accent);background:transparent}
+.btn-outline:hover{background:var(--accent);color:white}
+.btn-green{border:2px solid var(--green);color:var(--green);background:transparent}
+.btn-green:hover{background:var(--green);color:white}
+.btn-enterprise{background:linear-gradient(135deg,#1e40af,var(--accent));color:white}
+
+/* UPI Payment Modal */
+.modal-overlay{display:none;position:fixed;inset:0;background:rgba(0,0,0,0.7);backdrop-filter:blur(8px);z-index:1000;align-items:center;justify-content:center;padding:16px}
+.modal-overlay.show{display:flex}
+.modal{background:white;border-radius:20px;padding:28px;max-width:420px;width:100%}
+.modal h3{font-size:18px;font-weight:800;margin-bottom:4px}
+.modal p{font-size:13px;color:var(--muted);margin-bottom:20px}
+.upi-box{background:#f0fdf4;border:2px solid #86efac;border-radius:12px;padding:16px;text-align:center;margin-bottom:16px}
+.upi-id{font-size:20px;font-weight:800;color:var(--green);letter-spacing:1px}
+.amount-big{font-size:36px;font-weight:800;color:var(--accent);text-align:center;margin:12px 0}
+.steps-list{margin:16px 0}
+.step-item{display:flex;gap:10px;align-items:flex-start;margin-bottom:10px;font-size:13px}
+.step-num{width:22px;height:22px;background:var(--accent);color:white;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:800;flex-shrink:0}
+.upload-zone{border:2px dashed var(--border);border-radius:10px;padding:16px;text-align:center;cursor:pointer;margin-top:12px;font-size:13px;color:var(--muted)}
+.upload-zone:hover{border-color:var(--accent);color:var(--accent)}
+.close-btn{background:none;border:none;font-size:22px;cursor:pointer;float:right;color:var(--muted);margin-top:-4px}
+
+/* Value section */
+.value-section{padding:40px 5%;background:white}
+.value-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:20px;max-width:900px;margin:24px auto 0}
+.value-card{text-align:center;padding:20px;border-radius:14px;border:1px solid var(--border)}
+
+/* Timer section */
+.timer-section{padding:40px 5%;background:var(--bg);text-align:center}
+.timer-display{font-size:48px;font-weight:800;color:var(--accent);letter-spacing:2px;font-variant-numeric:tabular-nums}
+.timer-label{font-size:13px;color:var(--muted);margin-top:4px}
+
+@media(max-width:640px){.plans{grid-template-columns:1fr}.plan-card.featured{transform:none}}
+</style>
+</head>
+<body>
+
+<div class="topbar">
+  <div class="logo">🤖 DS Agent</div>
+  <a href="/" class="back-link">← Back to App</a>
+</div>
+
+<!-- HERO -->
+<div class="hero">
+  <div class="free-banner">⏱️ Free Plan: 10 Credits = ~10 Minutes Daily</div>
+  <h1>Pay Only For<br>What You Use</h1>
+  <p>Jitna use karo utna pay karo. Hourly billing se shuru karo — minimum ₹500/hour. Serious kaam ke liye monthly plan lo.</p>
+</div>
+
+<!-- PLANS -->
+<div class="plans">
+
+  <!-- FREE -->
+  <div class="plan-card">
+    <div class="plan-name">Free</div>
+    <div class="plan-price">₹0 <span class="plan-period">/forever</span></div>
+    <div class="plan-highlight" style="background:#fef3c7;color:#d97706">
+      ⏱️ 10 Credits/Day ≈ 10 Minutes
+    </div>
+    <ul class="plan-features">
+      <li>10 AI credits per day</li>
+      <li>1 credit = 1 minute use</li>
+      <li>Basic EDA &amp; Charts</li>
+      <li>5 Company Datasets</li>
+      <li>Python Practice Window</li>
+      <li>5MB max file size</li>
+      <li class="no">AI Chat Mode</li>
+      <li class="no">ML Model Comparison</li>
+      <li class="no">Staff DS Suite</li>
+      <li class="no">Content Marketing</li>
+    </ul>
+    <a href="/register" class="plan-btn btn-outline">Start Free</a>
+  </div>
+
+  <!-- HOURLY -->
+  <div class="plan-card featured">
+    <div class="plan-badge">⚡ Most Flexible</div>
+    <div class="plan-name">Pro Hourly</div>
+    <div class="plan-price">₹500 <span class="plan-period">/hour</span></div>
+    <div class="plan-highlight" style="background:#eff6ff;color:#1d4ed8">
+      ⏱️ Min 1 Hour • ₹8.33/min
+    </div>
+    <ul class="plan-features">
+      <li>Unlimited AI queries</li>
+      <li>All 10+ ML Models</li>
+      <li>All 98+ Company Datasets</li>
+      <li>Full Interview Prep Suite</li>
+      <li>Staff DS Suite</li>
+      <li>Content Marketing Suite</li>
+      <li>Cloud Computing Suite</li>
+      <li>100MB max file size</li>
+      <li>Model Deployment Code</li>
+      <li>GridSearch + Monitoring</li>
+    </ul>
+    <button class="plan-btn btn-primary" onclick="location.href='/payment?plan=hourly&amount=500&duration=1+Hour+Pro+Access'">Buy 1 Hour — ₹500</button>
+  </div>
+
+  <!-- DAILY -->
+  <div class="plan-card">
+    <div class="plan-name">Pro Daily</div>
+    <div class="plan-price">₹2,000 <span class="plan-period">/day</span></div>
+    <div class="plan-highlight" style="background:#f0fdf4;color:#059669">
+      ✅ Full 24-Hour Access
+    </div>
+    <ul class="plan-features">
+      <li>Everything in Hourly</li>
+      <li>24-hour unlimited access</li>
+      <li>200MB max file size</li>
+      <li>Language Teacher Pro</li>
+      <li>Video Generator Suite</li>
+      <li>Digital Products Suite</li>
+      <li>Priority processing</li>
+      <li>Download all reports</li>
+      <li>Chat history unlimited</li>
+      <li>All future features</li>
+    </ul>
+    <button class="plan-btn btn-green" onclick="location.href='/payment?plan=daily&amount=2000&duration=1+Day+Pro+Access'">Get Day Pass — ₹2,000</button>
+  </div>
+
+  <!-- MONTHLY -->
+  <div class="plan-card">
+    <div class="plan-badge" style="background:linear-gradient(135deg,#db2777,#9333ea)">🏆 Best Value</div>
+    <div class="plan-name">Pro Monthly</div>
+    <div class="plan-price">₹25,000 <span class="plan-period">/month</span></div>
+    <div class="plan-highlight" style="background:#fdf2f8;color:#db2777">
+      🔥 ₹833/day — 40x Cheaper than Daily!
+    </div>
+    <ul class="plan-features">
+      <li>Everything in Daily</li>
+      <li>30 days unlimited</li>
+      <li>500MB max file size</li>
+      <li>Advanced Analytics Suite</li>
+      <li>Custom Report Templates</li>
+      <li>API Access (beta)</li>
+      <li>Dedicated email support</li>
+      <li>Early access new features</li>
+      <li>Monthly strategy call</li>
+      <li>Invoice for GST</li>
+    </ul>
+    <button class="plan-btn btn-primary" style="background:linear-gradient(135deg,#db2777,#9333ea)" onclick="location.href='/payment?plan=monthly&amount=25000&duration=30+Days+Pro+Access'">Go Monthly — ₹25,000</button>
+  </div>
+
+  <!-- ENTERPRISE -->
+  <div class="plan-card enterprise">
+    <div class="plan-name" style="color:#1e40af">Enterprise</div>
+    <div class="plan-price" style="font-size:28px;color:#1e40af">₹1,50,000 <span class="plan-period">/month</span></div>
+    <div class="plan-highlight" style="background:#dbeafe;color:#1e40af">
+      👥 20 Team Seats Included
+    </div>
+    <ul class="plan-features">
+      <li>20 team member seats</li>
+      <li>Unlimited everything</li>
+      <li>2GB max file size</li>
+      <li>Full API access</li>
+      <li>Custom ML models</li>
+      <li>White-label option</li>
+      <li>Custom integrations</li>
+      <li>Dedicated account manager</li>
+      <li>99.9% SLA guarantee</li>
+      <li>On-premise option</li>
+    </ul>
+    <a href="/cdn-cgi/l/email-protection#0a786b627f66687f64616f783c383f3f4a6d676b63662469656735797f68606f697e374e592a4b6d6f647e2a4f647e6f787a7863796f2a43647b7f637873" class="plan-btn btn-enterprise">Contact Sales →</a>
+  </div>
+
+</div>
+
+<!-- VALUE COMPARISON -->
+<div class="value-section">
+  <h2 style="text-align:center;font-size:24px;font-weight:800;color:#1e293b;margin-bottom:6px">Worth It? Khud Compare Karo!</h2>
+  <p style="text-align:center;color:var(--muted);font-size:14px">Industry ke saath compare karo aur decide karo</p>
+  <div class="value-grid">
+    <div class="value-card" style="background:#fef2f2;border-color:#fca5a5">
+      <div style="font-size:13px;color:#dc2626;font-weight:700;margin-bottom:6px">DataRobot</div>
+      <div style="font-size:28px;font-weight:800;color:#dc2626">₹35L</div>
+      <div style="font-size:12px;color:#64748b">/year</div>
+      <div style="font-size:11px;color:#dc2626;margin-top:8px">Enterprise only, No Hindi</div>
+    </div>
+    <div class="value-card" style="background:#fff7ed;border-color:#fbbf24">
+      <div style="font-size:13px;color:#d97706;font-weight:700;margin-bottom:6px">Tableau</div>
+      <div style="font-size:28px;font-weight:800;color:#d97706">₹1.3L</div>
+      <div style="font-size:12px;color:#64748b">/year</div>
+      <div style="font-size:11px;color:#d97706;margin-top:8px">No ML, No AI chat</div>
+    </div>
+    <div class="value-card" style="background:#eff6ff;border-color:#93c5fd">
+      <div style="font-size:13px;color:#2563eb;font-weight:700;margin-bottom:6px">Power BI Pro</div>
+      <div style="font-size:28px;font-weight:800;color:#2563eb">₹1,600</div>
+      <div style="font-size:12px;color:#64748b">/user/month</div>
+      <div style="font-size:11px;color:#2563eb;margin-top:8px">Only charts, no ML</div>
+    </div>
+    <div class="value-card" style="background:linear-gradient(135deg,#eff6ff,#f5f3ff);border-color:#818cf8;border-width:2px">
+      <div style="font-size:13px;color:#5b5ef4;font-weight:800;margin-bottom:6px">🤖 DS Agent</div>
+      <div style="font-size:28px;font-weight:800;color:#5b5ef4">₹500</div>
+      <div style="font-size:12px;color:#64748b">/hour</div>
+      <div style="font-size:11px;color:#5b5ef4;font-weight:700;margin-top:8px">Full features + Hindi ✅</div>
+    </div>
+  </div>
+</div>
+
+<!-- FAQ -->
+<div style="padding:40px 5%;max-width:700px;margin:0 auto">
+  <h2 style="font-size:22px;font-weight:800;margin-bottom:20px;text-align:center">❓ Common Questions</h2>
+  <div style="display:flex;flex-direction:column;gap:12px">
+    <details style="background:white;border:1px solid var(--border);border-radius:10px;padding:14px">
+      <summary style="font-weight:700;cursor:pointer;font-size:14px">Free mein kya milta hai exactly?</summary>
+      <p style="margin-top:8px;font-size:13px;color:var(--muted);line-height:1.6">10 AI credits/day milte hain. 1 credit = approximately 1 minute use. 10 credits = ~10 minutes daily use. Basic EDA, charts, 5 company datasets, Python practice milta hai. Register karne ki zaroorat nahi — guest mode mein try karo!</p>
+    </details>
+    <details style="background:white;border:1px solid var(--border);border-radius:10px;padding:14px">
+      <summary style="font-weight:700;cursor:pointer;font-size:14px">Hourly plan kaise kaam karta hai?</summary>
+      <p style="margin-top:8px;font-size:13px;color:var(--muted);line-height:1.6">₹500 UPI se pay karo → Screenshot bhejo → 1 hour ke liye Pro access milta hai. Minimum 1 hour charge. Agar 2 ghante use karna hai to ₹1,000 pay karo. Jitna use karo utna pay — no waste!</p>
+    </details>
+    <details style="background:white;border:1px solid var(--border);border-radius:10px;padding:14px">
+      <summary style="font-weight:700;cursor:pointer;font-size:14px">Payment kaise karte hain?</summary>
+      <p style="margin-top:8px;font-size:13px;color:var(--muted);line-height:1.6">UPI se pay karo (PhonePe, GPay, Paytm — sab chalte hain). Payment ke baad screenshot upload karo. Admin manually verify karta hai aur Pro access activate hota hai (usually within 30 minutes).</p>
+    </details>
+    <details style="background:white;border:1px solid var(--border);border-radius:10px;padding:14px">
+      <summary style="font-weight:700;cursor:pointer;font-size:14px">Hospital/Company billing ke liye invoice milega?</summary>
+      <p style="margin-top:8px;font-size:13px;color:var(--muted);line-height:1.6">Monthly plan aur Enterprise plan ke saath GST invoice milti hai. Email karo: <a href="/cdn-cgi/l/email-protection" class="__cf_email__" data-cfemail="95e7f4fde0f9f7e0fbfef0e7a3a7a0a0d5f2f8f4fcf9bbf6faf8">[email&#160;protected]</a></p>
+    </details>
+  </div>
+</div>
+
+<!-- UPI PAYMENT MODAL -->
+<div class="modal-overlay" id="paymentModal">
+  <div class="modal">
+    <button class="close-btn" onclick="closePayment()">×</button>
+    <h3>💳 Complete Payment</h3>
+    <p id="payModalDesc">UPI se pay karo aur screenshot upload karo</p>
+
+    <div class="amount-big" id="payAmount">₹500</div>
+
+    <div class="upi-box">
+      <div style="font-size:12px;color:#059669;margin-bottom:4px;font-weight:600">UPI ID — Copy Karo</div>
+      <div class="upi-id" id="upiIdDisplay">yourname@upi</div>
+      <button onclick="copyUPI()" style="margin-top:8px;padding:5px 14px;background:var(--green);color:white;border:none;border-radius:6px;cursor:pointer;font-size:12px;font-weight:700;font-family:inherit" id="copyUpiBtn">📋 Copy UPI</button>
+    </div>
+
+    <div class="steps-list">
+      <div class="step-item"><div class="step-num">1</div><div>PhonePe / GPay / Paytm kholo</div></div>
+      <div class="step-item"><div class="step-num">2</div><div>UPI ID copy karo aur pay karo</div></div>
+      <div class="step-item"><div class="step-num">3</div><div>Payment screenshot lo</div></div>
+      <div class="step-item"><div class="step-num">4</div><div>Neeche screenshot upload karo → Pro access milega!</div></div>
+    </div>
+
+    <div class="upload-zone" onclick="document.getElementById('ssUpload').click()">
+      📸 Payment Screenshot Upload Karo<br>
+      <span style="font-size:11px">(JPG/PNG, click to select)</span>
+      <input type="file" id="ssUpload" accept="image/*" style="display:none" onchange="uploadScreenshot(this)">
+    </div>
+    <div id="uploadStatus" style="margin-top:8px;font-size:12px;text-align:center;min-height:20px"></div>
+  </div>
+</div>
+
+<footer style="background:#0a0f1e;color:rgba(255,255,255,0.5);padding:30px 5%;text-align:center">
+  <div style="font-size:16px;font-weight:800;color:white;margin-bottom:8px">🤖 DS Agent</div>
+  <div style="font-size:13px">data-scientist-1ly9.onrender.com</div>
+  <div style="margin-top:12px;font-size:12px">
+    <a href="/" style="color:rgba(255,255,255,0.5);text-decoration:none;margin:0 10px">Home</a>
+    <a href="/login" style="color:rgba(255,255,255,0.5);text-decoration:none;margin:0 10px">Login</a>
+    <a href="/register" style="color:rgba(255,255,255,0.5);text-decoration:none;margin:0 10px">Register</a>
+  </div>
+</footer>
+
+<script data-cfasync="false" src="/cdn-cgi/scripts/5c5dd728/cloudflare-static/email-decode.min.js"></script><script>
+var _selectedPlan = 'hourly';
+var _upiId = '{{ upi_id if upi_id else "yourname@upi" }}';
+
+function openPayment(plan, amount, label){
+  _selectedPlan = plan;
+  document.getElementById('payAmount').textContent = amount;
+  document.getElementById('payModalDesc').textContent = label + ' ke liye payment karo';
+  document.getElementById('upiIdDisplay').textContent = _upiId;
+  document.getElementById('paymentModal').classList.add('show');
+}
+function closePayment(){
+  document.getElementById('paymentModal').classList.remove('show');
+  document.getElementById('uploadStatus').textContent = '';
+}
+function copyUPI(){
+  navigator.clipboard.writeText(_upiId).then(function(){
+    var btn = document.getElementById('copyUpiBtn');
+    btn.textContent = '✅ Copied!';
+    setTimeout(function(){ btn.textContent = '📋 Copy UPI'; }, 2000);
+  });
+}
+async function uploadScreenshot(input){
+  var file = input.files[0]; if(!file) return;
+  var status = document.getElementById('uploadStatus');
+  status.textContent = '⏳ Uploading...'; status.style.color = '#5b5ef4';
+
+  var reader = new FileReader();
+  reader.onload = async function(e){
+    var b64 = e.target.result.split(',')[1];
+    try {
+      var r = await fetch('/submit_payment_screenshot', {
+        method: 'POST',
+        headers: {'Content-Type': 'application/json'},
+        body: JSON.stringify({
+          image_data: b64,
+          plan: _selectedPlan,
+          amount: document.getElementById('payAmount').textContent
+        })
+      });
+      var d = await r.json();
+      if(d.success || d.message){
+        status.textContent = '✅ Screenshot uploaded! Admin verify karega — 30 min mein Pro access milega.';
+        status.style.color = '#059669';
+      } else {
+        statu
