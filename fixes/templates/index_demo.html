@@ -1,0 +1,43 @@
+<!doctype html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <title>DS Agent — HF Status Demo</title>
+  <style>
+    body{font-family:Inter,system-ui,Arial;margin:20px}
+    #dlStatus{width:12px;height:12px;border-radius:50%;background:#16a34a;box-shadow:0 0 8px rgba(16,185,129,0.28);opacity:0.25;transition:opacity .2s, transform .2s}
+    #dlStatus.blink{animation:dlBlink 1s linear infinite;opacity:1;transform:scale(1.05)}
+    @keyframes dlBlink{0%,60%{opacity:1}61%,100%{opacity:0.15}}
+  </style>
+</head>
+<body>
+  <h3>HF Status Demo</h3>
+  <div style="display:flex;align-items:center;gap:8px">
+    <div>Deep Learning:</div>
+    <div id="dlStatus" title="checking..."></div>
+    <div id="dlText" style="color:#666">Checking HF status...</div>
+  </div>
+
+  <script>
+    async function pollHF(){
+      try{
+        const r = await fetch('/api/hf_status', {cache:'no-store'});
+        const j = await r.json();
+        const el = document.getElementById('dlStatus');
+        const txt = document.getElementById('dlText');
+        if(j.status === 'online'){
+          el.classList.add('blink');
+          txt.textContent = `Online (${j.source}) • ${j.latency_ms}ms`;
+        } else if(j.status === 'offline'){
+          el.classList.remove('blink');
+          txt.textContent = `Offline (${j.source})`;
+        } else {
+          el.classList.remove('blink');
+          txt.textContent = `Not configured`;
+        }
+      }catch(e){document.getElementById('dlStatus').classList.remove('blink');document.getElementById('dlText').textContent='Error' }
+    }
+    setInterval(pollHF,5000);pollHF();
+  </script>
+</body>
+</html>
