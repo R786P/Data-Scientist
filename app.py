@@ -3230,7 +3230,7 @@ def colab_status():
     # HuggingFace — main page check (Gradio runs on 7860, no /ping needed)
     if hf_url:
         try:
-            r = req.get(hf_url, timeout=10)
+            r = req.get(hf_url.rstrip('/')+'/ping', timeout=8)
             if r.status_code == 200:
                 return jsonify({'connected': True, 'url': hf_url, 'source': 'HuggingFace', 'message': 'HuggingFace Connected!'})
         except: pass
@@ -4667,7 +4667,7 @@ def ab_test():
         diff = abs(res_a['score'] - res_b['score'])
 
         # Chart
-        fig, axes = plt.subplots(1, 2, figsize=(8, 3))
+        fig, axes = plt.subplots(1, 2, figsize=(14, 3))
         metrics = ['Test Score','CV Mean']
         a_vals = [res_a['score'], res_a['cv_mean']]
         b_vals = [res_b['score'], res_b['cv_mean']]
