@@ -3382,9 +3382,9 @@ def colab_deep_learning():
                         }
                 except Exception as _le:
                     local_result['local_error'] = str(_le)
-
-        # AI guide
-        prompt = f"""You are a Deep Learning + Healthcare AI expert.
+                  
+# AI guide
+prompt = f"""You are a Deep Learning + Healthcare AI expert.
 
 Task: {task}
 Target column: {target or 'auto-detect'}
