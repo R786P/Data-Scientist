@@ -3391,42 +3391,44 @@ Target column: {target or 'auto-detect'}
 {df_info}
 Local model result: {local_result}
 
-Generate a comprehensive response:
-
-## Model Recommendation
-Which architecture is best for this task and why?
-
-## Implementation Code (PyTorch/TensorFlow)
-Complete working code with training loop
-
-## Healthcare Context (if applicable)
-- Diagnostic accuracy benchmarks
-- Clinical validation requirements
-- Regulatory considerations (FDA/CE)
-- Integration with EHR systems
-
-## Performance Optimization
-- How to improve accuracy
-- Handling class imbalance
-- Cross-validation strategy
-
-Use Hinglish for explanations. Include working code."""
-
-        guide = get_groq_response(
-            "You are a Deep Learning and Healthcare AI expert. Provide practical, working code.",
-            prompt, max_tokens=2000
-        )
+# Chart generate karo
+        chart_b64 = None
+        if local_result and local_result.get('accuracy'):
+            try:
+                import matplotlib; matplotlib.use('Agg')
+                import matplotlib.pyplot as plt
+                import io, base64
+                fig, axes = plt.subplots(1, 2, figsize=(10, 4))
+                fig.patch.set_facecolor('#0f0f1a')
+                models = [r['model'] for r in local_result.get('all_results', [{'model': local_result.get('model','Model'), 'accuracy': local_result.get('accuracy', 0)}])]
+                scores = [r['accuracy'] for r in local_result.get('all_results', [{'model': local_result.get('model','Model'), 'accuracy': local_result.get('accuracy', 0)}])]
+                axes[0].bar(models, scores, color=['#22c55e','#3b82f6','#f59e0b'][:len(models)])
+                axes[0].set_title('Model Accuracy', color='white'); axes[0].set_facecolor('#1a1a2e'); axes[0].tick_params(colors='white'); axes[0].set_ylim(0,100)
+                if local_result.get('top_features'):
+                    feats = [f['feature'] for f in local_result['top_features'][:6]]
+                    imps  = [f['importance'] for f in local_result['top_features'][:6]]
+                    axes[1].barh(feats, imps, color='#8b5cf6')
+                    axes[1].set_title('Top Features', color='white'); axes[1].set_facecolor('#1a1a2e'); axes[1].tick_params(colors='white')
+                else:
+                    axes[1].text(0.5,0.5,f'Accuracy\n{local_result.get("accuracy",0)}%', ha='center',va='center',fontsize=20,color='#22c55e',transform=axes[1].transAxes)
+                    axes[1].set_facecolor('#1a1a2e'); axes[1].set_title('Result',color='white')
+                plt.tight_layout()
+                buf = io.BytesIO(); plt.savefig(buf,format='png',bbox_inches='tight',facecolor='#0f0f1a'); buf.seek(0)
+                chart_b64 = base64.b64encode(buf.read()).decode(); plt.close()
+            except: pass
 
         return jsonify({
-            'success':    True,
-            'hf_status':  'online' if hf_alive else 'offline',
-            'server':     'HuggingFace Space' if hf_alive else 'Local + Groq AI',
-            'task':       task,
-            'target':     target,
+            'success':      True,
+            'hf_status':    'online' if hf_alive else 'offline',
+            'server':       'HuggingFace Space' if hf_alive else 'Local + Groq AI',
+            'task':         task,
+            'target':       target,
             'local_result': local_result,
-            'result':     guide,
-            'message':    f'✅ Deep Learning result ready! ({"HF Space" if hf_alive else "Groq AI fallback"})'
+            'result':       guide,
+            'chart':        chart_b64,
+            'message':      f'✅ Deep Learning result ready! ({"HF Space" if hf_alive else "Groq AI fallback"})'
         })
+
 
     except Exception as e:
         import traceback; traceback.print_exc()
