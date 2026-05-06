@@ -3391,7 +3391,14 @@ Target column: {target or 'auto-detect'}
 {df_info}
 Local model result: {local_result}
 
-# Chart generate karo
+Provide model recommendation and working code in Hinglish."""
+
+        guide = get_groq_response(
+            "You are a Deep Learning and Healthcare AI expert. Provide practical, working code.",
+            prompt, max_tokens=2000
+        )
+
+        # Chart generate karo
         chart_b64 = None
         if local_result and local_result.get('accuracy'):
             try:
