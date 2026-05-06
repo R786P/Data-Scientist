@@ -13972,7 +13972,7 @@ async function runDeepLearning(){
     const btn=document.querySelector('#colabModal button[onclick="runDeepLearning()"]');
     btn.textContent='Training on GPU... (may take 1-2 min)';btn.disabled=true;
     try{
-        const r=await fetch('/api/colab/deep_learning',{
+        const r=await fetch('/api/hf/deep_learning',{
             method:'POST',headers:{'Content-Type':'application/json'},
             body:JSON.stringify({target,epochs,layers:[l1,l2,l3]})
         });
@@ -24718,11 +24718,20 @@ function openLassoModal() {
 
 function openABModal() {
   closePlus();
-  botMsg('🔬 **A/B Testing**\n\nKya test karna hai?', [
-    {label:'Two groups compare', action:function(){ featureAPI('/api/ab_test',{test_type:'two_sample',confidence:0.95},'A/B test chal raha hai...','🔬 A/B Test Done!'); }},
-    {label:'Before/After analysis', action:function(){ featureAPI('/api/ab_test',{test_type:'paired',confidence:0.95},'Paired test...','Done!'); }},
-    {label:'Conversion rate test', action:function(){ featureAPI('/api/ab_test',{test_type:'proportion',confidence:0.95},'Proportion test...','Done!'); }},
-  ]);
+  var cols = window._dfColumns || [];
+  if(cols.length === 0){ botMsg('⚠️ Pehle dataset upload karo!'); return; }
+  botMsg('🧪 **A/B Testing**\n\nTarget column select karo:');
+  var btns = cols.slice(0,8).map(function(c){
+    return {label: c, action: function(){
+      botMsg('🔬 Test type select karo:', [
+        {label:'Two Groups Compare', action:function(){ featureAPI('/api/ab_test',{target:c,test_type:'two_sample',confidence:0.95,model_a:'random_forest',model_b:'gradient_boost'},'🧪 A/B test...','🏆 Done!'); }},
+        {label:'Before/After Analysis', action:function(){ featureAPI('/api/ab_test',{target:c,test_type:'paired',confidence:0.95,model_a:'random_forest',model_b:'logistic'},'Paired test...','Done!'); }},
+        {label:'Conversion Rate Test', action:function(){ featureAPI('/api/ab_test',{target:c,test_type:'proportion',confidence:0.95,model_a:'logistic',model_b:'gradient_boost'},'Proportion test...','Done!'); }},
+      ]);
+    }};
+  });
+  btns.push({label:'✏️ Type manually', action:function(){ focusChatInput('ab test '); }});
+  setTimeout(function(){ botMsg('Column select karo:', btns); }, 200);
 }
 
 function openModelVerModal() {
