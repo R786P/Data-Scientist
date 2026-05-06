@@ -3384,7 +3384,7 @@ def colab_deep_learning():
                     local_result['local_error'] = str(_le)
                   
 # AI guide
-prompt = f"""You are a Deep Learning + Healthcare AI expert.
+        prompt = f"""You are a Deep Learning + Healthcare AI expert.
 
 Task: {task}
 Target column: {target or 'auto-detect'}
