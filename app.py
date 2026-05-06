@@ -4667,7 +4667,7 @@ def ab_test():
         diff = abs(res_a['score'] - res_b['score'])
 
         # Chart
-        fig, axes = plt.subplots(1, 2, figsize=(14, 3))
+        fig, axes = plt.subplots(1, 3, figsize=(14, 3))
         metrics = ['Test Score','CV Mean']
         a_vals = [res_a['score'], res_a['cv_mean']]
         b_vals = [res_b['score'], res_b['cv_mean']]
