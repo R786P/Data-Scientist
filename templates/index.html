@@ -11754,8 +11754,8 @@ window.addEventListener('DOMContentLoaded',()=>{
         document.getElementById('topAvatar').textContent='U';
     });
     fetch('/affiliate_links').then(r=>r.json()).then(d=>affiliates=d).catch(()=>{});
-    setTimeout(checkColab, 3000);
-    setInterval(checkColab, 60000);
+        setTimeout(checkColab, 3000);
+        setInterval(checkColab, 60000);
     });
 
 function toggleAI(cb){
