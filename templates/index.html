@@ -24719,7 +24719,19 @@ function openLassoModal() {
 function openABModal() {
   closePlus();
   var cols = window._dfColumns || [];
-  if(cols.length === 0){ botMsg('⚠️ Pehle dataset upload karo!'); return; }
+  if(cols.length === 0){
+    // Try fetching columns again from server
+    fetch('/api/dataset/columns').then(function(r){return r.json();}).then(function(d){
+      if(d.columns && d.columns.length > 0){
+        window._dfColumns = d.columns;
+        window._dfNumericColumns = d.numeric_columns||[];
+        openABModal(); // retry
+      } else {
+        botMsg('⚠️ Pehle dataset upload karo!');
+      }
+    }).catch(function(){ botMsg('⚠️ Pehle dataset upload karo!'); });
+    return;
+  }
   botMsg('🧪 **A/B Testing**\n\nTarget column select karo:');
   var btns = cols.slice(0,8).map(function(c){
     return {label: c, action: function(){
