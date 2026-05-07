@@ -24906,11 +24906,8 @@ function openQuantumModal() {
 
 function openMedImgModal() {
   closePlus();
-  botMsg('🏥 **Medical Imaging Analysis**\n\nKya karna hai?', [
-    {label:'Anomaly Detection in Lab Values', action:function(){ featureAPI('/api/anomaly',{method:'isolation_forest',contamination:0.05,columns:[]},'Medical data analysis...','🏥 Analysis Done!'); }},
-    {label:'Patient Clustering', action:function(){ featureAPI('/api/ml/dbscan',{eps:0.5,min_samples:5},'Clustering patients...','Done!'); }},
-    {label:'Diagnosis Classification', action:function(){ botMsg('💡 Target column daao:\n`predict Diagnosis` ya `predict Disease`'); }},
-  ]);
+  const m = document.getElementById('medImgModal');
+  if(m){ m.style.display='flex'; medTab('xray'); }
 }
 
 function openCVisionModal() {
