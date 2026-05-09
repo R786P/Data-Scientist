@@ -3382,6 +3382,94 @@ def colab_deep_learning():
                         }
                 except Exception as _le:
                     local_result['local_error'] = str(_le)
+
+            # Tabular MLP task
+            elif task in ('tabular', 'mlp', 'neural_network'):
+                try:
+                    from sklearn.neural_network import MLPClassifier, MLPRegressor
+                    from sklearn.preprocessing import LabelEncoder, StandardScaler
+                    from sklearn.model_selection import train_test_split
+                    from sklearn.metrics import accuracy_score, r2_score
+                    if not target:
+                        target = num_cols[0] if num_cols else ''
+                    if target and target in df.columns:
+                        df.columns = df.columns.str.strip()
+                        X = df.drop(columns=[target]).copy()
+                        y = df[target]
+                        for col in X.select_dtypes('object').columns:
+                            X[col] = LabelEncoder().fit_transform(X[col].astype(str))
+                        X = X.fillna(X.median(numeric_only=True))
+                        is_cls = y.dtype == object or y.nunique() <= 15
+                        if is_cls: y = LabelEncoder().fit_transform(y.astype(str))
+                        else: y = y.values
+                        Xs = StandardScaler().fit_transform(X)
+                        X_tr,X_te,y_tr,y_te = train_test_split(Xs,y,test_size=0.2,random_state=42)
+                        mdl = MLPClassifier(hidden_layer_sizes=(64,32),max_iter=100,random_state=42) if is_cls else MLPRegressor(hidden_layer_sizes=(64,32),max_iter=100,random_state=42)
+                        mdl.fit(X_tr,y_tr)
+                        score = accuracy_score(y_te,mdl.predict(X_te))*100 if is_cls else max(0,r2_score(y_te,mdl.predict(X_te))*100)
+                        local_result = {'accuracy': round(score,2), 'target': target, 'model': 'MLP Neural Network',
+                                       'task_type': 'classification' if is_cls else 'regression',
+                                       'layers': '64→32', 'features': len(X.columns)}
+                except Exception as _le:
+                    local_result['local_error'] = str(_le)
+
+            # Time Series task
+            elif task in ('time_series', 'lstm', 'forecasting'):
+                try:
+                    from sklearn.linear_model import LinearRegression
+                    import numpy as np
+                    if not target:
+                        target = num_cols[0] if num_cols else ''
+                    if target and target in df.columns:
+                        series = df[target].dropna().values[-200:]
+                        n = len(series); window = 5
+                        X_ts = np.array([series[i:i+window] for i in range(n-window)])
+                        y_ts = series[window:]
+                        split = int(len(X_ts)*0.8)
+                        mdl = LinearRegression()
+                        mdl.fit(X_ts[:split], y_ts[:split])
+                        preds = mdl.predict(X_ts[split:])
+                        from sklearn.metrics import mean_absolute_error
+                        mae = mean_absolute_error(y_ts[split:], preds)
+                        last = list(series[-window:])
+                        forecast = []
+                        for _ in range(10):
+                            p = mdl.predict([last[-window:]])[0]
+                            forecast.append(round(float(p),2))
+                            last.append(p)
+                        local_result = {'accuracy': round(max(0,100-mae/max(abs(series.mean()),1)*100),1),
+                                       'target': target, 'model': 'Time Series Forecast',
+                                       'mae': round(float(mae),3), 'forecast_next_10': forecast,
+                                       'actual_values': series[-20:].tolist()}
+                except Exception as _le:
+                    local_result['local_error'] = str(_le)
+
+            # NLP task
+            elif task in ('nlp', 'text', 'bert', 'sentiment'):
+                try:
+                    from sklearn.feature_extraction.text import TfidfVectorizer
+                    from sklearn.linear_model import LogisticRegression
+                    from sklearn.model_selection import train_test_split
+                    from sklearn.metrics import accuracy_score
+                    from sklearn.preprocessing import LabelEncoder
+                    text_col = cat_cols[0] if cat_cols else ''
+                    label_col = cat_cols[1] if len(cat_cols)>1 else (num_cols[0] if num_cols else '')
+                    if text_col and label_col and text_col in df.columns and label_col in df.columns:
+                        texts = df[text_col].astype(str).tolist()
+                        labels = LabelEncoder().fit_transform(df[label_col].astype(str))
+                        tfidf = TfidfVectorizer(max_features=500)
+                        X_nlp = tfidf.fit_transform(texts)
+                        X_tr,X_te,y_tr,y_te = train_test_split(X_nlp,labels,test_size=0.2,random_state=42)
+                        mdl = LogisticRegression(max_iter=200)
+                        mdl.fit(X_tr,y_tr)
+                        acc = accuracy_score(y_te,mdl.predict(X_te))*100
+                        local_result = {'accuracy': round(acc,2), 'target': label_col,
+                                       'model': 'TF-IDF + LogisticRegression',
+                                       'text_column': text_col, 'vocab_size': 500}
+                except Exception as _le:
+                    local_result['local_error'] = str(_le)
+
+      
                   
 # AI guide
         prompt = f"""You are a Deep Learning + Healthcare AI expert.
