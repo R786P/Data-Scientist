@@ -4628,9 +4628,16 @@ def ab_test():
         import matplotlib; matplotlib.use('Agg')
         import matplotlib.pyplot as plt, io as io, time as _time
 
-        df = agent.df.dropna()
+        df = agent.df.copy()
+        df.columns = df.columns.str.strip()
+        df = df.dropna()
+        col_map = {c.strip().lower(): c for c in df.columns}
+        target = target.strip()
         if target not in df.columns:
-            return jsonify({'error': f'Target "{target}" nahi mila!'}), 400
+            if target.lower() in col_map:
+                target = col_map[target.lower()]
+            else:
+                return jsonify({'error': f'Target "{target}" nahi mila! Available: {list(df.columns[:8])}'}), 400
 
         y = df[target]; X = df.drop(columns=[target])
         for c in X.select_dtypes(include='object').columns:
