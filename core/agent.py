@@ -55,7 +55,7 @@ class DataScienceAgent:
     def load_data(self, fp):
         try:
             self.df = pd.read_csv(fp, encoding='latin1')
-            self.last_file = fp
+            self.df.columns = self.df.columns.str.strip()  # ✅ column whitespace fix
             self.numeric_columns = self.df.select_dtypes('number').columns.tolist()
             self.categorical_columns = self.df.select_dtypes('object').columns.tolist()
             self.available_columns = list(self.df.columns)
